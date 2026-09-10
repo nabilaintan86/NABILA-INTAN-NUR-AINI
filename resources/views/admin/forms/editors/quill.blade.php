@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Quill Editor - NioBoard Responsive Admin Dashboard Template')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/libs/editors/quill.css') }}">
+        <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/quill.css') }}">
     @endpush
     @section('content')
         <div class="nk-content">
@@ -67,6 +67,6 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/libs/editors/quill.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/libs/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/editors/quill.js') }}"></script>
     @endpush

@@ -31,7 +31,7 @@
                                     <div class="row g-gs">
                                         <div class="col-sm-6 col-xxl-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/a.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -45,7 +45,7 @@
                                         </div>
                                         <div class="col-sm-6 col-xxl-4">
                                             <div class="card" aria-hidden="true">
-                                                <img src="{{ asset('admin/images/preview/a.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title placeholder-glow">
                                                         <span class="placeholder col-6"></span>

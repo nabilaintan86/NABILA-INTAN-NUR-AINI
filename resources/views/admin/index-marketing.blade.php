@@ -144,19 +144,19 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="{{ asset('admin/images/icon/a.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Google Analytics</a>
+                                                    <img src="{{ asset('admin-assets/images/icon/a.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Google Analytics</a>
                                                 </div>
                                                 <a href="{{ url('/admin/index-marketing') }}#" class="btn-link"><em class="icon ni ni-external-alt"></em></a>
                                             </li>
                                             <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="{{ asset('admin/images/icon/b.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Facebook Ads</a>
+                                                    <img src="{{ asset('admin-assets/images/icon/b.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Facebook Ads</a>
                                                 </div>
                                                 <a href="{{ url('/admin/index-marketing') }}#" class="btn-link"><em class="icon ni ni-external-alt"></em></a>
                                             </li>
                                             <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="{{ asset('admin/images/icon/c.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Seranking</a>
+                                                    <img src="{{ asset('admin-assets/images/icon/c.png') }}" class="me-2" alt=""><a href="{{ url('/admin/index-marketing') }}#" class="h6">Seranking</a>
                                                 </div>
                                                 <a href="{{ url('/admin/index-marketing') }}#" class="btn-link"><em class="icon ni ni-external-alt"></em></a>
                                             </li>
@@ -324,7 +324,7 @@
                                                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button">
                                                 <div class="d-flex align-items-center">
                                                     <div class="media media-middle media-sharp media-tiny">
-                                                        <img src="{{ asset('admin/images/icon/d.png') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/icon/d.png') }}" alt="">
                                                     </div>
                                                     <div class="h6 d-none d-md-inline-block ms-2">
                                                         Google
@@ -336,7 +336,7 @@
                                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button">
                                                 <div class="d-flex align-items-center">
                                                     <div class="media media-middle media-sharp media-tiny">
-                                                        <img src="{{ asset('admin/images/icon/b.png') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/icon/b.png') }}" alt="">
                                                     </div>
                                                     <div class="h6 d-none d-md-inline-block ms-2">
                                                         Facebook
@@ -348,7 +348,7 @@
                                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact-tab-pane" type="button">
                                                 <div class="d-flex align-items-center">
                                                     <div class="media media-middle media-sharp media-tiny">
-                                                        <img src="{{ asset('admin/images/icon/e.png') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/icon/e.png') }}" alt="">
                                                     </div>
                                                     <div class="h6 d-none d-md-inline-block ms-2">
                                                         Instagram
@@ -360,7 +360,7 @@
                                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane" type="button">
                                                 <div class="d-flex align-items-center">
                                                     <div class="media media-middle media-sharp media-tiny">
-                                                        <img src="{{ asset('admin/images/icon/c.png') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/icon/c.png') }}" alt="">
                                                     </div>
                                                     <div class="h6 d-none d-md-inline-block ms-2">
                                                         Seranking
@@ -1064,7 +1064,7 @@
                                                         <div class="nk-timeline-item-inner">
                                                             <div class="nk-timeline-symbol">
                                                                 <div class="media media-md media-middle media-circle">
-                                                                    <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                    <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                                 </div>
                                                             </div>
                                                             <div class="nk-timeline-content">
@@ -1082,7 +1082,7 @@
                                                         <div class="nk-timeline-item-inner">
                                                             <div class="nk-timeline-symbol">
                                                                 <div class="media media-md media-middle media-circle">
-                                                                    <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                    <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                                 </div>
                                                             </div>
                                                             <div class="nk-timeline-content">
@@ -1100,7 +1100,7 @@
                                                         <div class="nk-timeline-item-inner">
                                                             <div class="nk-timeline-symbol">
                                                                 <div class="media media-md media-middle media-circle">
-                                                                    <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                    <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                                 </div>
                                                             </div>
                                                             <div class="nk-timeline-content">
@@ -1171,5 +1171,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/charts/marketing-chart.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/charts/marketing-chart.js') }}"></script>
     @endpush

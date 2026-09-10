@@ -30,7 +30,7 @@
                                                 <a href="{{ url('/admin/index-ecommerce') }}#" class="btn btn-sm btn-primary">View Sales</a>
                                             </div>
                                             <div class="d-none d-sm-block d-xl-none d-xxl-block me-md-5 me-xxl-0">
-                                                <img src="{{ asset('admin/images/award/a.png') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/award/a.png') }}" alt="">
                                             </div>
                                         </div>
                                     </div>
@@ -311,7 +311,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Nike v22 Running</span><span class="text smaller">28 Jul 2022</span>
@@ -335,7 +335,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Business Kit (Mug)</span><span class="text smaller">16 Oct 2022</span>
@@ -359,7 +359,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Borosil Paper Cup</span><span class="text smaller">21 Feb 2022</span>
@@ -383,7 +383,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Mountain Trip Kit</span><span class="text smaller">14 Jun 2022</span>
@@ -407,7 +407,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">One Seater Sofa</span><span class="text smaller">28 Jul 2022</span>
@@ -504,5 +504,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/charts/ecommerce-chart.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/charts/ecommerce-chart.js') }}"></script>
     @endpush

@@ -51,5 +51,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/kanban/kanban.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/kanban/kanban.js') }}"></script>
     @endpush

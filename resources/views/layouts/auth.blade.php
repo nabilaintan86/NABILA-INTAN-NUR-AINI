@@ -1,25 +1,31 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->
-    getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>
-        @yield('title', 'Auth - NioBoard')
-        </title>
-        <link rel="shortcut icon" href="{{ asset('admin/images/favicon.png') }}">
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}">
-        @stack('styles')
-    </head>
-    <body class="nk-body" data-sidebar-collapse="lg" data-navbar-collapse="lg">
-        <div class="nk-app-root">
-            <div class="nk-main">
-                @yield('content')
-            </div>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>@yield('title', 'Login - Network Monitoring')</title>
+
+    <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/style.css') }}">
+
+    @stack('styles')
+</head>
+
+<body class="nk-body bg-light">
+
+    <div class="nk-app-root">
+        <div class="nk-main">
+
+            @yield('content')
+
         </div>
-        <script src="{{ asset('admin/assets/js/bundle.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/scripts.js') }}"></script>
-        @stack('scripts')
-    </body>
+    </div>
+
+    <script src="{{ asset('admin-assets/assets/js/bundle.js') }}"></script>
+    <script src="{{ asset('admin-assets/assets/js/scripts.js') }}"></script>
+
+    @stack('scripts')
+
+</body>
 </html>

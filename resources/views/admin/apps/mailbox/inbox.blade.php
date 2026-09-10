@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'MailBox | Inbox - NioBoard Responsive Admin Dashboard Template')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/libs/editors/quill.css') }}">
+        <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/quill.css') }}">
     @endpush
     @section('content')
         <div class="nk-content nk-content-stretch">
@@ -64,7 +64,7 @@
                                     <a href="{{ url('/admin/apps/mailbox/inbox') }}#">
                                     <div class="media-group">
                                         <div class="media media-circle media-middle media-md">
-                                            <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                         </div>
                                         <div class="media-text">
                                             <span class="title">Timothy Smith</span><span class="text smaller">timothysmith@gmail.com</span>
@@ -76,7 +76,7 @@
                                     <a href="{{ url('/admin/apps/mailbox/inbox') }}#">
                                     <div class="media-group">
                                         <div class="media media-circle media-middle media-md">
-                                            <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                         </div>
                                         <div class="media-text">
                                             <span class="title">Alexis Clarke</span><span class="text smaller">alexshatov@gmail.com</span>
@@ -100,7 +100,7 @@
                                     <a href="{{ url('/admin/apps/mailbox/inbox') }}#">
                                     <div class="media-group">
                                         <div class="media media-circle media-middle media-md">
-                                            <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                         </div>
                                         <div class="media-text">
                                             <span class="title">Nancy Martino</span><span class="text smaller">nancyshatov@gmail.com</span>
@@ -205,7 +205,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Leslie Alexander</span><span class="text smaller">leslie@gmail.com</span>
@@ -250,7 +250,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Theresa Webb</span><span class="text smaller">theresa@gmail.com</span>
@@ -295,7 +295,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Albert Flores</span><span class="text smaller">albert@gmail.com</span>
@@ -375,7 +375,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Ralph Edwards</span><span class="text smaller">ralph@gmail.com</span>
@@ -420,7 +420,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Annette Black</span><span class="text smaller">annette@gmail.com</span>
@@ -465,7 +465,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/f.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/f.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Olga Semklo</span><span class="text smaller">olga.s@cool.design</span>
@@ -545,7 +545,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/g.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/g.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Saunder Offner</span><span class="text smaller">saunder@gmail.com</span>
@@ -585,7 +585,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/h.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/h.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Vladamir Koschek</span><span class="text smaller">vladamir@gmail.com</span>
@@ -625,7 +625,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/i.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/i.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Stephen MacGilfoyle</span><span class="text smaller">stephen@gmail.com</span>
@@ -670,7 +670,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/j.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/j.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Jane Montgomery</span><span class="text smaller">jane@gmail.com</span>
@@ -710,7 +710,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/k.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/k.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Timothy Smith</span><span class="text smaller">timothysmith@gmail.com</span>
@@ -755,7 +755,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/l.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/l.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Raymond Atkins</span><span class="text smaller">raymond@gmail.com</span>
@@ -795,7 +795,7 @@
                                     <div class="nk-ibx-item-elem nk-ibx-item-user">
                                         <div class="media-group">
                                             <div class="media media-circle media-md">
-                                                <img src="{{ asset('admin/images/avatar/m.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/m.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title">Joshua Mcnair</span><span class="text smaller">joshua@gmail.com</span>
@@ -931,7 +931,7 @@
                                             <div class="nk-reply-header nk-ibx-reply-header toggle-reply">
                                                 <div class="media-group nk-reply-desc">
                                                     <div class="media media-middle media-circle media-md">
-                                                        <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                     </div>
                                                     <div class="media-text nk-reply-info">
                                                         <div class="nk-reply-author lead-text">
@@ -1169,7 +1169,7 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/libs/editors/quill.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/editors/quill.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/apps/inbox.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/libs/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/apps/inbox.js') }}"></script>
     @endpush

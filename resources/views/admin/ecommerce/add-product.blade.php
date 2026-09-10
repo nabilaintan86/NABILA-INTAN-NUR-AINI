@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Add product - NioBoard Responsive Admin Dashboard Template')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/libs/editors/quill.css') }}">
+        <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/quill.css') }}">
     @endpush
     @section('content')
         <div class="nk-content">
@@ -204,7 +204,7 @@
                                                             <div class="form-control-wrap">
                                                                 <div class="image-upload-wrap d-flex flex-column align-items-center">
                                                                     <div class="media media-huge border">
-                                                                        <img id="image-result" class="w-100 h-100" src="{{ asset('admin/images/avatar/avatar-placeholder.jpg') }}" alt="avatar">
+                                                                        <img id="image-result" class="w-100 h-100" src="{{ asset('admin-assets/images/avatar/avatar-placeholder.jpg') }}" alt="avatar">
                                                                     </div>
                                                                     <div class="pt-3">
                                                                         <input class="upload-image" data-target="image-result" id="change-avatar" type="file" max="1" hidden><label for="change-avatar" class="btn btn-md btn-primary">Change</label>
@@ -300,6 +300,6 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/libs/editors/quill.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/libs/editors/quill.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/editors/quill.js') }}"></script>
     @endpush

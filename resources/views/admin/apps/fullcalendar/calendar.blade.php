@@ -38,5 +38,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/fullcalendar/fullcalendar.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/fullcalendar/fullcalendar.js') }}"></script>
     @endpush

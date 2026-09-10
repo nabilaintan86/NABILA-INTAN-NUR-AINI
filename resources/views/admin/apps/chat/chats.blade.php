@@ -45,7 +45,7 @@
                                     <li class="toggle-chat-item" data-target="chatBody">
                                         <div class="media-group">
                                             <div class="media media-circle media-middle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title"><span>Jessica Drew</span> <span class="date">18:30</span></span><span class="text smaller"><span>Ok, see you later</span> <span class="badge bg-success rounded-pill">2</span></span>
@@ -55,7 +55,7 @@
                                     <li class="toggle-chat-item" data-target="chatBody">
                                         <div class="media-group">
                                             <div class="media media-circle media-middle">
-                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title"><span>David Moore</span> <span class="date">18:16</span></span><span class="text smaller"><span>You: i don't remember anything 😄 </span></span>
@@ -65,7 +65,7 @@
                                     <li class="toggle-chat-item" data-target="chatBody">
                                         <div class="media-group">
                                             <div class="media media-circle media-middle">
-                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title"><span>Greg James</span> <span class="date">18:02</span></span><span class="text smaller"><span>I got a job at SpaceX 🎉 🚀</span></span>
@@ -75,7 +75,7 @@
                                     <li class="toggle-chat-item" data-target="chatBody">
                                         <div class="media-group">
                                             <div class="media media-circle media-middle">
-                                                <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <span class="title"><span>Emily Dorson</span> <span class="date">17:42</span></span><span class="text smaller"><span>Table for four, 5PM. Be there.</span></span>
@@ -94,7 +94,7 @@
                                 </ul>
                                 <div class="media-group">
                                     <div class="media media-circle media-middle">
-                                        <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                        <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                     </div>
                                     <div class="media-text">
                                         <span class="title"><span>David Moore</span></span><span class="text smaller"><span>Active</span></span>
@@ -117,7 +117,7 @@
                                     <div class="nk-message is-you">
                                         <div class="nk-message-avatar">
                                             <div class="media media-circle media-middle media-sm">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                         </div>
                                         <div class="nk-message-content">
@@ -126,10 +126,10 @@
                                                     <div class="nk-message-bubble has-media">
                                                         <ul class="nk-message-media">
                                                             <li>
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </li>
                                                             <li>
-                                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                             </li>
                                                         </ul>
                                                         <ul class="nk-message-meta">
@@ -215,7 +215,7 @@
                                     <div class="nk-message is-you">
                                         <div class="nk-message-avatar">
                                             <div class="media media-circle media-middle media-sm">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                         </div>
                                         <div class="nk-message-content">
@@ -302,7 +302,7 @@
                                     <div class="nk-message is-you">
                                         <div class="nk-message-avatar">
                                             <div class="media media-circle media-middle media-sm">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                         </div>
                                         <div class="nk-message-content">
@@ -406,7 +406,7 @@
                                 <div class="nk-aside-content py-4 border-bottom border-light position-relative">
                                     <div class="media-group media-group-column text-center py-2">
                                         <div class="media media-big media-circle media-middle">
-                                            <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                         </div>
                                         <div class="media-text">
                                             <h3 class="mb-1">
@@ -477,28 +477,28 @@
                                             </h5>
                                             <ul class="nk-chat-media-list gap g-2 list4col">
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/a.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/b.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/c.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/d.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/e.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/f.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/f.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/g.jpg') }}" alt=""></a>
+                                                    <a class="nk-chat-media-item" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/g.jpg') }}" alt=""></a>
                                                 </li>
                                                 <li>
-                                                    <a class="nk-chat-media-item is-video" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin/images/avatar/h.jpg') }}" alt=""><em class="icon ni ni-play-fill"></em></a>
+                                                    <a class="nk-chat-media-item is-video" href="{{ url('/admin/apps/chat/chats') }}#"><img src="{{ asset('admin-assets/images/avatar/h.jpg') }}" alt=""><em class="icon ni ni-play-fill"></em></a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -512,5 +512,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/apps/chat.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/apps/chat.js') }}"></script>
     @endpush

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Tinymce Editor - NioBoard Responsive Admin Dashboard Template')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/libs/editors/tinymce.css') }}">
+        <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/tinymce.css') }}">
     @endpush
     @section('content')
         <div class="nk-content">
@@ -117,6 +117,6 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/libs/editors/tinymce.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/editors/tinymce.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/libs/editors/tinymce.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/editors/tinymce.js') }}"></script>
     @endpush

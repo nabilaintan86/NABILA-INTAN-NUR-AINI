@@ -84,16 +84,16 @@
                                 <div class="mt-5">
                                     <div class="media-group media-group-overlap">
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                         </div>
                                     </div>
                                     <p class="small mt-2">

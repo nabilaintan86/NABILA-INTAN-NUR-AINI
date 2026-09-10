@@ -28,7 +28,7 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <img src="{{ asset('admin/images/preview/a.jpg') }}" class="img-fluid" alt="...">
+                                    <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="img-fluid" alt="...">
                                 </div>
                                 <div class="card-body pt-0">
                                     <div class="d-flex align-items-center code-toolbar py-2">
@@ -56,7 +56,7 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <img src="{{ asset('admin/images/preview/a.jpg') }}" class="img-thumbnail " alt="...">
+                                    <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="img-thumbnail " alt="...">
                                 </div>
                                 <div class="card-body pt-0">
                                     <div class="d-flex align-items-center code-toolbar py-2">
@@ -84,7 +84,7 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <img src="{{ asset('admin/images/preview/a.jpg') }}" class="rounded mb-2 float-start" alt="..."><img src="{{ asset('admin/images/preview/a.jpg') }}" class="rounded mb-2 float-end" alt="...">
+                                    <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="rounded mb-2 float-start" alt="..."><img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="rounded mb-2 float-end" alt="...">
                                 </div>
                                 <div class="card-body pt-0">
                                     <div class="d-flex align-items-center code-toolbar py-2">
@@ -102,7 +102,7 @@
                         <div class="nk-block">
                             <div class="card">
                                 <div class="card-body">
-                                    <img src="{{ asset('admin/images/preview/a.jpg') }}" class="rounded mx-auto d-block" alt="...">
+                                    <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="rounded mx-auto d-block" alt="...">
                                 </div>
                                 <div class="card-body pt-0">
                                     <div class="d-flex align-items-center code-toolbar py-2">
@@ -121,7 +121,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="text-center">
-                                        <img src="{{ asset('admin/images/preview/a.jpg') }}" class="rounded" alt="...">
+                                        <img src="{{ asset('admin-assets/images/preview/a.jpg') }}" class="rounded" alt="...">
                                     </div>
                                 </div>
                                 <div class="card-body pt-0">

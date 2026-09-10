@@ -270,7 +270,7 @@
                                                 <h3>
                                                     Check with screenshots here
                                                 </h3>
-                                                <img src="{{ asset('admin/images/support/b.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/support/b.jpg') }}" alt="">
                                                 <h3>
                                                     Check with some bullete points:
                                                 </h3>

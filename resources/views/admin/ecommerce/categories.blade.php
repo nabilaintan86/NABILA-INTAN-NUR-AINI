@@ -71,7 +71,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/f.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/f.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Household</a>
@@ -120,7 +120,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/g.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/g.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Watches</a>
@@ -169,7 +169,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/h.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/h.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Headphones</a>
@@ -218,7 +218,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/i.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/i.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Speakers</a>
@@ -267,7 +267,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/j.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/j.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Toothbrush</a>
@@ -316,7 +316,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/k.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/k.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Wines</a>
@@ -365,7 +365,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/l.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/l.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Cameras</a>
@@ -414,7 +414,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/m.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/m.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">T-shirts</a>
@@ -470,7 +470,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/n.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/n.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Health & Beauty</a>
@@ -519,7 +519,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/o.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/o.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Jewelry</a>
@@ -568,7 +568,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/p.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/p.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Toys</a>
@@ -617,7 +617,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/q.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/q.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Mobiles</a>
@@ -666,7 +666,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/r.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/r.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Shoes</a>
@@ -722,7 +722,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/s.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/s.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Chairs</a>
@@ -771,7 +771,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-middle">
-                                                        <img src="{{ asset('admin/images/product/t.jpg') }}" alt="product">
+                                                        <img src="{{ asset('admin-assets/images/product/t.jpg') }}" alt="product">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/ecommerce/edit-category') }}" class="title">Speakers</a>
@@ -821,5 +821,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/data-tables/data-tables.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/data-tables/data-tables.js') }}"></script>
     @endpush

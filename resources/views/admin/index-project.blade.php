@@ -225,7 +225,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Create Wireframe</a><span class="text smaller">Esther Howard</span>
@@ -247,13 +247,13 @@
                                                     <td class="tb-col tb-col-end  tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="David">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Sanjoy">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Kinchit">
-                                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -268,7 +268,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Divine Opulence</a><span class="text smaller">Jenny Wilson</span>
@@ -290,13 +290,13 @@
                                                     <td class="tb-col tb-col-end tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -311,7 +311,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Charto CRM</a><span class="text smaller">Cody Fisher</span>
@@ -333,10 +333,10 @@
                                                     <td class="tb-col tb-col-end tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -351,7 +351,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Mountain Trip Kit </a><span class="text smaller">Savannah Nguyen</span>
@@ -373,10 +373,10 @@
                                                     <td class="tb-col tb-col-end tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Jhon">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Marku">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -391,7 +391,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Chat Application</a><span class="text smaller">Jane Cooper</span>
@@ -413,13 +413,13 @@
                                                     <td class="tb-col tb-col-end tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Kevin">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Ebadot">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -434,7 +434,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-project') }}#" class="title">Mountain Trip Kit </a><span class="text smaller">Jane Cooper</span>
@@ -456,10 +456,10 @@
                                                     <td class="tb-col tb-col-end tb-col-xxl">
                                                         <div class="media-group media-group-overlap">
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Jane Smith">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media media-xs media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                         </div>
                                                     </td>
@@ -490,7 +490,7 @@
                                                 </div>
                                                 <div class="media-group my-4">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                     </div>
                                                     <div class="media-text">
                                                         <span class="title">Jenny Wilson</span><span class="text smaller">Manager</span>
@@ -521,13 +521,13 @@
                                                     </div>
                                                     <div class="gap-col">
                                                         <div class="media-group media-group-overlap">
-                                                            <a href="{{ url('/admin/index-project') }}#" class="media media-sm media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith"><img src="{{ asset('admin/images/avatar/a.jpg') }}" alt=""></a><a href="{{ url('/admin/index-project') }}#" class="media media-sm media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Kevin Martin"><img src="{{ asset('admin/images/avatar/b.jpg') }}" alt=""></a>
+                                                            <a href="{{ url('/admin/index-project') }}#" class="media media-sm media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Alex Smith"><img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt=""></a><a href="{{ url('/admin/index-project') }}#" class="media media-sm media-circle media-border border-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Kevin Martin"><img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt=""></a>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-sm-6 text-sm-end">
-                                                <img src="{{ asset('admin/images/product/a-lg.jpg') }}" alt="" class="rounded img-cover">
+                                                <img src="{{ asset('admin-assets/images/product/a-lg.jpg') }}" alt="" class="rounded img-cover">
                                             </div>
                                         </div>
                                     </div>
@@ -701,7 +701,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Timothy Smith</span><span class="text smaller">Product Manager</span>
@@ -720,7 +720,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Alexis Clarke</span><span class="text smaller">React Developer</span>
@@ -739,7 +739,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Herbert Stokes</span><span class="text smaller">Lead Designer</span>
@@ -758,7 +758,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Nancy Martino</span><span class="text smaller">UI/UX Designer</span>
@@ -777,7 +777,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Michael Morris</span><span class="text smaller">Lead Developer</span>
@@ -796,7 +796,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Glen Matney</span><span class="text smaller">Lead Designer</span>
@@ -823,5 +823,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/charts/project-manage-chart.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/charts/project-manage-chart.js') }}"></script>
     @endpush

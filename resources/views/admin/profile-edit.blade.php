@@ -11,7 +11,7 @@
                                     <div class="nk-block-head-content">
                                         <div class="d-flex flex-column flex-md-row align-items-md-center">
                                             <div class="media media-huge media-circle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
                                             </div>
                                             <div class="mt-3 mt-md-0 ms-md-3">
                                                 <h3 class="title mb-1">
@@ -440,7 +440,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/d.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/d.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Google</span><span class="text smaller">Calendar and contacts</span>
@@ -453,7 +453,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/f.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/f.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Slack</span><span class="text smaller">Communication</span>
@@ -466,7 +466,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/g.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/g.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Github</span><span class="text smaller">Manage your Git repositories</span>
@@ -479,7 +479,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/h.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/h.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Mailchimp</span><span class="text smaller">Email marketing service</span>
@@ -492,7 +492,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/i.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/i.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Asana</span><span class="text smaller">Communication</span>
@@ -517,7 +517,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/b.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/b.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Facebook</span><span class="text smaller text-success">Connected</span>
@@ -528,7 +528,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/e.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/e.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Instagram</span><span class="text smaller text-danger">Not Connected</span>
@@ -539,7 +539,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/j.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/j.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Behance</span><span class="text smaller text-danger">Not Connected</span>
@@ -550,7 +550,7 @@
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                         <div class="media-group">
                                                             <div class="media media-middle flex-shrink-0 text-bg-secondary-soft">
-                                                                <img src="{{ asset('admin/images/icon/k.png') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/icon/k.png') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title">Behance</span><span class="text smaller text-danger">Not Connected</span>
@@ -571,5 +571,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/sweetalert/user-edit-alert.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/sweetalert/user-edit-alert.js') }}"></script>
     @endpush

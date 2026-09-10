@@ -43,7 +43,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Florenza Desporte</a>
@@ -94,7 +94,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Anna Adame</a>
@@ -196,7 +196,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Florenza Desporte</a>
@@ -349,7 +349,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Yoko Pottie</a>
@@ -400,7 +400,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Florenza Desporte</a>
@@ -451,7 +451,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Vladamir Koschek</a>
@@ -502,7 +502,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Tyne Widmore</a>
@@ -553,7 +553,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Sean Bean</a>
@@ -604,7 +604,7 @@
                                     <div class="card text-center h-100">
                                         <div class="card-body">
                                             <div class="media media-xxl media-middle media-circle">
-                                                <img src="{{ asset('admin/images/avatar/f.jpg') }}" alt="user">
+                                                <img src="{{ asset('admin-assets/images/avatar/f.jpg') }}" alt="user">
                                             </div>
                                             <div class="mt-1 mb-4">
                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="mb-1 h5">Stu Delamaine</a>

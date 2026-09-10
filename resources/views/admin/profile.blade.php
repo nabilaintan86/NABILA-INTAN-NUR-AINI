@@ -11,7 +11,7 @@
                                     <div class="nk-block-head-content">
                                         <div class="d-flex flex-column flex-md-row align-items-md-center">
                                             <div class="media media-huge media-circle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
                                             </div>
                                             <div class="mt-3 mt-md-0 ms-md-3">
                                                 <h3 class="title mb-1">
@@ -179,7 +179,7 @@
                                                         <ul class="d-flex flex-column gap gy-2">
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="user"></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="user"></a>
                                                                     <div class="media-text">
                                                                         <div class="lead-text">
                                                                             Kamran Ahmed
@@ -193,7 +193,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user"></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user"></a>
                                                                     <div class="media-text">
                                                                         <div class="lead-text">
                                                                             Harriett Adkins
@@ -207,7 +207,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="user"></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="user"></a>
                                                                     <div class="media-text">
                                                                         <div class="lead-text">
                                                                             George Whalen
@@ -221,7 +221,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="user"></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media media-md media-circle"><img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="user"></a>
                                                                     <div class="media-text">
                                                                         <div class="lead-text">
                                                                             Claudia Chandler
@@ -242,7 +242,7 @@
                                                         <ul class="d-flex flex-wrap gap gy-3">
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin/images/product/a.jpg') }}" alt=""></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt=""></a>
                                                                     <div class="media-text">
                                                                         <a href="{{ url('/admin/profile') }}#" class="lead-text">How to get creative in your work</a><span class="sub-text">15 Dec 2021</span>
                                                                     </div>
@@ -250,7 +250,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin/images/product/b.jpg') }}" alt=""></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt=""></a>
                                                                     <div class="media-text">
                                                                         <a href="{{ url('/admin/profile') }}#" class="lead-text">Create FureStibe branding logo</a><span class="sub-text">13 Dec 2021</span>
                                                                     </div>
@@ -258,7 +258,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin/images/product/c.jpg') }}" alt=""></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt=""></a>
                                                                     <div class="media-text">
                                                                         <a href="{{ url('/admin/profile') }}#" class="lead-text">9 Degree Project Estimation</a><span class="sub-text">10 Dec 2021</span>
                                                                     </div>
@@ -266,7 +266,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin/images/product/d.jpg') }}" alt=""></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt=""></a>
                                                                     <div class="media-text">
                                                                         <a href="{{ url('/admin/profile') }}#" class="lead-text">Smartest Applications for Business</a><span class="sub-text">10 Dec 2021</span>
                                                                     </div>
@@ -274,7 +274,7 @@
                                                             </li>
                                                             <li>
                                                                 <div class="media-group">
-                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin/images/product/e.jpg') }}" alt=""></a>
+                                                                    <a href="{{ url('/admin/profile') }}#" class="media"><img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt=""></a>
                                                                     <div class="media-text">
                                                                         <a href="{{ url('/admin/profile') }}#" class="lead-text">A well-written bio allows viewers</a><span class="sub-text">20 Dec 2021</span>
                                                                     </div>
@@ -337,17 +337,17 @@
                                                                         <ul class="d-flex flex-wrap gap g-2 py-2">
                                                                             <li>
                                                                                 <div class="media media-xxl">
-                                                                                    <img src="{{ asset('admin/images/product/a.jpg') }}" alt="" class="img-thumbnail">
+                                                                                    <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="" class="img-thumbnail">
                                                                                 </div>
                                                                             </li>
                                                                             <li>
                                                                                 <div class="media media-xxl">
-                                                                                    <img src="{{ asset('admin/images/product/b.jpg') }}" alt="" class="img-thumbnail">
+                                                                                    <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="" class="img-thumbnail">
                                                                                 </div>
                                                                             </li>
                                                                             <li>
                                                                                 <div class="media media-xxl">
-                                                                                    <img src="{{ asset('admin/images/product/c.jpg') }}" alt="" class="img-thumbnail">
+                                                                                    <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="" class="img-thumbnail">
                                                                                 </div>
                                                                             </li>
                                                                         </ul>
@@ -380,7 +380,7 @@
                                                                                 <div class="p-3">
                                                                                     <div class="media-group">
                                                                                         <div class="media rounded-0">
-                                                                                            <img src="{{ asset('admin/images/icon/file-type-pdf.svg') }}" alt="">
+                                                                                            <img src="{{ asset('admin-assets/images/icon/file-type-pdf.svg') }}" alt="">
                                                                                         </div>
                                                                                         <div class="media-text ms-1">
                                                                                             <a href="{{ url('/admin/profile') }}#" class="title">Modern Designs Pattern</a><span class="text smaller">1.6.mb</span>
@@ -390,7 +390,7 @@
                                                                                 <div class="p-3">
                                                                                     <div class="media-group">
                                                                                         <div class="media rounded-0">
-                                                                                            <img src="{{ asset('admin/images/icon/file-type-doc.svg') }}" alt="">
+                                                                                            <img src="{{ asset('admin-assets/images/icon/file-type-doc.svg') }}" alt="">
                                                                                         </div>
                                                                                         <div class="media-text ms-1">
                                                                                             <a href="{{ url('/admin/profile') }}#" class="title">cPanel Upload Guidelines</a><span class="text smaller">18kb</span>
@@ -400,7 +400,7 @@
                                                                                 <div class="p-3">
                                                                                     <div class="media-group">
                                                                                         <div class="media rounded-0">
-                                                                                            <img src="{{ asset('admin/images/icon/file-type-code.svg') }}" alt="">
+                                                                                            <img src="{{ asset('admin-assets/images/icon/file-type-code.svg') }}" alt="">
                                                                                         </div>
                                                                                         <div class="media-text ms-1">
                                                                                             <a href="{{ url('/admin/profile') }}#" class="title">Weekly Finance Reports</a><span class="text smaller">10mb</span>

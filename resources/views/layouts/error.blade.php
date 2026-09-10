@@ -7,8 +7,8 @@
         <title>
         @yield('title', 'Error - NioBoard')
         </title>
-        <link rel="shortcut icon" href="{{ asset('admin/images/favicon.png') }}">
-        <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}">
+        <link rel="shortcut icon" href="{{ asset('admin-assets/images/favicon.png') }}">
+        <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/style.css') }}">
         @stack('styles')
     </head>
     <body class="nk-body" data-sidebar-collapse="lg" data-navbar-collapse="lg">
@@ -17,8 +17,8 @@
                 @yield('content')
             </div>
         </div>
-        <script src="{{ asset('admin/assets/js/bundle.js') }}"></script>
-        <script src="{{ asset('admin/assets/js/scripts.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/bundle.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/scripts.js') }}"></script>
         @stack('scripts')
     </body>
 </html>

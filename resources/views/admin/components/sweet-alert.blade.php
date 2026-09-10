@@ -84,5 +84,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/sweetalert/sweetalert-example.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/sweetalert/sweetalert-example.js') }}"></script>
     @endpush

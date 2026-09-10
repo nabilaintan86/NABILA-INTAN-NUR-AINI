@@ -6,12 +6,12 @@
                 <div class="nk-block wide-md mx-auto">
                     <div class="row g-gs align-items-center">
                         <div class="col-lg-6">
-                            <img src="{{ asset('admin/images/error/c.png') }}" alt="">
+                            <img src="{{ asset('admin-assets/images/error/c.png') }}" alt="">
                         </div>
                         <div class="col-lg-6">
                             <div class="nk-block-content">
                                 <div class="nk-error-number">
-                                    <img src="{{ asset('admin/images/error/504.svg') }}" alt="">
+                                    <img src="{{ asset('admin-assets/images/error/504.svg') }}" alt="">
                                 </div>
                                 <h2 class="nk-error-title mb-2">
                                     Gateway Timeout Error

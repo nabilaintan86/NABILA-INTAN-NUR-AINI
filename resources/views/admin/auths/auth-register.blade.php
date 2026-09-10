@@ -62,10 +62,10 @@
                                 </div>
                                 <div class="row g-2">
                                     <div class="col-xxl-6">
-                                        <a href="{{ url('/admin/auths/auth-register') }}#" class="btn btn-outline-light w-100"><img src="{{ asset('admin/images/icon/d.png') }}" alt="" class="icon"><span class="fw-medium">Continue with Google</span></a>
+                                        <a href="{{ url('/admin/auths/auth-register') }}#" class="btn btn-outline-light w-100"><img src="{{ asset('admin-assets/images/icon/d.png') }}" alt="" class="icon"><span class="fw-medium">Continue with Google</span></a>
                                     </div>
                                     <div class="col-xxl-6">
-                                        <a href="{{ url('/admin/auths/auth-register') }}#" class="btn btn-outline-light w-100"><img src="{{ asset('admin/images/icon/b.png') }}" alt="" class="icon"><span class="fw-medium">Continue with Facebook</span></a>
+                                        <a href="{{ url('/admin/auths/auth-register') }}#" class="btn btn-outline-light w-100"><img src="{{ asset('admin-assets/images/icon/b.png') }}" alt="" class="icon"><span class="fw-medium">Continue with Facebook</span></a>
                                     </div>
                                 </div>
                                 <div class="text-center mt-4">
@@ -118,16 +118,16 @@
                                 <div class="mt-5">
                                     <div class="media-group media-group-overlap">
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                         </div>
                                         <div class="media media-sm media-circle media-border border-white">
-                                            <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                         </div>
                                     </div>
                                     <p class="small mt-2">

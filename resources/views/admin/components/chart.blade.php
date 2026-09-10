@@ -179,5 +179,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/charts/chart-example.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/charts/chart-example.js') }}"></script>
     @endpush

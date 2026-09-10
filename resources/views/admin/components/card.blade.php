@@ -28,7 +28,7 @@
                                     <div class="row g-gs">
                                         <div class="col-md-6 col-lg-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h3 class="card-title">
                                                         Card title
@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="col-md-6 col-lg-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h3 class="card-title">
                                                         Card title
@@ -165,7 +165,7 @@
                                     <div class="row">
                                         <div class="col-lg-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <p class="card-text">
                                                         Some quick example text to build on the card title and make up the bulk of the card's content.
@@ -287,7 +287,7 @@
                                     <div class="row">
                                         <div class="col-lg-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -654,7 +654,7 @@
                                     <div class="row g-gs">
                                         <div class="col-lg-6 col-xl-3">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -681,7 +681,7 @@
                                                         <small class="text-muted">Last updated 3 mins ago</small>
                                                     </p>
                                                 </div>
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-bottom" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-bottom" alt="...">
                                             </div>
                                         </div>
                                     </div>
@@ -715,7 +715,7 @@
                                     <div class="row">
                                         <div class="col-xxl-4">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img" alt="...">
                                                 <div class="card-img-overlay">
                                                     <h5 class="card-title">
                                                         Card title
@@ -760,7 +760,7 @@
                                     <div class="card">
                                         <div class="row g-0">
                                             <div class="col-md-4">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="h-100 rounded-start" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="h-100 rounded-start" alt="...">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
@@ -1151,7 +1151,7 @@
                                 <div class="card-body">
                                     <div class="card-group">
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1165,7 +1165,7 @@
                                             </div>
                                         </div>
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1179,7 +1179,7 @@
                                             </div>
                                         </div>
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1198,7 +1198,7 @@
                                     </p>
                                     <div class="card-group">
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1212,7 +1212,7 @@
                                             </div>
                                         </div>
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1226,7 +1226,7 @@
                                             </div>
                                         </div>
                                         <div class="card">
-                                            <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                            <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                             <div class="card-body">
                                                 <h5 class="card-title">
                                                     Card title
@@ -1270,7 +1270,7 @@
                                     <div class="row row-cols-1 row-cols-md-2 g-4">
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1283,7 +1283,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1296,7 +1296,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1309,7 +1309,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1327,7 +1327,7 @@
                                     <div class="row row-cols-1 row-cols-md-3 g-4">
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1340,7 +1340,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1353,7 +1353,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1366,7 +1366,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1384,7 +1384,7 @@
                                     <div class="row row-cols-1 row-cols-md-3 g-4">
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1397,7 +1397,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1410,7 +1410,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1423,7 +1423,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1441,7 +1441,7 @@
                                     <div class="row row-cols-1 row-cols-md-3 g-4">
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1457,7 +1457,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title
@@ -1473,7 +1473,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="card h-100">
-                                                <img src="{{ asset('admin/images/preview/b.jpg') }}" class="card-img-top" alt="...">
+                                                <img src="{{ asset('admin-assets/images/preview/b.jpg') }}" class="card-img-top" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">
                                                         Card title

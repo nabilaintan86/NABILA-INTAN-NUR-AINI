@@ -34,7 +34,7 @@
                                             <div class="toast-header">
                                                 <div class="media-group">
                                                     <div class="media media-xs">
-                                                        <img src="{{ asset('admin/images/favicon.png') }}" alt="logo-icon">
+                                                        <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
                                                         <strong>NioBoard</strong>
@@ -78,7 +78,7 @@
                                         <div class="toast-header">
                                             <div class="media-group">
                                                 <div class="media media-xs">
-                                                    <img src="{{ asset('admin/images/favicon.png') }}" alt="logo-icon">
+                                                    <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                 </div>
                                                 <div class="media-text">
                                                     <strong>NioBoard</strong>
@@ -122,7 +122,7 @@
                                             <div class="toast-header">
                                                 <div class="media-group">
                                                     <div class="media media-xs">
-                                                        <img src="{{ asset('admin/images/favicon.png') }}" alt="logo-icon">
+                                                        <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
                                                         <strong>NioBoard</strong>
@@ -138,7 +138,7 @@
                                             <div class="toast-header">
                                                 <div class="media-group">
                                                     <div class="media media-xs">
-                                                        <img src="{{ asset('admin/images/favicon.png') }}" alt="logo-icon">
+                                                        <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
                                                         <strong>NioBoard</strong>

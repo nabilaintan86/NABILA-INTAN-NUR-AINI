@@ -7,7 +7,7 @@
             <div class="container">
                 <div class="nk-block">
                     <div class="nk-block-content wide-sm text-center mx-auto">
-                        <img src="{{ asset('admin/images/error/a.svg') }}" alt="" class="mb-4">
+                        <img src="{{ asset('admin-assets/images/error/a.svg') }}" alt="" class="mb-4">
                         <h2 class="nk-error-title mb-2">
                             OOPS! Page not found!
                         </h2>

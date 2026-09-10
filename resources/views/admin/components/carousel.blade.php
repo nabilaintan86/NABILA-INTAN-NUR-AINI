@@ -31,13 +31,13 @@
                                     <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="image">
                                             </div>
                                         </div>
                                     </div>
@@ -71,13 +71,13 @@
                                     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 1">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 1">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 2">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 2">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 3">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="iamge 3">
                                             </div>
                                         </div>
                                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
@@ -115,13 +115,13 @@
                                         </div>
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                         </div>
                                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
@@ -159,7 +159,7 @@
                                         </div>
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         First slide label
@@ -170,7 +170,7 @@
                                                 </div>
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         Second slide label
@@ -181,7 +181,7 @@
                                                 </div>
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         Third slide label
@@ -224,13 +224,13 @@
                                     <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                         </div>
                                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
@@ -265,13 +265,13 @@
                                     <div id="carouselExampleInterval" class="carousel slide" data-bs-ride="carousel">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active" data-bs-interval="10000">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item" data-bs-interval="2000">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                         </div>
                                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
@@ -306,13 +306,13 @@
                                     <div id="carouselExampleControlsNoTouching" class="carousel slide" data-bs-touch="false">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                             </div>
                                         </div>
                                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
@@ -350,7 +350,7 @@
                                         </div>
                                         <div class="carousel-inner">
                                             <div class="carousel-item active" data-bs-interval="10000">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         First slide label
@@ -361,7 +361,7 @@
                                                 </div>
                                             </div>
                                             <div class="carousel-item" data-bs-interval="2000">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         Second slide label
@@ -372,7 +372,7 @@
                                                 </div>
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="{{ asset('admin/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
+                                                <img src="{{ asset('admin-assets/images/slider/a.jpg') }}" class="d-block w-100" alt="...">
                                                 <div class="carousel-caption d-none d-md-block">
                                                     <h5>
                                                         Third slide label

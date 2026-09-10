@@ -536,5 +536,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/data-tables/data-tables.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/data-tables/data-tables.js') }}"></script>
     @endpush

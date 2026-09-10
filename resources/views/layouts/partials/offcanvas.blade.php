@@ -19,17 +19,17 @@
                         <ul class="d-flex flex-wrap gap g-2 py-2">
                             <li>
                                 <div class="media media-xxl">
-                                    <img src="{{ asset('admin/images/product/a.jpg') }}" alt="" class="img-thumbnail">
+                                    <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="" class="img-thumbnail">
                                 </div>
                             </li>
                             <li>
                                 <div class="media media-xxl">
-                                    <img src="{{ asset('admin/images/product/b.jpg') }}" alt="" class="img-thumbnail">
+                                    <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="" class="img-thumbnail">
                                 </div>
                             </li>
                             <li>
                                 <div class="media media-xxl">
-                                    <img src="{{ asset('admin/images/product/c.jpg') }}" alt="" class="img-thumbnail">
+                                    <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="" class="img-thumbnail">
                                 </div>
                             </li>
                         </ul>
@@ -62,7 +62,7 @@
                                 <div class="p-3">
                                     <div class="media-group">
                                         <div class="media rounded-0">
-                                            <img src="{{ asset('admin/images/icon/file-type-pdf.svg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/icon/file-type-pdf.svg') }}" alt="">
                                         </div>
                                         <div class="media-text ms-1">
                                             <a href="{{ url('/admin') }}#" class="title">Modern Designs Pattern</a><span class="text smaller">1.6.mb</span>
@@ -72,7 +72,7 @@
                                 <div class="p-3">
                                     <div class="media-group">
                                         <div class="media rounded-0">
-                                            <img src="{{ asset('admin/images/icon/file-type-doc.svg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/icon/file-type-doc.svg') }}" alt="">
                                         </div>
                                         <div class="media-text ms-1">
                                             <a href="{{ url('/admin') }}#" class="title">Cpanel Upload Guidelines</a><span class="text smaller">18kb</span>
@@ -82,7 +82,7 @@
                                 <div class="p-3">
                                     <div class="media-group">
                                         <div class="media rounded-0">
-                                            <img src="{{ asset('admin/images/icon/file-type-code.svg') }}" alt="">
+                                            <img src="{{ asset('admin-assets/images/icon/file-type-code.svg') }}" alt="">
                                         </div>
                                         <div class="media-text ms-1">
                                             <a href="{{ url('/admin') }}#" class="title">Weekly Finance Reports</a><span class="text smaller">10mb</span>

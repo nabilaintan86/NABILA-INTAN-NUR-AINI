@@ -11,7 +11,7 @@
                                     <div class="card-body">
                                         <div class="d-flex flex-column flex-sm-row-reverse flex-xxl-row-reverse justify-content-between align-items-sm-center align-items-xxl-center gap g-3">
                                             <div class="gap-col d-xl-none d-xxl-block">
-                                                <img src="{{ asset('admin/images/award/b.png') }}" alt="" class="pt-lg-3">
+                                                <img src="{{ asset('admin-assets/images/award/b.png') }}" alt="" class="pt-lg-3">
                                             </div>
                                             <div class="gap-col">
                                                 <div class="card-title mb-4">
@@ -321,7 +321,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title text-truncate">Nike v22 Running</span><span class="text smaller">Artworks</span>
@@ -347,7 +347,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title text-truncate">Business Kit (Mug)</span><span class="text smaller">16 Oct 2022</span>
@@ -373,7 +373,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title text-truncate">Borosil Paper Cup</span><span class="text smaller">21 Feb 2022</span>
@@ -399,7 +399,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title text-truncate">Mountain Trip Kit</span><span class="text smaller">14 Jun 2022</span>
@@ -425,7 +425,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <span class="title text-truncate">One Seater Sofa</span><span class="text smaller">28 Jul 2022</span>
@@ -496,7 +496,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-nft') }}#" class="title">Jane Cooper</a><span class="text smaller">@janeCooper12</span>
@@ -511,7 +511,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-nft') }}#" class="title">Esther Howard</a><span class="text smaller">@estherHoward</span>
@@ -526,7 +526,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-nft') }}#" class="title">Tower Hill</a><span class="text smaller">@towerHill</span>
@@ -541,7 +541,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-nft') }}#" class="title">Michael Morris</a><span class="text smaller">@michael21</span>
@@ -556,7 +556,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/product/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/product/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/index-nft') }}#" class="title">Alexis Clarke</a><span class="text smaller">@alexis_30</span>
@@ -632,7 +632,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Timothy Smith</a><span class="text smaller">68,945 ETH</span>
@@ -664,7 +664,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Alexis Clarke</a><span class="text smaller">58,943 ETH</span>
@@ -696,7 +696,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Herbert Stokes</a><span class="text smaller">45,657 ETH</span>
@@ -728,7 +728,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Nancy Martino</a><span class="text smaller">38,945 ETH</span>
@@ -760,7 +760,7 @@
                                                     <td class="tb-col">
                                                         <div class="media-group">
                                                             <div class="media media-md flex-shrink-0 media-middle media-circle">
-                                                                <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="">
+                                                                <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="">
                                                             </div>
                                                             <div class="media-text">
                                                                 <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Michael Morris</a><span class="text smaller">18,945 ETH</span>
@@ -800,5 +800,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/charts/nft-chart.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/charts/nft-chart.js') }}"></script>
     @endpush

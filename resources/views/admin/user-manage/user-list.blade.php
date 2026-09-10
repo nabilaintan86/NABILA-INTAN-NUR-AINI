@@ -70,7 +70,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Florenza Desporte</a><span class="small text">florenza@gmail.com</span>
@@ -117,7 +117,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Anna Adame</a><span class="small text">anna@gmail.com</span>
@@ -211,7 +211,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Wesley Burland</a><span class="small text">wesley@gmail.com</span>
@@ -258,7 +258,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Kamran Adil</a><span class="small text">adil@gmail.com</span>
@@ -352,7 +352,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Saunder Offner</a><span class="small text">saunder@gmail.com</span>
@@ -399,7 +399,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/f.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/f.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Melody Macy</a><span class="small text">melody@altbox.com</span>
@@ -540,7 +540,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle text-bg-info-soft">
-                                                        <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Frank Thomas</a><span class="small text">frank@altbox.com</span>
@@ -587,7 +587,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Florenza Desporte</a><span class="small text">florenza@gmail.com</span>
@@ -634,7 +634,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Anna Adame</a><span class="small text">anna@gmail.com</span>
@@ -728,7 +728,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/c.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/c.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Wesley Burland</a><span class="small text">wesley@gmail.com</span>
@@ -775,7 +775,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/d.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/d.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Kamran Adil</a><span class="small text">adil@gmail.com</span>
@@ -869,7 +869,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/e.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/e.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Saunder Offner</a><span class="small text">saunder@gmail.com</span>
@@ -916,7 +916,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/f.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/f.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Melody Macy</a><span class="small text">melody@altbox.com</span>
@@ -1057,7 +1057,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Frank Thomas</a><span class="small text">frank@altbox.com</span>
@@ -1151,7 +1151,7 @@
                                             <td class="tb-col">
                                                 <div class="media-group">
                                                     <div class="media media-md media-middle media-circle">
-                                                        <img src="{{ asset('admin/images/avatar/b.jpg') }}" alt="user">
+                                                        <img src="{{ asset('admin-assets/images/avatar/b.jpg') }}" alt="user">
                                                     </div>
                                                     <div class="media-text">
                                                         <a href="{{ url('/admin/user-manage/user-profile') }}" class="title">Frank Thomas</a><span class="small text">frank@altbox.com</span>
@@ -1204,5 +1204,5 @@
         </div>
     @endsection
     @push('scripts')
-        <script src="{{ asset('admin/assets/js/data-tables/data-tables.js') }}"></script>
+        <script src="{{ asset('admin-assets/assets/js/data-tables/data-tables.js') }}"></script>
     @endpush

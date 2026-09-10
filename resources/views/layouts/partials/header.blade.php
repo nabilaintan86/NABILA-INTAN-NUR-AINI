@@ -317,7 +317,7 @@
                                     </ul>
                                 </div>
                                 <div class="nk-nav-col nk-nav-media">
-                                    <img src="{{ asset('admin/images/thumb/a.jpg') }}" alt="" class="rounded-3">
+                                    <img src="{{ asset('admin-assets/images/thumb/a.jpg') }}" alt="" class="rounded-3">
                                 </div>
                             </div>
                         </div>
@@ -381,7 +381,7 @@
                                     <li>
                                         <div class="media-group">
                                             <div class="media media-md media-middle media-circle text-bg-light">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="">
                                             </div>
                                             <div class="media-text">
                                                 <div class="lead-text">
@@ -405,12 +405,12 @@
                         <a href="{{ url('/admin') }}#" data-bs-toggle="dropdown">
                         <div class="d-sm-none">
                             <div class="media media-md media-circle">
-                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
                             </div>
                         </div>
                         <div class="d-none d-sm-block">
                             <div class="media media-circle">
-                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
                             </div>
                         </div>
                         </a>
@@ -418,7 +418,7 @@
                             <div class="dropdown-content dropdown-content-x-lg py-3 border-bottom border-light">
                                 <div class="media-group">
                                     <div class="media media-xl media-middle media-circle">
-                                        <img src="{{ asset('admin/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
                                     </div>
                                     <div class="media-text">
                                         <div class="lead-text">

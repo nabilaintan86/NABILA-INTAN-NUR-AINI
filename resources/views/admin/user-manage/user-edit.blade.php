@@ -11,7 +11,7 @@
                                     <div class="nk-block-head-content">
                                         <div class="d-flex flex-column flex-md-row align-items-md-center">
                                             <div class="media media-huge media-circle">
-                                                <img src="{{ asset('admin/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
+                                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" class="img-thumbnail" alt="">
                                             </div>
                                             <div class="mt-3 mt-md-0 ms-md-3">
                                                 <h3 class="title mb-1">
