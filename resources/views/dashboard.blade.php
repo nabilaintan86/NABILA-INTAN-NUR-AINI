@@ -471,6 +471,131 @@
     }
 
     /* ============================================================
+       KPI DETAIL MODAL & DEVICE TABLE
+    ============================================================ */
+    #kpiDetailModal .modal-dialog {
+        max-width: min(96vw, 1440px);
+        width: 100%;
+        margin: 20px auto;
+    }
+
+    #kpiDetailModal .modal-content {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, .18);
+    }
+
+    #kpiDetailModal .modal-header,
+    #kpiDetailModal .modal-body {
+        padding: 18px 24px;
+    }
+
+    #kpiDetailModal .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .kpi-table-wrap {
+        max-height: 62vh;
+        overflow: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .kpi-table {
+        width: 100%;
+        table-layout: auto;
+        margin: 0;
+        font-size: 12.5px;
+        background: #fff;
+    }
+
+    .kpi-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        padding: 12px 14px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .kpi-table tbody td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    .kpi-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .kpi-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .kpi-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .kpi-table .device-name {
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+    }
+
+    .kpi-table .device-ip {
+        font-family: monospace;
+        font-size: 11px;
+        color: #64748b;
+        white-space: nowrap;
+    }
+
+    .kpi-table .text-nowrap {
+        white-space: nowrap;
+    }
+
+    .kpi-table td.kpi-col, .kpi-table th.kpi-col {
+        text-align: right;
+    }
+
+    .kpi-table th:nth-child(3),
+    .kpi-table th:nth-child(4),
+    .kpi-table th:nth-child(5),
+    .kpi-table th:nth-child(8),
+    .kpi-table th:nth-child(9),
+    .kpi-table th:nth-child(10),
+    .kpi-table th:nth-child(11),
+    .kpi-table td:nth-child(3),
+    .kpi-table td:nth-child(4),
+    .kpi-table td:nth-child(5),
+    .kpi-table td:nth-child(8),
+    .kpi-table td:nth-child(9),
+    .kpi-table td:nth-child(10),
+    .kpi-table td:nth-child(11) {
+        text-align: right;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-table th:nth-child(2),
+    .kpi-table th:nth-child(6),
+    .kpi-table th:nth-child(7),
+    .kpi-table td:nth-child(6),
+    .kpi-table td:nth-child(7) {
+        white-space: nowrap;
+    }
+
+    /* ============================================================
        RESPONSIVE
     ============================================================ */
     @media (max-width: 767px) {
@@ -592,12 +717,12 @@
             <div class="card h-100">
                 <div class="card-body py-3">
                     <div class="monitor-summary">
-                        <div class="summary-icon">
-                            <i class="fas fa-clock"></i>
+                        <div class="summary-icon" style="background:#fef2f2;color:#dc2626;">
+                            <i class="fas fa-bell"></i>
                         </div>
 
                         <div>
-                            <div class="summary-label">LAST POLLING</div>
+                            <div class="summary-label">TOTAL ALERTS</div>
                             <div class="summary-value" id="lastPollingSummary">
                                 -
                             </div>
@@ -814,7 +939,7 @@
         tabindex="-1"
         aria-hidden="true">
 
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered kpi-modal-dialog">
 
             <div class="modal-content">
 
@@ -930,202 +1055,31 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ============================================================
-       1. NETWORK DATA
+       1. NETWORK DATA — from database via controller
        ============================================================ */
 
-    const network = {
+    const rawDevices = @json($devices);
 
-        sites: [
+    const allDevices = rawDevices.map(d => ({
+        id: String(d.id),
+        name: d.name,
+        type: d.type,
+        ip: d.ip_address,
+        polls: d.polls,
+        responded: d.responded_percentage,
+        missed: d.missed_percentage,
+        downTime: d.down_time || '-',
+        period: d.period || '-',
+        alerts: d.alerts_count,
+        avgDelay: d.avg_delay,
+        minDelay: d.min_delay,
+        maxDelay: d.max_delay,
+        status: d.status
+    }));
 
-            {
-                id: 'plaza-bri',
-                name: 'Plaza BRI',
-
-                devices: [
-
-                    {
-                        id: 'pop-gresik',
-                        name: 'POP Gresik',
-                        hostname: 'pop-gresik',
-                        type: 'router',
-                        ip: '202.154.4.254',
-                        status: 'up',
-                        uptime: '99.8%',
-                        lastPoll: '2026-09-09 15:47:00',
-                        avgDelay: 12,
-                        minDelay: 2,
-                        maxDelay: 45,
-                        missed: 0,
-                        packetLoss: 0,
-                        info1: '202.154.62.144/29',
-                        info2: 'Link via FIC',
-                        log: '20260909 154700 UP POP Gresik'
-                    },
-
-                    {
-                        id: 'intiland-1',
-                        name: 'Intiland 1',
-                        hostname: 'intiland-1',
-                        type: 'router',
-                        ip: '202.154.4.4',
-                        status: 'up',
-                        uptime: '99.99%',
-                        lastPoll: '2026-09-09 15:46:30',
-                        avgDelay: 9,
-                        minDelay: 1,
-                        maxDelay: 30,
-                        missed: 0,
-                        packetLoss: 0,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 154630 UP Intiland 1'
-                    },
-
-                    {
-                        id: 'pjb',
-                        name: 'PJB',
-                        hostname: 'pjb',
-                        type: 'router',
-                        ip: '202.154.4.134',
-                        status: 'down',
-                        uptime: '0%',
-                        lastPoll: '2026-09-09 14:50:00',
-                        avgDelay: 0,
-                        minDelay: 0,
-                        maxDelay: 0,
-                        missed: 200,
-                        packetLoss: 100,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 145000 DOWN PJB'
-                    },
-
-                    {
-                        id: 'border',
-                        name: 'Border',
-                        hostname: 'border',
-                        type: 'router',
-                        ip: '202.154.4.3',
-                        status: 'up',
-                        uptime: '99.2%',
-                        lastPoll: '2026-09-09 15:47:10',
-                        avgDelay: 8,
-                        minDelay: 1,
-                        maxDelay: 22,
-                        missed: 2,
-                        packetLoss: 1,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 154710 UP Border'
-                    },
-
-                    {
-                        id: 'smkn-1',
-                        name: 'SMKN-1',
-                        hostname: 'smkn-1',
-                        type: 'router',
-                        ip: '202.154.4.241',
-                        status: 'up',
-                        uptime: '98.7%',
-                        lastPoll: '2026-09-09 15:46:40',
-                        avgDelay: 11,
-                        minDelay: 2,
-                        maxDelay: 40,
-                        missed: 1,
-                        packetLoss: 0.5,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 154640 UP SMKN-1'
-                    },
-
-                    {
-                        id: 'sby-jkt',
-                        name: 'SBY-JKT',
-                        hostname: 'sby-jkt',
-                        type: 'router',
-                        ip: '202.154.0.29',
-                        status: 'warning',
-                        uptime: '72%',
-                        lastPoll: '2026-09-09 15:30:00',
-                        avgDelay: 120,
-                        minDelay: 10,
-                        maxDelay: 550,
-                        missed: 30,
-                        packetLoss: 15,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 153000 WARNING SBY-JKT'
-                    },
-
-                    {
-                        id: 'iix-ji',
-                        name: 'IIX-JI',
-                        hostname: 'iix-ji',
-                        type: 'router',
-                        ip: '218.100.32.1',
-                        status: 'up',
-                        uptime: '99.5%',
-                        lastPoll: '2026-09-09 15:47:15',
-                        avgDelay: 5,
-                        minDelay: 1,
-                        maxDelay: 18,
-                        missed: 0,
-                        packetLoss: 0,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 154715 UP IIX-JI'
-                    },
-
-                    {
-                        id: '56-17',
-                        name: '56.17',
-                        hostname: '56.17',
-                        type: 'router',
-                        ip: '202.154.56.17',
-                        status: 'up',
-                        uptime: '99.9%',
-                        lastPoll: '2026-09-09 15:47:20',
-                        avgDelay: 7,
-                        minDelay: 1,
-                        maxDelay: 25,
-                        missed: 0,
-                        packetLoss: 0,
-                        info1: '-',
-                        info2: '-',
-                        log: '20260909 154720 UP 56.17'
-                    }
-
-                ]
-            }
-
-        ]
-
-    };
-
-
-    /* ============================================================
-       2. FLATTEN DEVICE DATA
-    ============================================================ */
-
-    const allDevices = [];
     const deviceMap = {};
-    const siteMap = {};
 
-    network.sites.forEach(site => {
-
-        siteMap[site.id] = site;
-
-        site.devices.forEach(device => {
-
-            device.siteId = site.id;
-
-            allDevices.push(device);
-
-            deviceMap[device.id] = device;
-
-        });
-
-    });
+    allDevices.forEach(d => { deviceMap[d.id] = d; });
 
 
     /* ============================================================
@@ -1198,14 +1152,14 @@ document.addEventListener('DOMContentLoaded', function () {
         allDevices.filter(d => d.status === 'warning').length;
 
 
-    let uptimeSum = 0;
+    let respondedSum = 0;
 
     allDevices.forEach(device => {
 
-        const uptime = parseFloat(device.uptime);
+        const responded = parseFloat(device.responded);
 
-        if (!isNaN(uptime)) {
-            uptimeSum += uptime;
+        if (!isNaN(responded)) {
+            respondedSum += responded;
         }
 
     });
@@ -1213,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const availability =
         total > 0
-            ? uptimeSum / total
+            ? respondedSum / total
             : 0;
 
 
@@ -1385,12 +1339,11 @@ document.addEventListener('DOMContentLoaded', function () {
             ) / total
             : 0;
 
-
-    const latestDevice =
-        [...allDevices].sort(
-            (a, b) =>
-                new Date(b.lastPoll) - new Date(a.lastPoll)
-        )[0];
+    const totalAlerts =
+        allDevices.reduce(
+            (sum, device) => sum + Number(device.alerts || 0),
+            0
+        );
 
 
     document.getElementById('totalDeviceSummary').textContent =
@@ -1402,9 +1355,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('lastPollingSummary').textContent =
-        latestDevice
-            ? formatTime(latestDevice.lastPoll)
-            : '-';
+        `${totalAlerts} alerts`;
 
 
     /* ============================================================
@@ -1823,8 +1774,7 @@ document.addEventListener('DOMContentLoaded', function () {
             )
             .sort(
                 (a, b) =>
-                    new Date(b.lastPoll) -
-                    new Date(a.lastPoll)
+                    b.alerts - a.alerts
             )
             .slice(0, 5);
 
@@ -1873,13 +1823,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <div class="alert-ip">
                             ${device.ip}
-                            · ${device.avgDelay} ms
+                            · ${device.avgDelay} ms · ${device.alerts} alerts
                         </div>
 
                     </div>
 
                     <div class="alert-time">
-                        ${formatTime(device.lastPoll)}
+                        ${device.period}
                     </div>
 
                 </div>
@@ -1893,15 +1843,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const activities =
         [...allDevices]
-            .filter(
-                device =>
-                    device.log &&
-                    device.log.trim() !== ''
-            )
             .sort(
                 (a, b) =>
-                    new Date(b.lastPoll) -
-                    new Date(a.lastPoll)
+                    b.alerts - a.alerts
             )
             .slice(0, 6);
 
@@ -1933,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         onclick="showDetail('${device.id}')">
 
                         <div class="feed-time">
-                            ${formatTime(device.lastPoll)}
+                            ${device.period}
                         </div>
 
                         <span
@@ -1946,12 +1890,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="feed-body">
 
                             <div class="feed-title">
-                                ${device.name}
+                                ${device.name} · ${device.ip}
                             </div>
 
                             <div class="feed-desc">
 
-                                Status monitoring →
+                                ${device.responded}% responded · ${device.avgDelay} ms avg
 
                                 <span
                                     class="badge bg-${statusBadge(device.status)}">
@@ -2028,23 +1972,35 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kpiDetailBody')
             .innerHTML = `
 
-                <div class="table-responsive">
+                <div class="kpi-table-wrap">
 
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle kpi-table mb-0 w-100">
 
-                        <thead class="table-light">
+                        <thead class="table-light kpi-table-head">
 
                             <tr>
 
-                                <th>Device</th>
+                                <th>Name</th>
 
                                 <th>Type</th>
 
-                                <th>IP Address</th>
+                                <th># Polls</th>
 
-                                <th>Site</th>
+                                <th>% Responded</th>
 
-                                <th>Latency</th>
+                                <th>% Missed</th>
+
+                                <th>Down time</th>
+
+                                <th>Period</th>
+
+                                <th># Alerts</th>
+
+                                <th>Avg delay</th>
+
+                                <th>Min delay</th>
+
+                                <th>Max delay</th>
 
                                 <th>Status</th>
 
@@ -2064,7 +2020,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <tr>
 
                                     <td
-                                        colspan="6"
+                                        colspan="12"
                                         class="text-center text-muted py-4">
 
                                         Tidak ada device
@@ -2081,15 +2037,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                     <tr
                                         style="cursor:pointer"
+                                        class="${device.status === 'down' ? 'table-danger' : device.status === 'warning' ? 'table-warning' : ''}"
                                         onclick="
                                             showDetail('${device.id}')
                                         ">
 
-                                        <td>
+                                        <td class="device-cell">
 
-                                            <strong>
+                                            <div class="device-name">
                                                 ${device.name}
-                                            </strong>
+                                            </div>
+
+                                            <div class="device-ip">
+                                                ${device.ip}
+                                            </div>
 
                                         </td>
 
@@ -2098,18 +2059,42 @@ document.addEventListener('DOMContentLoaded', function () {
                                         </td>
 
                                         <td>
-                                            ${device.ip}
+                                            ${device.polls.toLocaleString()}
                                         </td>
 
                                         <td>
-                                            ${
-                                                siteMap[device.siteId]?.name
-                                                || '-'
+                                            ${device.responded}%
+                                        </td>
+
+                                        <td>
+                                            ${device.missed}%
+                                        </td>
+
+                                        <td>
+                                            ${device.downTime}
+                                        </td>
+
+                                        <td>
+                                            ${device.period}
+                                        </td>
+
+                                        <td>
+                                            ${device.alerts > 0
+                                                ? '<span class="badge bg-danger">' + device.alerts + '</span>'
+                                                : '<span class="text-muted">0</span>'
                                             }
                                         </td>
 
                                         <td>
                                             ${device.avgDelay} ms
+                                        </td>
+
+                                        <td>
+                                            ${device.minDelay} ms
+                                        </td>
+
+                                        <td>
+                                            ${device.maxDelay.toLocaleString()} ms
                                         </td>
 
                                         <td>
@@ -2165,16 +2150,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
-        const site =
-            siteMap[device.siteId];
-
-
         const badge =
             statusBadge(device.status);
-
-
-        /* Tutup KPI modal */
 
         const kpiModalElement =
             document.getElementById('kpiDetailModal');
@@ -2188,11 +2165,9 @@ document.addEventListener('DOMContentLoaded', function () {
             kpiModal.hide();
         }
 
-
         document.getElementById('detailModalTitle')
             .textContent =
                 `Device Detail: ${device.name}`;
-
 
         document.getElementById('detailModalSubtitle')
             .textContent =
@@ -2227,11 +2202,83 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="detail-stat">
 
                             <div class="value">
+                                ${device.responded}%
+                            </div>
+
+                            <div class="label">
+                                Responded
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="detail-stat">
+
+                            <div class="value">
+                                ${device.missed}%
+                            </div>
+
+                            <div class="label">
+                                Missed
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="detail-stat">
+
+                            <div class="value">
+                                ${device.alerts}
+                            </div>
+
+                            <div class="label">
+                                Alerts
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-3 mb-3">
+
+                    <div class="col-md-3">
+
+                        <div class="detail-stat">
+
+                            <div class="value">
+                                ${device.polls.toLocaleString()}
+                            </div>
+
+                            <div class="label">
+                                Total Polls
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="detail-stat">
+
+                            <div class="value">
                                 ${device.avgDelay} ms
                             </div>
 
                             <div class="label">
-                                Average Latency
+                                Avg Delay
                             </div>
 
                         </div>
@@ -2244,11 +2291,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="detail-stat">
 
                             <div class="value">
-                                ${device.packetLoss}%
+                                ${device.minDelay} ms
                             </div>
 
                             <div class="label">
-                                Packet Loss
+                                Min Delay
                             </div>
 
                         </div>
@@ -2261,11 +2308,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="detail-stat">
 
                             <div class="value">
-                                ${device.uptime}
+                                ${device.maxDelay.toLocaleString()} ms
                             </div>
 
                             <div class="label">
-                                Uptime
+                                Max Delay
                             </div>
 
                         </div>
@@ -2283,21 +2330,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             <div class="site-summary-item">
 
-                                <span>Site</span>
+                                <span>Name</span>
 
                                 <strong>
-                                    ${site ? site.name : '-'}
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Hostname</span>
-
-                                <strong>
-                                    ${device.hostname || '-'}
+                                    ${device.name}
                                 </strong>
 
                             </div>
@@ -2316,7 +2352,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             <div class="site-summary-item">
 
-                                <span>Device Type</span>
+                                <span>Type</span>
 
                                 <strong>
                                     ${device.type}
@@ -2324,134 +2360,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             </div>
 
-
                             <div class="site-summary-item">
 
-                                <span>Status</span>
-
-                                <span class="badge bg-${badge}">
-                                    ${statusText(device.status)}
-                                </span>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Last Poll</span>
+                                <span>Down Time</span>
 
                                 <strong>
-                                    ${device.lastPoll}
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-6">
-
-                        <div class="site-summary">
-
-                            <div class="site-summary-item">
-
-                                <span>Missed Poll</span>
-
-                                <strong>
-                                    ${device.missed}
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Packet Loss</span>
-
-                                <strong>
-                                    ${device.packetLoss}%
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Min Delay</span>
-
-                                <strong>
-                                    ${device.minDelay} ms
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Average Delay</span>
-
-                                <strong>
-                                    ${device.avgDelay} ms
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Max Delay</span>
-
-                                <strong>
-                                    ${device.maxDelay} ms
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Uptime</span>
-
-                                <strong>
-                                    ${device.uptime}
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <hr class="my-4">
-
-
-                <div class="row g-3 mb-3">
-
-                    <div class="col-md-6">
-
-                        <div class="site-summary">
-
-                            <div class="site-summary-item">
-
-                                <span>Info 1</span>
-
-                                <strong>
-                                    ${device.info1 || '-'}
+                                    ${device.downTime}
                                 </strong>
 
                             </div>
 
                             <div class="site-summary-item">
 
-                                <span>Info 2</span>
+                                <span>Period</span>
 
                                 <strong>
-                                    ${device.info2 || '-'}
+                                    ${device.period}
                                 </strong>
 
                             </div>
@@ -2480,7 +2404,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <span>Polling</span>
 
                                 <strong>
-                                    ICMP
+                                    ${device.type}
                                 </strong>
 
                             </div>
@@ -2492,7 +2416,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
 
 
-                <h6 class="mb-2">
+                <h6 class="mb-2 mt-4">
 
                     <i class="fas fa-terminal text-primary me-2"></i>
 
@@ -2501,7 +2425,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 </h6>
 
                 <pre class="device-log">${
-                    device.log || '-'
+                    device.status === 'up'
+                        ? 'UP ' + device.name + ' (' + device.ip + ') avg=' + device.avgDelay + 'ms'
+                        : device.status === 'down'
+                            ? 'DOWN ' + device.name + ' (' + device.ip + ') - No response'
+                            : 'WARNING ' + device.name + ' (' + device.ip + ') - High latency'
                 }</pre>
 
             `;

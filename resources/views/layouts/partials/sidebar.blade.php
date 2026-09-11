@@ -149,7 +149,7 @@
                     {{-- Detail Router --}}
                     <li class="nk-menu-item">
                         <a
-                            href="{{ route('admin.detail-router') }}"
+                            href="{{ route('admin.kelola-router') }}"
                             class="nk-menu-link"
                         >
                             <span class="nk-menu-icon">

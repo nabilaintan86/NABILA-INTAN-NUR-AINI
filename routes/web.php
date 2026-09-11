@@ -74,8 +74,8 @@ Route::prefix('admin')
         Route::get('/monitoring', [MonitoringController::class, 'index'])
             ->name('monitoring');
 
-        Route::get('/detail-router', [DetailRouterController::class, 'index'])
-            ->name('detail-router');
+        Route::get('/router/{id}', [DetailRouterController::class, 'detail'])
+            ->name('router.detail');
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
@@ -93,8 +93,23 @@ Route::prefix('admin')
         Route::get('/troubleshooting', [TroubleshootingController::class, 'index'])
             ->name('troubleshooting');
 
+        Route::post('/troubleshooting/diagnose', [TroubleshootingController::class, 'diagnose'])
+            ->name('troubleshooting.diagnose');
+
+        Route::post('/troubleshooting/resolve/{id}', [TroubleshootingController::class, 'resolve'])
+            ->name('troubleshooting.resolve');
+
         Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
             ->name('kelola-router');
+
+        Route::post('/kelola-router', [KelolaRouterController::class, 'store'])
+            ->name('kelola-router.store');
+
+        Route::put('/kelola-router/{device}', [KelolaRouterController::class, 'update'])
+            ->name('kelola-router.update');
+
+        Route::delete('/kelola-router/{device}', [KelolaRouterController::class, 'destroy'])
+            ->name('kelola-router.destroy');
 
 
         Route::get('/laporan', [LaporanController::class, 'index'])
@@ -102,4 +117,16 @@ Route::prefix('admin')
 
         Route::get('/tools', [ToolsController::class, 'index'])
             ->name('tools');
+
+        Route::post('/tools/ping', [ToolsController::class, 'ping'])
+            ->name('tools.ping');
+
+        Route::post('/tools/trace', [ToolsController::class, 'trace'])
+            ->name('tools.trace');
+
+        Route::post('/tools/lookup', [ToolsController::class, 'lookup'])
+            ->name('tools.lookup');
+
+        Route::post('/tools/scan', [ToolsController::class, 'scan'])
+            ->name('tools.scan');
     });
