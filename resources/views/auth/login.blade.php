@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <style>
-        /* ====== Sama seperti sebelumnya, hanya disisipkan di sini ====== */
         *,
         *::before,
         *::after {
@@ -539,7 +538,6 @@
         (function() {
             'use strict';
 
-            // DOM refs
             const tabs = document.querySelectorAll('.tab-btn');
             const panels = {
                 login: document.getElementById('panel-login'),
@@ -550,7 +548,6 @@
             const switchBtn = document.getElementById('switchBtn');
             const switchText = document.getElementById('switchText');
 
-            // Toggle password visibility
             document.querySelectorAll('.toggle-pw').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const targetId = this.getAttribute('data-target');
@@ -562,7 +559,6 @@
                 });
             });
 
-            // Tab switching
             function setActiveTab(tabId) {
                 tabs.forEach(t => {
                     const isActive = t.getAttribute('data-tab') === tabId;
@@ -585,7 +581,6 @@
                     switchText.textContent = 'Sudah punya akun?';
                 }
 
-                // Sembunyikan success banner jika ada
                 document.getElementById('successBanner')?.classList.remove('show');
             }
 
@@ -608,13 +603,11 @@
                 }
             });
 
-            // Forgot password demo
             document.getElementById('forgotLink').addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('Fitur reset password akan segera hadir. Silakan hubungi admin.');
             });
 
-            // Social buttons demo
             document.getElementById('googleBtn').addEventListener('click', function() {
                 alert('Fitur login dengan Google akan segera hadir.');
             });
@@ -622,7 +615,6 @@
                 alert('Fitur login dengan Facebook akan segera hadir.');
             });
 
-            // --- Validasi real-time (opsional) ---
             const loginEmail = document.getElementById('loginEmail');
             const loginPassword = document.getElementById('loginPassword');
             const loginEmailError = document.getElementById('loginEmailError');
@@ -677,7 +669,6 @@
                 }
             });
 
-            // Register fields
             const regName = document.getElementById('regName');
             const regEmail = document.getElementById('regEmail');
             const regPassword = document.getElementById('regPassword');
@@ -778,7 +769,6 @@
                 }
             }
 
-            // Reset error saat pindah tab
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.input-wrap.error').forEach(el => el.classList.remove('error'));
@@ -786,7 +776,6 @@
                 });
             });
 
-            // --- Set active tab jika ada error dari server ---
             @if ($errors->has('email') || $errors->has('password'))
                 setActiveTab('login');
                 tabs.forEach(t => {
@@ -801,7 +790,7 @@
                     t.classList.toggle('active', isActive);
                     t.setAttribute('aria-selected', isActive);
                 });
-            @endif   // <-- INI YANG DITAMBAHKAN
+            @endif
 
         })();
     </script>

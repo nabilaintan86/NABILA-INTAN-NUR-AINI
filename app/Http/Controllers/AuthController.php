@@ -9,26 +9,16 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    /**
-     * Menampilkan halaman Login + Register
-     */
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Jika membuka /register secara langsung,
-     * arahkan ke halaman login yang sama.
-     */
     public function showRegisterForm()
     {
         return redirect()->route('login');
     }
 
-    /**
-     * Proses Login
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -51,9 +41,6 @@ class AuthController extends Controller
             ->with('auth_tab', 'login');
     }
 
-    /**
-     * Proses Register
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -76,9 +63,6 @@ class AuthController extends Controller
             ->with('success', 'Akun berhasil dibuat. Selamat datang!');
     }
 
-    /**
-     * Logout
-     */
     public function logout(Request $request)
     {
         Auth::logout();
