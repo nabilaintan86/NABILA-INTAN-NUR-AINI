@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Invoice List - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Invoice List - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -256,7 +256,7 @@
                                                 <a href="{{ url('/admin/apps/invoice/invoice-preview') }}" class="text-light">#256943</a>
                                             </td>
                                             <td class="tb-col">
-                                                <span>nioboard@outlook.net</span>
+                                                <span>radnext@outlook.net</span>
                                             </td>
                                             <td class="tb-col">
                                                 <span>Enterprice</span>

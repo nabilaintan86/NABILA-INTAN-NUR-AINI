@@ -6,13 +6,14 @@ use App\Http\Controllers\AuthController;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MonitoringController;
-use App\Http\Controllers\Admin\DetailRouterController;
+use App\Http\Controllers\Admin\MapController;
 use App\Http\Controllers\Admin\LogHistoryController;
 use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\TroubleshootingController;
 use App\Http\Controllers\Admin\KelolaRouterController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\ToolsController;
+use App\Http\Controllers\Admin\UserController;
 
 
 /*
@@ -64,6 +65,10 @@ Route::prefix('admin')
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
+        // Endpoint JSON data dashboard (dipakai auto-refresh grafik tiap 30 dtk)
+        Route::get('/dashboard/data', [DashboardController::class, 'data'])
+            ->name('dashboard.data');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -74,11 +79,29 @@ Route::prefix('admin')
         Route::get('/monitoring', [MonitoringController::class, 'index'])
             ->name('monitoring');
 
-        Route::get('/router/{id}', [DetailRouterController::class, 'detail'])
-            ->name('router.detail');
+        // Network Map - topologi jaringan
+        Route::get('/map', [MapController::class, 'index'])
+            ->name('map');
+
+        // Endpoint JSON data map (dipakai auto-refresh status tiap 30 dtk)
+        Route::get('/map/data', [MapController::class, 'data'])
+            ->name('map.data');
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
+
+        // Infinite scroll tab real-time (load 50 per batch)
+        Route::get('/log/load-more', [LogHistoryController::class, 'loadMore'])
+            ->name('log.load-more');
+
+        // Tab arsip (date range + tabel + pagination)
+        Route::get('/log/archive', [LogHistoryController::class, 'archive'])
+            ->name('log.archive');
+
+        // Detail device (modal popup) - bisa id monitoring_logs atau log_archives
+        Route::get('/log/detail/{id}', [LogHistoryController::class, 'detail'])
+            ->whereNumber('id')
+            ->name('log.detail');
 
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])
             ->name('notifikasi');
@@ -129,4 +152,31 @@ Route::prefix('admin')
 
         Route::post('/tools/scan', [ToolsController::class, 'scan'])
             ->name('tools.scan');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelola User (khusus Super Admin, middleware role)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::group(['middleware' => 'role:super_admin'], function () {
+            Route::get('/kelola-user', [UserController::class, 'index'])
+                ->name('kelola-user');
+
+            Route::get('/kelola-user/create', [UserController::class, 'create'])
+                ->name('kelola-user.create');
+
+            Route::post('/kelola-user', [UserController::class, 'store'])
+                ->name('kelola-user.store');
+
+            Route::get('/kelola-user/{user}/edit', [UserController::class, 'edit'])
+                ->name('kelola-user.edit');
+
+            Route::put('/kelola-user/{user}', [UserController::class, 'update'])
+                ->name('kelola-user.update');
+
+            Route::delete('/kelola-user/{user}', [UserController::class, 'destroy'])
+                ->name('kelola-user.destroy');
+        });
     });

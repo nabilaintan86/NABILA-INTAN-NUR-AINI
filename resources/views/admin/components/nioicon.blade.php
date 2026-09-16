@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'NioIcon - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'NioIcon - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -11,7 +11,7 @@
                                     Nioicon Font
                                 </h1>
                                 <p>
-                                    Nioicon is hand-crafted and beautiful icon set which is designed by Softnio Team. We inspired from google icons and carefuly designed this for NioBoard dashboard. It's have over than 1000+ icons that helps much in your project.
+                                    Nioicon is hand-crafted and beautiful icon set which is designed by Softnio Team. We inspired from google icons and carefuly designed this for RadneXt dashboard. It's have over than 1000+ icons that helps much in your project.
                                 </p>
                                 <p>
                                     You can use with any <code class="code-tag">&lt;em&gt;</code>, <code class="code-tag">&lt;span&gt;</code> tag element with <code>.ni</code> &amp; <code>.ni-{name-class-name}</code>.
@@ -24,11 +24,11 @@
                             <ul class="preview-icon-list">
                                 <li class="preview-icon-item">
                                     <div class="preview-icon-box card">
-                                        <button type="button" class="btn btn-icon btn-clipboard js-copy text-light" data-clip-success="&lt;em class=&quot;icon ni ni-copy-fill&quot;&gt;&lt;/em&gt;" data-clip-text="&lt;em class=&quot;icon ni ni-copy&quot;&gt;&lt;/em&gt;" data-clipboard-text="&lt;em class=&quot;icon ni ni-nioboard&quot;&gt;&lt;/em&gt;"><em class="icon ni ni-copy"></em></button>
+                                        <button type="button" class="btn btn-icon btn-clipboard js-copy text-light" data-clip-success="&lt;em class=&quot;icon ni ni-copy-fill&quot;&gt;&lt;/em&gt;" data-clip-text="&lt;em class=&quot;icon ni ni-copy&quot;&gt;&lt;/em&gt;" data-clipboard-text="&lt;em class=&quot;icon ni ni-radnext&quot;&gt;&lt;/em&gt;"><em class="icon ni ni-copy"></em></button>
                                         <div class="preview-icon-wrap">
-                                            <em class="ni ni-nioboard"></em>
+                                            <em class="ni ni-radnext"></em>
                                         </div>
-                                        <span class="preview-icon-name">nioboard</span>
+                                        <span class="preview-icon-name">radnext</span>
                                     </div>
                                 </li>
                                 <li class="preview-icon-item">

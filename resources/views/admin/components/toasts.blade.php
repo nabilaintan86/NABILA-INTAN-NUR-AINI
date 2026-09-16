@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Toasts - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Toasts - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -37,7 +37,7 @@
                                                         <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
-                                                        <strong>NioBoard</strong>
+                                                        <strong>RadneXt</strong>
                                                     </div>
                                                 </div>
                                                 <small>11 mins ago</small><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -57,7 +57,7 @@
                                             <button data-clipboard-target="#code-example-1" class="js-copy text-light" type="button"></button>
                                         </div>
                                     </div>
-                                    <pre class="code-preview"><code class="language-html" id="code-example-1">&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-bs-toggle=&quot;toast&quot; data-bs-target=&quot;liveToast&quot; &gt;Show live toast&lt;/button&gt;&lt;div class=&quot;toast-container position-fixed bottom-0 end-0 p-3&quot;&gt;    &lt;div id=&quot;liveToast&quot; class=&quot;toast&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;NioBoard&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small&gt;11 mins ago&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;            Hello, world! This is a toast message.        &lt;/div&gt;    &lt;/div&gt;&lt;/div&gt;</code></pre>
+                                    <pre class="code-preview"><code class="language-html" id="code-example-1">&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-bs-toggle=&quot;toast&quot; data-bs-target=&quot;liveToast&quot; &gt;Show live toast&lt;/button&gt;&lt;div class=&quot;toast-container position-fixed bottom-0 end-0 p-3&quot;&gt;    &lt;div id=&quot;liveToast&quot; class=&quot;toast&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;RadneXt&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small&gt;11 mins ago&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;            Hello, world! This is a toast message.        &lt;/div&gt;    &lt;/div&gt;&lt;/div&gt;</code></pre>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +81,7 @@
                                                     <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                 </div>
                                                 <div class="media-text">
-                                                    <strong>NioBoard</strong>
+                                                    <strong>RadneXt</strong>
                                                 </div>
                                             </div>
                                             <small class="text-muted">11 mins ago</small><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -100,7 +100,7 @@
                                             <button data-clipboard-target="#code-example-2" class="js-copy text-light" type="button"></button>
                                         </div>
                                     </div>
-                                    <pre class="code-preview"><code class="language-html" id="code-example-2">&lt;div class=&quot;toast&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;  &lt;div class=&quot;toast-header&quot;&gt;    &lt;div class=&quot;media-group&quot;&gt;        &lt;div class=&quot;media media-xs&quot;&gt;            &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;        &lt;/div&gt;        &lt;div class=&quot;media-text&quot;&gt;            &lt;strong&gt;NioBoard&lt;/strong&gt;        &lt;/div&gt;    &lt;/div&gt;    &lt;small class=&quot;text-muted&quot;&gt;11 mins ago&lt;/small&gt;    &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;  &lt;/div&gt;  &lt;div class=&quot;toast-body&quot;&gt;    Hello, world! This is a toast message.  &lt;/div&gt;&lt;/div&gt;</code></pre>
+                                    <pre class="code-preview"><code class="language-html" id="code-example-2">&lt;div class=&quot;toast&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;  &lt;div class=&quot;toast-header&quot;&gt;    &lt;div class=&quot;media-group&quot;&gt;        &lt;div class=&quot;media media-xs&quot;&gt;            &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;        &lt;/div&gt;        &lt;div class=&quot;media-text&quot;&gt;            &lt;strong&gt;RadneXt&lt;/strong&gt;        &lt;/div&gt;    &lt;/div&gt;    &lt;small class=&quot;text-muted&quot;&gt;11 mins ago&lt;/small&gt;    &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;  &lt;/div&gt;  &lt;div class=&quot;toast-body&quot;&gt;    Hello, world! This is a toast message.  &lt;/div&gt;&lt;/div&gt;</code></pre>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                                                         <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
-                                                        <strong>NioBoard</strong>
+                                                        <strong>RadneXt</strong>
                                                     </div>
                                                 </div>
                                                 <small class="text-muted">just now</small><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -141,7 +141,7 @@
                                                         <img src="{{ asset('admin-assets/images/favicon.png') }}" alt="logo-icon">
                                                     </div>
                                                     <div class="media-text">
-                                                        <strong>NioBoard</strong>
+                                                        <strong>RadneXt</strong>
                                                     </div>
                                                 </div>
                                                 <small class="text-muted">2 seconds ago</small><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -161,7 +161,7 @@
                                             <button data-clipboard-target="#code-example-3" class="js-copy text-light" type="button"></button>
                                         </div>
                                     </div>
-                                    <pre class="code-preview"><code class="language-html" id="code-example-3">&lt;div class=&quot;toast-container position-static&quot;&gt;    &lt;div class=&quot;toast fade show&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;NioBoard&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small class=&quot;text-muted&quot;&gt;just now&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;        See? Just like this.        &lt;/div&gt;    &lt;/div&gt;        &lt;div class=&quot;toast fade show&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;NioBoard&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small class=&quot;text-muted&quot;&gt;2 seconds ago&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;        Heads up, toasts will stack automatically        &lt;/div&gt;    &lt;/div&gt;&lt;/div&gt;</code></pre>
+                                    <pre class="code-preview"><code class="language-html" id="code-example-3">&lt;div class=&quot;toast-container position-static&quot;&gt;    &lt;div class=&quot;toast fade show&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;RadneXt&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small class=&quot;text-muted&quot;&gt;just now&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;        See? Just like this.        &lt;/div&gt;    &lt;/div&gt;        &lt;div class=&quot;toast fade show&quot; role=&quot;alert&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot;&gt;        &lt;div class=&quot;toast-header&quot;&gt;            &lt;div class=&quot;media-group&quot;&gt;                &lt;div class=&quot;media media-xs&quot;&gt;                    &lt;img src=&quot;/images/favicon.png&quot; alt=&quot;logo-icon&quot;&gt;                &lt;/div&gt;                &lt;div class=&quot;media-text&quot;&gt;                    &lt;strong&gt;RadneXt&lt;/strong&gt;                &lt;/div&gt;            &lt;/div&gt;            &lt;small class=&quot;text-muted&quot;&gt;2 seconds ago&lt;/small&gt;            &lt;button type=&quot;button&quot; class=&quot;btn-close&quot; data-bs-dismiss=&quot;toast&quot; aria-label=&quot;Close&quot;&gt;&lt;/button&gt;        &lt;/div&gt;        &lt;div class=&quot;toast-body&quot;&gt;        Heads up, toasts will stack automatically        &lt;/div&gt;    &lt;/div&gt;&lt;/div&gt;</code></pre>
                                 </div>
                             </div>
                         </div>

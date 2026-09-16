@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Auth Login Split - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Auth Login Split - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="nk-split nk-split-page">
@@ -105,7 +105,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="nk-split-content d-none d-md-block flex-grow-1 has-bg" data-bg="https://html.nioboard.themenio.com/images/thumb/b.jpg">
+                <div class="nk-split-content d-none d-md-block flex-grow-1 has-bg" data-bg="https://html.radnext.themenio.com/images/thumb/b.jpg">
                 </div>
             </div>
         </div>

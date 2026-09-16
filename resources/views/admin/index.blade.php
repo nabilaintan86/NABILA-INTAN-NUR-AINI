@@ -8,17 +8,75 @@
     .monitoring-map-area {
         min-height: 520px;
         background: linear-gradient(135deg, #f8f9fc 0%, #eef1f6 100%);
-        border: 2px dashed #d9e2ec;
+        border: 1px solid #e2e8f0;
         border-radius: .5rem;
+        padding: 1.25rem;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        transition: border-color .2s;
     }
     .monitoring-map-area:hover {
         border-color: #b4bdd4;
     }
+
+    /* ── Grid node (CSS Grid, 1 node = 1 device) ────── */
+    .monitoring-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
+        gap: 12px;
+        width: 100%;
+    }
+    .monitoring-node {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,.9);
+        padding: 0;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,.12);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .monitoring-node:hover,
+    .monitoring-node:focus-visible {
+        transform: scale(1.35);
+        box-shadow: 0 4px 12px rgba(0,0,0,.2);
+        z-index: 1;
+    }
+    .node-up      { background-color: #22c55e; }
+    .node-down    { background-color: #ef4444; animation: node-pulse 1.6s ease-out infinite; }
+    .node-unknown { background-color: #94a3b8; }
+
+    /* Animasi pulse untuk device DOWN */
+    @keyframes node-pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+        70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+        100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    }
+
+    /* ── Legend map ──────────────────────────────────── */
+    .monitoring-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 1rem;
+        font-size: .78rem;
+        color: #5e6b7b;
+    }
+    .monitoring-legend .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .monitoring-legend .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .monitoring-legend .legend-dot.up      { background-color: #22c55e; }
+    .monitoring-legend .legend-dot.down    { background-color: #ef4444; }
+    .monitoring-legend .legend-dot.unknown { background-color: #94a3b8; }
 
     /* ── KPI cards clickable ─────────────────────────── */
     .kpi-card {
@@ -96,6 +154,7 @@
 
     @media (max-width: 767.98px) {
         .monitoring-map-area { min-height: 320px; }
+        .monitoring-grid { gap: 8px; }
         .modal-monitoring .table { font-size: .8rem; }
         .modal-monitoring .table thead th,
         .modal-monitoring .table tbody td { padding: .5rem; }
@@ -120,7 +179,7 @@
                 </div>
                 <div class="mt-2 d-flex align-items-end justify-content-between">
                     <div>
-                        <div class="amount h1 mb-0" id="kpiUpCount">-</div>
+                        <div class="amount h1 mb-0" id="kpiUpCount">{{ $totalUp }}</div>
                         <span class="text-soft small">Perangkat aktif</span>
                     </div>
                     <em class="icon ni ni-chevron-right text-soft kpi-arrow"></em>
@@ -143,7 +202,7 @@
                 </div>
                 <div class="mt-2 d-flex align-items-end justify-content-between">
                     <div>
-                        <div class="amount h1 mb-0" id="kpiDownCount">-</div>
+                        <div class="amount h1 mb-0" id="kpiDownCount">{{ $totalDown }}</div>
                         <span class="text-soft small">Perangkat bermasalah</span>
                     </div>
                     <em class="icon ni ni-chevron-right text-soft kpi-arrow"></em>
@@ -166,7 +225,7 @@
                 </div>
                 <div class="mt-2 d-flex align-items-end justify-content-between">
                     <div>
-                        <div class="amount h1 mb-0" id="kpiServicesCount">-</div>
+                        <div class="amount h1 mb-0" id="kpiServicesCount">{{ $totalServicesDown }}</div>
                         <span class="text-soft small">Service bermasalah</span>
                     </div>
                     <em class="icon ni ni-chevron-right text-soft kpi-arrow"></em>
@@ -186,15 +245,38 @@
             <span class="text-xs text-soft">RADNET Wireless Network 2025</span>
         </div>
         <div class="monitoring-map-area mt-3">
-            <em class="icon ni ni-map text-soft display-4"></em>
-            <p class="text-soft mt-2 mb-0">Visualisasi peta interaktif akan ditampilkan di sini</p>
+            {{-- Grid node: 1 bulat kecil = 1 device, warna sesuai status --}}
+            <div class="monitoring-grid" id="monitoringGrid">
+                @foreach($devices as $device)
+                    <button
+                        type="button"
+                        class="monitoring-node node-{{ $device->status }}"
+                        title="{{ $device->name }} ({{ $device->ip_address }})"
+                        aria-label="{{ $device->name }}"
+                        onclick="showDeviceDetail('{{ $device->id }}')">
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Legend --}}
+            <div class="monitoring-legend">
+                <span class="legend-item">
+                    <span class="legend-dot up"></span> UP ({{ $totalUp }})
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot down"></span> DOWN ({{ $totalDown }})
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot unknown"></span> UNKNOWN ({{ $totalUnknown }})
+                </span>
+            </div>
         </div>
     </div>
 </div>
 
 {{-- ═══════════════════════════════════════════════════
      MODALS
-================================================== --}}
+═══════════════════════════════════════════════════ --}}
 
 {{-- Modal: Items Up --}}
 <div class="modal fade modal-monitoring" id="modalUp" tabindex="-1" aria-hidden="true">
@@ -234,95 +316,85 @@
         </div>
     </div>
 </div>
+
+{{-- Modal: Detail Device (dibuka dari klik node / baris) --}}
+<div class="modal fade modal-monitoring" id="modalDeviceDetail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deviceDetailTitle">Detail Device</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deviceDetailBody"></div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ── PLACEHOLDER DATA: ganti dengan data asli dari backend ── */
-    var devices = [
-        { name: 'POP Gresik',  ip: '202.154.4.254', status: 'up',      latency: 12,  info: 'Uptime 99.8%' },
-        { name: 'Intiland 1',  ip: '202.154.4.4',   status: 'up',      latency: 9,   info: 'Uptime 99.99%' },
-        { name: 'Border',      ip: '202.154.4.3',   status: 'up',      latency: 8,   info: 'Uptime 99.2%' },
-        { name: 'SMKN-1',      ip: '202.154.4.241', status: 'up',      latency: 11,  info: 'Uptime 98.7%' },
-        { name: 'IIX-JI',      ip: '218.100.32.1',  status: 'up',      latency: 5,   info: 'Uptime 99.5%' },
-        { name: '56.17',       ip: '202.154.56.17', status: 'up',      latency: 7,   info: 'Uptime 99.9%' },
-        { name: 'Core Router', ip: '10.0.0.1',      status: 'up',      latency: 3,   info: 'Uptime 99.95%' },
-        { name: 'Switch SW-1', ip: '10.0.0.2',      status: 'up',      latency: 2,   info: 'Uptime 99.99%' },
-        { name: 'AP Tower-3',  ip: '192.168.1.30',  status: 'up',      latency: 15,  info: 'Uptime 99.1%' },
-        { name: 'MikroTik-7',  ip: '192.168.1.7',   status: 'up',      latency: 6,   info: 'Uptime 99.7%' },
-        { name: 'OLT-BRI',     ip: '202.154.4.1',   status: 'up',      latency: 4,   info: 'Uptime 99.9%' },
-        { name: 'RB-SJ-01',    ip: '192.168.10.1',  status: 'up',      latency: 18,  info: 'Uptime 98.5%' },
-        { name: 'RB-SJ-02',    ip: '192.168.10.2',  status: 'up',      latency: 22,  info: 'Uptime 97.8%' },
-        { name: 'Backup GW',   ip: '10.0.0.254',    status: 'up',      latency: 1,   info: 'Uptime 99.99%' }
-    ];
+    /* ── DATA ASLI dari controller (Eloquent) ─────────────── */
+    var devices = @json($devices);
 
-    var services = [
-        { name: 'SSH',        device: 'POP Gresik',  status: 'up',   info: 'Port 22 open' },
-        { name: 'HTTP',       device: 'Border',      status: 'up',   info: 'Port 80/443 open' },
-        { name: 'SNMP',       device: 'Core Router', status: 'up',   info: 'Port 161 responding' },
-        { name: 'DNS',        device: 'POP Gresik',  status: 'up',   info: 'Port 53 responding' },
-        { name: 'NTP',        device: 'Switch SW-1', status: 'up',   info: 'Port 123 open' },
-        { name: 'ICMP Ping',  device: 'All Devices', status: 'up',   info: 'Monitoring active' }
-    ];
-    /* ── END PLACEHOLDER ────────────────────────────────────────── */
+    var upDevices    = devices.filter(function (d) { return d.status === 'up'; });
+    var downDevices  = devices.filter(function (d) { return d.status === 'down'; });
+    // Data service belum tersedia di database, dikosongkan dulu
+    var downServices = [];
 
-    var upDevices     = devices.filter(function (d) { return d.status === 'up'; });
-    var downDevices   = devices.filter(function (d) { return d.status === 'down' || d.status === 'warning'; });
-    var downServices  = services.filter(function (s) { return s.status === 'down'; });
-
-    /* ── Update KPI counts ─────────────────────────────────────── */
-    document.getElementById('kpiUpCount').textContent        = upDevices.length;
-    document.getElementById('kpiDownCount').textContent      = downDevices.length;
-    document.getElementById('kpiServicesCount').textContent  = downServices.length;
-
-    /* ── Status helpers ────────────────────────────────────────── */
+    /* ── Status helpers ───────────────────────────────────── */
     function statusBadge(status) {
-        var map = { up: 'success', down: 'danger', warning: 'warning' };
-        return '<span class="badge bg-' + (map[status] || 'secondary') + '">' + status.toUpperCase() + '</span>';
+        var map = { up: 'success', down: 'danger', unknown: 'secondary' };
+        return '<span class="badge bg-' + (map[status] || 'secondary') + '">' + String(status).toUpperCase() + '</span>';
     }
 
-    /* ── Build table HTML ──────────────────────────────────────── */
+    /* ── Build tabel device ────────────────────────────────── */
     function buildDeviceTable(list) {
         if (!list.length) {
-            return '<div class="empty-state"><em class="icon ni ni-check-circle"></em><p class="mt-2 mb-0">Tidak ada perangkat yang bermasalah.</p></div>';
+            return '<div class="empty-state"><em class="icon ni ni-check-circle"></em><p class="mt-2 mb-0">Tidak ada perangkat.</p></div>';
         }
         var html = '<div class="table-responsive"><table class="table"><thead><tr>' +
-            '<th>Nama Perangkat</th><th>IP Address</th><th>Status</th><th>Keterangan</th>' +
+            '<th>Nama Perangkat</th><th>IP Address</th><th>Type</th><th>Status</th><th>Avg Delay</th>' +
             '</tr></thead><tbody>';
         list.forEach(function (d) {
             html += '<tr>' +
                 '<td><strong>' + d.name + '</strong></td>' +
-                '<td><code>' + d.ip + '</code></td>' +
+                '<td><code>' + d.ip_address + '</code></td>' +
+                '<td>' + (d.type || '-') + '</td>' +
                 '<td>' + statusBadge(d.status) + '</td>' +
-                '<td>' + d.info + '</td>' +
+                '<td>' + (d.avg_delay !== null ? d.avg_delay + ' ms' : '-') + '</td>' +
                 '</tr>';
         });
         html += '</tbody></table></div>';
         return html;
     }
 
-    function buildServiceTable(list) {
-        if (!list.length) {
-            return '<div class="empty-state"><em class="icon ni ni-check-circle"></em><p class="mt-2 mb-0">Tidak ada service yang bermasalah.</p></div>';
+    /* ── Build detail device (modal) ───────────────────────── */
+    function buildDeviceDetail(d) {
+        function row(label, value) {
+            return '<tr><td class="text-muted">' + label + '</td>' +
+                '<td class="text-end"><strong>' + (value === null || value === undefined || value === '' ? '-' : value) + '</strong></td></tr>';
         }
-        var html = '<div class="table-responsive"><table class="table"><thead><tr>' +
-            '<th>Nama Service</th><th>Perangkat</th><th>Status</th><th>Keterangan</th>' +
-            '</tr></thead><tbody>';
-        list.forEach(function (s) {
-            html += '<tr>' +
-                '<td><strong>' + s.name + '</strong></td>' +
-                '<td>' + s.device + '</td>' +
-                '<td>' + statusBadge(s.status) + '</td>' +
-                '<td>' + s.info + '</td>' +
-                '</tr>';
-        });
+        var html = '<div class="table-responsive"><table class="table"><tbody>';
+        html += row('Nama Perangkat', d.name);
+        html += row('IP Address', d.ip_address);
+        html += row('Type', d.type);
+        html += '<tr><td class="text-muted">Status</td><td class="text-end">' + statusBadge(d.status) + '</td></tr>';
+        html += row('Jumlah Polls', d.polls);
+        html += row('Responded', d.responded_percentage !== null ? d.responded_percentage + '%' : '-');
+        html += row('Missed', d.missed_percentage !== null ? d.missed_percentage + '%' : '-');
+        html += row('Down Time', d.down_time);
+        html += row('Period', d.period);
+        html += row('Alerts', d.alerts_count > 0 ? d.alerts_count : 0);
+        html += row('Rata-rata Delay', d.avg_delay !== null ? d.avg_delay + ' ms' : '-');
+        html += row('Min Delay', d.min_delay !== null ? d.min_delay + ' ms' : '-');
+        html += row('Max Delay', d.max_delay !== null ? d.max_delay + ' ms' : '-');
         html += '</tbody></table></div>';
         return html;
     }
 
-    /* ── Open modal ────────────────────────────────────────────── */
+    /* ── Open modal KPI berdasarkan status ─────────────────── */
     window.openKpiModal = function (type) {
         var bsModal;
         if (type === 'up') {
@@ -332,10 +404,20 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('modalDownBody').innerHTML = buildDeviceTable(downDevices);
             bsModal = new bootstrap.Modal(document.getElementById('modalDown'));
         } else {
-            document.getElementById('modalServicesBody').innerHTML = buildServiceTable(downServices);
+            document.getElementById('modalServicesBody').innerHTML =
+                '<div class="empty-state"><em class="icon ni ni-check-circle"></em><p class="mt-2 mb-0">Belum ada data service yang dipantau.</p></div>';
             bsModal = new bootstrap.Modal(document.getElementById('modalServices'));
         }
         bsModal.show();
+    };
+
+    /* ── Open modal detail device dari node map ─────────────── */
+    window.showDeviceDetail = function (id) {
+        var device = devices.find(function (d) { return String(d.id) === String(id); });
+        if (!device) return;
+        document.getElementById('deviceDetailTitle').textContent = 'Detail Device';
+        document.getElementById('deviceDetailBody').innerHTML = buildDeviceDetail(device);
+        new bootstrap.Modal(document.getElementById('modalDeviceDetail')).show();
     };
 
 });

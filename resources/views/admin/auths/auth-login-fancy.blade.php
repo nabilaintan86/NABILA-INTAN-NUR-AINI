@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Auth Login Fancy - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Auth Login Fancy - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="mask mask-3">

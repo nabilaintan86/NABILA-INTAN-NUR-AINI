@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'MailBox | Inbox - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'MailBox | Inbox - RadneXt Responsive Admin Dashboard Template')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/quill.css') }}">
     @endpush

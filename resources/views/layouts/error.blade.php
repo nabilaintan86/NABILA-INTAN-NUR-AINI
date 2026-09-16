@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>
-        @yield('title', 'Error - NioBoard')
+        @yield('title', 'Error - RadneXt')
         </title>
         <link rel="shortcut icon" href="{{ asset('admin-assets/images/favicon.png') }}">
         <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/style.css') }}">

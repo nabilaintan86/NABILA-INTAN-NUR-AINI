@@ -1,5 +1,5 @@
 @extends('layouts.error')
-@section('title', 'Page not found! - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Page not found! - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="container">

@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Auth Register - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Auth Register - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="container p-2 p-sm-4">
@@ -13,7 +13,7 @@
                                             Create New Account
                                         </h3>
                                         <p class="small">
-                                            Use your remail email continue with Nioboard (it's free)!
+                                            Use your remail email continue with RadneXt (it's free)!
                                         </p>
                                     </div>
                                 </div>

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Users Edit - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Users Edit - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -219,7 +219,7 @@
                                                             <div class="form-group">
                                                                 <label for="oldPassword" class="form-label">Old Password</label>
                                                                 <div class="form-control-wrap">
-                                                                    <a href="https://html.nioboard.themenio.com/oldPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="oldPassword" placeholder="Old password">
+                                                                    <a href="https://html.radnext.themenio.com/oldPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="oldPassword" placeholder="Old password">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -227,7 +227,7 @@
                                                             <div class="form-group">
                                                                 <label for="newPassword" class="form-label">New Password</label>
                                                                 <div class="form-control-wrap">
-                                                                    <a href="https://html.nioboard.themenio.com/newPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="newPassword" placeholder="New password">
+                                                                    <a href="https://html.radnext.themenio.com/newPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="newPassword" placeholder="New password">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -235,7 +235,7 @@
                                                             <div class="form-group">
                                                                 <label for="confirmPassword" class="form-label">Confirm New Password</label>
                                                                 <div class="form-control-wrap">
-                                                                    <a href="https://html.nioboard.themenio.com/confirmPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="confirmPassword" placeholder="Confirm New Password">
+                                                                    <a href="https://html.radnext.themenio.com/confirmPassword" class="form-control-icon end password-toggle" title="Toggle show/hide password"><em class="on icon ni ni-eye-off"></em><em class="off icon ni ni-eye"></em></a><input type="password" class="form-control" id="confirmPassword" placeholder="Confirm New Password">
                                                                 </div>
                                                             </div>
                                                         </div>

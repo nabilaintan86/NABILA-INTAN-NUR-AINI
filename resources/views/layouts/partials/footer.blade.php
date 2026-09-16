@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="nk-footer-wrap">
             <div class="nk-footer-copyright">
-                &copy; 2022 Nioboard. Template by <a href="https://softnio.com" target="_blank" class="text-reset">Softnio</a>
+                &copy; 2026 RadneXt. Monitoring Jaringan Admin
             </div>
             <div class="nk-footer-links">
                 <ul class="nav nav-sm">

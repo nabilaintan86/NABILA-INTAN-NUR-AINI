@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Auth Register Split - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Auth Register Split - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="nk-split nk-split-page">
@@ -34,7 +34,7 @@
                                         Create New Account
                                     </h3>
                                     <p class="small">
-                                        Use your email continue with Nioboard (it's free)!
+                                        Use your email continue with RadneXt (it's free)!
                                     </p>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="nk-split-content d-none d-md-block flex-grow-1 has-bg" data-bg="https://html.nioboard.themenio.com/images/thumb/b.jpg">
+                <div class="nk-split-content d-none d-md-block flex-grow-1 has-bg" data-bg="https://html.radnext.themenio.com/images/thumb/b.jpg">
                 </div>
             </div>
         </div>

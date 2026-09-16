@@ -9,16 +9,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->create([
-            'name'     => 'Test User',
-            'email'    => 'test@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+            ]
+        );
 
         $this->call([
             DeviceSeeder::class,
             ActivityLogSeeder::class,
             TroubleshootingLogSeeder::class,
+            MapPlazaBRISeeder::class,
+            PopMappingSeeder::class,
         ]);
     }
 }

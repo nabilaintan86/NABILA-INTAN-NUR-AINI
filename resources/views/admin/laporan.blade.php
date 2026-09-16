@@ -22,7 +22,6 @@
 {{-- FILTER PERIODE --}}
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
     <div>
-        <h5 class="title mb-1">Laporan &amp; Grafik</h5>
         <p class="text-soft small mb-0">Analisis kestabilan jaringan RADNET</p>
     </div>
     <div class="btn-group laporan-filters" role="group" id="periodFilter">

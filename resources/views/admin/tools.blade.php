@@ -172,10 +172,6 @@
                 <div class="nk-block-head">
                     <div class="nk-block-head-between flex-wrap gap g-2">
                         <div class="nk-block-head-content">
-                            <h2 class="nk-block-title">
-                                <i class="fas fa-tools text-primary me-2"></i>
-                                Network Tools
-                            </h2>
                             <nav>
                                 <ol class="breadcrumb breadcrumb-arrow mb-0">
                                     <li class="breadcrumb-item">

@@ -1,5 +1,5 @@
 @extends('layouts.error')
-@section('title', 'Error 504 - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Error 504 - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-wrap align-items-center justify-content-center">
             <div class="container">

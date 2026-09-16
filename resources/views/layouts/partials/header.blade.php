@@ -6,7 +6,6 @@
                 $pageTitles = [
                     'admin.dashboard' => 'Dashboard',
                     'admin.monitoring' => 'Monitoring Jaringan',
-                    'admin.detail-router' => 'Detail Router',
                     'admin.log' => 'Log History',
                     'admin.notifikasi' => 'Notifikasi',
                     'admin.troubleshooting' => 'Troubleshooting',

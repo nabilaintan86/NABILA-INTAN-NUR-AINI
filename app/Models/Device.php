@@ -9,6 +9,9 @@ class Device extends Model
 {
     use HasFactory;
 
+    // Tambahan ini biar Laravel baca tabel 'device1', bukan 'devices'
+    protected $table = 'device';
+
     protected $fillable = [
         'name',
         'type',
@@ -23,6 +26,10 @@ class Device extends Model
         'min_delay',
         'max_delay',
         'status',
+        'icon_type',
+        'pop_name',
+        'pos_x',
+        'pos_y',
     ];
 
     protected $casts = [
@@ -33,6 +40,8 @@ class Device extends Model
         'avg_delay'             => 'integer',
         'min_delay'             => 'integer',
         'max_delay'             => 'integer',
+        'pos_x'                 => 'integer',
+        'pos_y'                 => 'integer',
     ];
 
     public function activityLogs()
@@ -43,5 +52,15 @@ class Device extends Model
     public function troubleshootingLogs()
     {
         return $this->hasMany(TroubleshootingLog::class);
+    }
+
+    public function outboundConnections()
+    {
+        return $this->hasMany(DeviceConnection::class, 'from_device_id');
+    }
+
+    public function inboundConnections()
+    {
+        return $this->hasMany(DeviceConnection::class, 'to_device_id');
     }
 }

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Tinymce Editor - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Tinymce Editor - RadneXt Responsive Admin Dashboard Template')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/libs/editors/tinymce.css') }}">
     @endpush

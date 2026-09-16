@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Support Center - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Support Center - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -242,7 +242,7 @@
                                                             <a href="{{ url('/admin/apps/help-desk/details') }}"><em class="icon ni ni-chevron-right text-primary"></em><span>HTML Admin Dashboard</span></a>
                                                         </li>
                                                         <li>
-                                                            <a href="{{ url('/admin/apps/help-desk/details') }}"><em class="icon ni ni-chevron-right text-primary"></em><span>Nioboard Front-end Template</span></a>
+                                                            <a href="{{ url('/admin/apps/help-desk/details') }}"><em class="icon ni ni-chevron-right text-primary"></em><span>RadneXt Front-end Template</span></a>
                                                         </li>
                                                     </ul>
                                                     <a href="{{ url('/admin/apps/help-desk/details') }}" class="btn-link small ms-1 fw-medium"><span>All Tutorials</span> <em class="icon ni ni-arrow-right"></em></a>

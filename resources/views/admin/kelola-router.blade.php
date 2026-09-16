@@ -73,10 +73,6 @@
                 <div class="nk-block-head">
                     <div class="nk-block-head-between flex-wrap gap g-2">
                         <div class="nk-block-head-content">
-                            <h2 class="nk-block-title">
-                                <i class="fas fa-network-wired text-primary me-2"></i>
-                                Kelola Perangkat Jaringan
-                            </h2>
                             <nav>
                                 <ol class="breadcrumb breadcrumb-arrow mb-0">
                                     <li class="breadcrumb-item">
@@ -161,10 +157,7 @@
                                             <tr class="{{ $device->status === 'down' ? 'row-down' : ($device->status === 'warning' ? 'row-warning' : '') }}">
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                    <a href="{{ route('admin.router.detail', $device->id) }}"
-                                                       class="device-name text-decoration-none">
-                                                        {{ $device->name }}
-                                                    </a>
+                                                    <span class="device-name">{{ $device->name }}</span>
                                                 </td>
                                                 <td>
                                                     <span class="device-type-badge type-{{ strtolower($device->type) }}">

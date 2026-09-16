@@ -120,10 +120,6 @@
                 <div class="nk-block-head">
                     <div class="nk-block-head-between flex-wrap gap g-2">
                         <div class="nk-block-head-content">
-                            <h2 class="nk-block-title">
-                                <i class="fas fa-screwdriver-wrench text-primary me-2"></i>
-                                Troubleshooting Center
-                            </h2>
                             <nav>
                                 <ol class="breadcrumb breadcrumb-arrow mb-0">
                                     <li class="breadcrumb-item">
@@ -232,10 +228,7 @@
                                             <tr class="ts-row" data-status="{{ $device->status }}">
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                    <a href="{{ route('admin.router.detail', $device->id) }}"
-                                                       class="device-name text-decoration-none">
-                                                        {{ $device->name }}
-                                                    </a>
+                                                    <span class="device-name">{{ $device->name }}</span>
                                                 </td>
                                                 <td><span class="device-ip">{{ $device->ip_address }}</span></td>
                                                 <td><span class="badge bg-soft-primary">{{ $device->type }}</span></td>

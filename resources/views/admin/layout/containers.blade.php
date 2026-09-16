@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Containers - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Containers - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">

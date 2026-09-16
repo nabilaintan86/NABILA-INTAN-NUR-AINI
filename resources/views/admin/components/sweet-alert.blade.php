@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Sweetalert - NioBoard Responsive Admin Dashboard Template')
+@section('title', 'Sweetalert - RadneXt Responsive Admin Dashboard Template')
     @section('content')
         <div class="nk-content">
             <div class="container">
@@ -11,7 +11,7 @@
                                     Sweetalert2
                                 </h1>
                                 <p>
-                                    Inside Nioboard, we integrated the <a href="https://sweetalert2.github.io/" target="_blank">SweetAlert2</a> which is beautiful, responsive, highly customizable JavaScript's popup boxes.
+                                    Inside RadneXt, we integrated the <a href="https://sweetalert2.github.io/" target="_blank">SweetAlert2</a> which is beautiful, responsive, highly customizable JavaScript's popup boxes.
                                 </p>
                                 <p>
                                     You can see full uses documentation details from <a href="https://sweetalert2.github.io/" target="_blank">here</a>.

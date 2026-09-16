@@ -198,7 +198,6 @@
 {{-- HEADER --}}
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
     <div>
-        <h5 class="title mb-1">Notifikasi</h5>
         <p class="text-soft small mb-0">Pantau perubahan status dan gangguan perangkat jaringan RADNET.</p>
     </div>
 </div>

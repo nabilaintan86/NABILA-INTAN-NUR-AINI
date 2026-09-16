@@ -4,1062 +4,613 @@
 
 @push('styles')
 <style>
-    /* ============================================================
-       GLOBAL DASHBOARD
-    ============================================================ */
-    .noc-dashboard {
+    :root {
         --noc-primary: #3b82f6;
-        --noc-success: #22c55e;
+        --noc-success: #10b981;
         --noc-danger: #ef4444;
-        --noc-warning: #eab308;
-        --noc-muted: #64748b;
-        --noc-border: #e2e8f0;
+        --noc-warning: #f59e0b;
     }
 
-    .noc-dashboard .card {
-        border: 1px solid #edf0f3;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+    @keyframes pulse-ring {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        70% { transform: scale(1.4); opacity: 0; }
+        100% { transform: scale(1.4); opacity: 0; }
+    }
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+    @keyframes fadeInScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
     }
 
-    .noc-dashboard .card-header {
+    .noc-dashboard { animation: fadeInScale 0.4s ease-out; }
+
+    .noc-card {
         background: #fff;
-        border-bottom: 1px solid #f1f5f9;
-        padding: 15px 20px;
-    }
-
-    /* ============================================================
-       HEADER
-    ============================================================ */
-    .noc-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .noc-status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #22c55e;
-        box-shadow: 0 0 0 4px rgba(34, 197, 94, .12);
-    }
-
-    /* ============================================================
-       KPI CARDS
-    ============================================================ */
-    .kpi-card {
-        position: relative;
-        background: #fff;
-        border-radius: 12px;
-        padding: 18px 20px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
-        border: 1px solid #edf0f3;
-        border-left: 4px solid #ccc;
-        transition: all .2s ease;
-        cursor: pointer;
-        height: 100%;
+        border-radius: 16px;
+        border: 1px solid #eef2f7;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
-
-    .kpi-card:hover {
+    .noc-card:hover {
+        box-shadow: 0 12px 32px -8px rgba(15, 23, 42, .12);
         transform: translateY(-2px);
-        box-shadow: 0 7px 18px rgba(15, 23, 42, .08);
     }
+    .noc-card-header {
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .noc-card-body { padding: 20px 22px; }
 
-    .kpi-card .kpi-number {
-        font-size: 29px;
+    /* HEADER */
+    .noc-header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #1e1b4b 100%);
+        border-radius: 18px;
+        padding: 22px 26px;
+        color: #fff;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(30, 41, 59, .4);
+    }
+    .noc-header::before {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(59,130,246,.35) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    .noc-header::after {
+        content: '';
+        position: absolute;
+        bottom: -60%; left: -5%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(139,92,246,.25) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite reverse;
+    }
+    .noc-header > * { position: relative; z-index: 1; }
+    .noc-header h4 {
+        color: #fff;
         font-weight: 700;
-        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 4px;
+        font-size: 1.4rem;
     }
+    .noc-header .subtitle { color: #94a3b8; font-size: 0.8rem; font-weight: 500; }
 
-    .kpi-card .kpi-label {
-        font-size: 13px;
-        color: #64748b;
+    .live-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #6ee7b7;
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 11.5px;
         font-weight: 600;
-        margin-top: 4px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    .live-dot {
+        position: relative;
+        width: 8px; height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+    }
+    .live-dot::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse-ring 1.8s ease-out infinite;
     }
 
-    .kpi-card .kpi-sub {
-        font-size: 11px;
-        color: #94a3b8;
-        margin-top: 4px;
+    /* KPI CARDS */
+    .kpi-card-new {
+        position: relative;
+        border-radius: 16px;
+        padding: 22px 22px 20px;
+        color: #fff;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 158px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        animation: slideInUp 0.5s ease-out backwards;
+        box-shadow: 0 4px 14px -4px rgba(15, 23, 42, .15);
     }
+    .kpi-card-new:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card-new:nth-child(2) { animation-delay: 0.10s; }
+    .kpi-card-new:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card-new:nth-child(4) { animation-delay: 0.20s; }
+    .kpi-card-new::before {
+        content: '';
+        position: absolute;
+        top: -40%; right: -30%;
+        width: 200px; height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transition: all 0.5s ease;
+    }
+    .kpi-card-new::after {
+        content: '';
+        position: absolute;
+        bottom: -60%; right: -20%;
+        width: 150px; height: 150px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        transition: all 0.5s ease;
+    }
+    .kpi-card-new:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 20px 40px -12px rgba(15, 23, 42, .3);
+    }
+    .kpi-card-new:hover::before { transform: scale(1.3); }
+    .kpi-card-new > * { position: relative; z-index: 1; }
+    .kpi-card-new.up { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .kpi-card-new.down { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    .kpi-card-new.warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .kpi-card-new.availability { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
 
-    .kpi-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 10px;
+    .kpi-icon-circle {
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        font-size: 20px;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        transition: all 0.3s ease;
+    }
+    .kpi-card-new:hover .kpi-icon-circle {
+        transform: rotate(-8deg) scale(1.1);
+        background: rgba(255, 255, 255, 0.3);
+    }
+    .kpi-number-new {
+        font-size: 2.4rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    .kpi-label-new { font-size: 0.85rem; font-weight: 600; opacity: 0.95; margin-top: 4px; }
+    .kpi-sub-new { font-size: 0.72rem; opacity: 0.8; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+
+    /* SECTION TITLE */
+    .section-title-new {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .section-title-new i { font-size: 1rem; color: var(--noc-primary); }
+    .section-subtitle-new { font-size: 0.72rem; color: #94a3b8; margin-top: 3px; font-weight: 500; }
+
+    /* SUMMARY CARDS (CLICKABLE) */
+    .summary-card-new {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid #eef2f7;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+    }
+    .summary-card-new::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: var(--accent, #3b82f6);
+        transition: width 0.3s ease;
+    }
+    .summary-card-new:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px -8px rgba(15, 23, 42, .15);
+        border-color: var(--accent, #3b82f6);
+    }
+    .summary-card-new:hover::before { width: 6px; }
+    .summary-icon-new {
+        width: 46px; height: 46px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 18px;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+    .summary-card-new:hover .summary-icon-new {
+        transform: rotate(-8deg) scale(1.08);
     }
 
-    .kpi-card.up {
-        border-left-color: #22c55e;
-    }
-
-    .kpi-card.down {
-        border-left-color: #ef4444;
-    }
-
-    .kpi-card.warning {
-        border-left-color: #eab308;
-    }
-
-    .kpi-card.availability {
-        border-left-color: #3b82f6;
-    }
-
-    .kpi-card.up .kpi-icon {
-        background: #ecfdf5;
-        color: #16a34a;
-    }
-
-    .kpi-card.down .kpi-icon {
-        background: #fef2f2;
-        color: #dc2626;
-    }
-
-    .kpi-card.warning .kpi-icon {
-        background: #fffbeb;
-        color: #ca8a04;
-    }
-
-    .kpi-card.availability .kpi-icon {
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    /* ============================================================
-       SECTION TITLE
-    ============================================================ */
-    .section-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .section-subtitle {
-        font-size: 11px;
-        color: #94a3b8;
-    }
-
-    /* ============================================================
-       LATENCY
-    ============================================================ */
-    .latency-card .card-body {
-        padding: 20px 24px;
-    }
-
-    .latency-chart-wrapper {
-        height: 330px;
-        position: relative;
-    }
-
-    .latency-summary {
-        display: flex;
-        gap: 22px;
-        flex-wrap: wrap;
-    }
-
+    /* LATENCY */
+    .latency-chart-wrapper { height: 340px; position: relative; }
     .latency-summary-item {
-        display: flex;
-        flex-direction: column;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 12px 18px;
+        border-radius: 12px;
+        min-width: 110px;
+        border: 1px solid #eef2f7;
+        transition: all 0.3s ease;
     }
-
+    .latency-summary-item:hover {
+        border-color: var(--noc-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(59, 130, 246, .3);
+    }
     .latency-summary-item .label {
-        font-size: 11px;
+        font-size: 0.7rem;
         color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
     }
-
     .latency-summary-item .value {
-        font-size: 17px;
-        font-weight: 700;
+        font-size: 1.15rem;
+        font-weight: 800;
         color: #0f172a;
+        margin-top: 2px;
+        letter-spacing: -0.3px;
     }
 
-    /* ============================================================
-       NETWORK HEALTH
-    ============================================================ */
-    .health-item {
-        padding: 13px 0;
-        border-bottom: 1px dashed #e2e8f0;
-    }
-
-    .health-item:last-child {
-        border-bottom: none;
-    }
-
-    .health-top {
+    /* ALERTS */
+    .alert-item-new {
+        padding: 12px 14px;
+        border-radius: 12px;
+        margin-bottom: 10px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-    }
-
-    .health-name {
-        display: flex;
-        align-items: center;
-        font-size: 13px;
-        color: #334155;
-        font-weight: 600;
-    }
-
-    .health-dot {
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        margin-right: 8px;
-    }
-
-    .health-value {
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .health-bar {
-        height: 6px;
-        background: #f1f5f9;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 8px;
-    }
-
-    .health-bar span {
-        display: block;
-        height: 100%;
-        border-radius: 10px;
-        transition: width .4s ease;
-    }
-
-    /* ============================================================
-       ALERTS
-    ============================================================ */
-    .alert-item {
-        padding: 10px 12px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        gap: 12px;
         background: #fff;
         border: 1px solid #f1f5f9;
-        border-left: 3px solid;
-        transition: .2s ease;
+        transition: all 0.25s ease;
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
     }
-
-    .alert-item:hover {
+    .alert-item-new::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        transition: width 0.3s ease;
+    }
+    .alert-item-new.critical::before { background: linear-gradient(180deg, #ef4444, #b91c1c); }
+    .alert-item-new.warning::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
+    .alert-item-new:hover {
         background: #f8fafc;
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px -2px rgba(15, 23, 42, .08);
     }
-
-    .alert-item.critical {
-        border-left-color: #ef4444;
-        background: #fffafa;
-    }
-
-    .alert-item.warning {
-        border-left-color: #eab308;
-        background: #fffdf5;
-    }
-
-    .alert-icon {
-        width: 30px;
-        height: 30px;
-        border-radius: 7px;
+    .alert-item-new:hover::before { width: 6px; }
+    .alert-icon-new {
+        width: 38px; height: 38px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        font-size: 15px;
     }
-
-    .alert-item.critical .alert-icon {
-        background: #fee2e2;
+    .alert-item-new.critical .alert-icon-new {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
         color: #dc2626;
     }
-
-    .alert-item.warning .alert-icon {
-        background: #fef3c7;
+    .alert-item-new.warning .alert-icon-new {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
         color: #ca8a04;
     }
 
-    .alert-name {
-        font-size: 12px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .alert-ip {
-        font-size: 10px;
-        color: #94a3b8;
-        margin-top: 2px;
-    }
-
-    .alert-time {
-        margin-left: auto;
-        color: #94a3b8;
-        font-size: 10px;
-        white-space: nowrap;
-    }
-
-    /* ============================================================
-       ACTIVITY FEED
-    ============================================================ */
-    .activity-feed {
-        padding: 0;
-    }
-
-    .feed-item {
+    /* ACTIVITY FEED */
+    .feed-item-new {
         display: flex;
         align-items: flex-start;
         gap: 14px;
-        padding: 14px 20px;
+        padding: 14px 22px;
         border-bottom: 1px solid #f1f5f9;
         cursor: pointer;
-        transition: background .2s ease;
+        transition: all 0.25s ease;
+        animation: slideInUp 0.3s ease-out backwards;
     }
-
-    .feed-item:hover {
-        background: #f8fafc;
+    .feed-item-new:hover {
+        background: linear-gradient(90deg, #f8fafc 0%, #fff 100%);
+        padding-left: 26px;
     }
+    .feed-item-new:last-child { border-bottom: none; }
 
-    .feed-item:last-child {
-        border-bottom: none;
+    /* MODAL */
+    .modal-content {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px -12px rgba(15, 23, 42, .25);
     }
-
-    .feed-time {
-        min-width: 55px;
-        color: #64748b;
-        font-size: 11px;
-        font-weight: 600;
-        padding-top: 2px;
+    .modal-header {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 20px 26px;
+        background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+        border-radius: 18px 18px 0 0;
     }
-
-    .feed-marker {
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        margin-top: 4px;
-        flex-shrink: 0;
-    }
-
-    .feed-body {
-        flex: 1;
-    }
-
-    .feed-title {
-        font-weight: 600;
-        font-size: 12px;
-        color: #0f172a;
-    }
-
-    .feed-desc {
-        font-size: 11px;
-        color: #64748b;
-        margin-top: 3px;
-    }
-
-    /* ============================================================
-       MONITORING SUMMARY
-    ============================================================ */
-    .monitor-summary {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .monitor-summary .summary-icon {
-        width: 35px;
-        height: 35px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    .monitor-summary .summary-label {
-        font-size: 10px;
-        color: #94a3b8;
-    }
-
-    .monitor-summary .summary-value {
-        font-size: 13px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    /* ============================================================
-       DEVICE DETAIL
-    ============================================================ */
-    .site-summary {
-        background: #f8fafc;
-        border: 1px solid #eef2f7;
-        border-radius: 9px;
-        padding: 13px;
-    }
-
-    .site-summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 8px 0;
-        font-size: 12px;
-    }
-
-    .site-summary-item:last-child {
-        border-bottom: none;
-    }
-
-    .site-summary-item > span:first-child {
-        color: #64748b;
-    }
-
-    .site-summary-item strong {
-        color: #0f172a;
-        text-align: right;
-    }
-
-    .detail-stat {
-        text-align: center;
-        padding: 13px 8px;
-        background: #f8fafc;
-        border-radius: 8px;
-    }
-
-    .detail-stat .value {
-        font-size: 18px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .detail-stat .label {
-        font-size: 10px;
-        color: #94a3b8;
-        margin-top: 2px;
-    }
-
-    .device-log {
-        background: #0f172a;
-        color: #cbd5e1;
-        padding: 13px;
-        border-radius: 8px;
-        font-size: 11px;
-        line-height: 1.6;
-        margin: 0;
-    }
-
-    /* ============================================================
-       EMPTY STATE
-    ============================================================ */
-    .empty-state {
-        text-align: center;
-        padding: 35px 15px;
-        color: #94a3b8;
-        font-size: 12px;
-    }
-
-    .empty-state i {
-        font-size: 25px;
-        margin-bottom: 8px;
-    }
-
-    /* ============================================================
-       KPI DETAIL MODAL & DEVICE TABLE
-    ============================================================ */
-    #kpiDetailModal .modal-dialog {
-        max-width: min(96vw, 1440px);
-        width: 100%;
-        margin: 20px auto;
-    }
-
-    #kpiDetailModal .modal-content {
-        border: 0;
-        border-radius: 16px;
-        box-shadow: 0 20px 50px rgba(15, 23, 42, .18);
-    }
-
-    #kpiDetailModal .modal-header,
-    #kpiDetailModal .modal-body {
-        padding: 18px 24px;
-    }
-
-    #kpiDetailModal .modal-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
     .kpi-table-wrap {
         max-height: 62vh;
         overflow: auto;
-        border: 1px solid #e2e8f0;
         border-radius: 12px;
+        border: 1px solid #eef2f7;
     }
-
-    .kpi-table {
-        width: 100%;
-        table-layout: auto;
-        margin: 0;
-        font-size: 12.5px;
-        background: #fff;
-    }
-
+    .kpi-table { width: 100%; margin: 0; font-size: 12.5px; }
     .kpi-table thead th {
         position: sticky;
         top: 0;
-        z-index: 2;
         background: #f8fafc;
         color: #475569;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: .4px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .5px;
         text-transform: uppercase;
-        white-space: nowrap;
         padding: 12px 14px;
         border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
     }
-
     .kpi-table tbody td {
         padding: 12px 14px;
         vertical-align: middle;
         border-bottom: 1px solid #f1f5f9;
-        white-space: normal;
-        word-break: normal;
-        overflow-wrap: break-word;
     }
+    .kpi-table tbody tr:hover { background: #f8fafc; }
+    .kpi-table tbody tr { cursor: pointer; }
 
-    .kpi-table tbody tr {
-        transition: background .15s ease;
-    }
-
-    .kpi-table tbody tr:hover {
-        background: #f8fafc;
-    }
-
-    .kpi-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .kpi-table .device-name {
-        font-weight: 700;
-        color: #0f172a;
-        white-space: nowrap;
-    }
-
-    .kpi-table .device-ip {
-        font-family: monospace;
-        font-size: 11px;
-        color: #64748b;
-        white-space: nowrap;
-    }
-
-    .kpi-table .text-nowrap {
-        white-space: nowrap;
-    }
-
-    .kpi-table td.kpi-col, .kpi-table th.kpi-col {
-        text-align: right;
-    }
-
-    .kpi-table th:nth-child(3),
-    .kpi-table th:nth-child(4),
-    .kpi-table th:nth-child(5),
-    .kpi-table th:nth-child(8),
-    .kpi-table th:nth-child(9),
-    .kpi-table th:nth-child(10),
-    .kpi-table th:nth-child(11),
-    .kpi-table td:nth-child(3),
-    .kpi-table td:nth-child(4),
-    .kpi-table td:nth-child(5),
-    .kpi-table td:nth-child(8),
-    .kpi-table td:nth-child(9),
-    .kpi-table td:nth-child(10),
-    .kpi-table td:nth-child(11) {
-        text-align: right;
-        white-space: nowrap;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .kpi-table th:nth-child(2),
-    .kpi-table th:nth-child(6),
-    .kpi-table th:nth-child(7),
-    .kpi-table td:nth-child(6),
-    .kpi-table td:nth-child(7) {
-        white-space: nowrap;
-    }
-
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
     @media (max-width: 767px) {
-        .latency-chart-wrapper {
-            height: 260px;
-        }
-
-        .latency-summary {
-            gap: 14px;
-        }
-
-        .feed-time {
-            min-width: 45px;
-        }
+        .latency-chart-wrapper { height: 260px; }
+        .kpi-number-new { font-size: 1.9rem; }
+        .noc-header { padding: 18px 20px; }
     }
 </style>
 @endpush
 
 
 @section('content')
+<div class="noc-dashboard">
 
-<div class="nk-content-body noc-dashboard">
-
-    {{-- ============================================================
-         HEADER
-    ============================================================ --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-
-        <div>
-            <div class="d-flex align-items-center gap-2">
-                <h4 class="mb-0">
-                    <i class="fas fa-satellite-dish text-primary me-2"></i>
-                    RadneXt Wireless Network Monitoring
-                </h4>
-
-                <span class="noc-status text-success">
-                    <span class="noc-status-dot"></span>
-                    Monitoring Active
-                </span>
+    {{-- HEADER --}}
+    <div class="noc-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <h4 class="mb-0">
+                        <i class="fas fa-satellite-dish me-2" style="color:#60a5fa;"></i>
+                        RadneXt Network Monitoring
+                    </h4>
+                    <span class="live-status">
+                        <span class="live-dot"></span>
+                        Live Monitoring
+                    </span>
+                </div>
+                <div class="subtitle mt-2">
+                    Network Operations Center · Real-time status &amp; performance
+                </div>
             </div>
-
-            <small class="text-muted">
-                Network Operations Center · Real-time status &amp; performance
-            </small>
-        </div>
-
-        <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
-
-            <span class="badge bg-light text-dark border px-3 py-2">
-                <i class="far fa-clock me-1"></i>
-                <span id="dashboardClock">
-                    {{ now()->format('Y/m/d H:i:s') }}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge" style="background: rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.15); padding: 8px 14px; border-radius: 10px; font-weight: 500;">
+                    <i class="far fa-clock me-1"></i>
+                    <span id="dashboardClock">{{ now()->format('Y/m/d H:i:s') }}</span>
                 </span>
-            </span>
-
-            <button
-                class="btn btn-outline-secondary btn-sm"
-                onclick="refreshDashboard()"
-                title="Refresh Dashboard">
-                <i class="fas fa-sync-alt" id="refreshIcon"></i>
-            </button>
-
+                <button class="btn btn-sm" onclick="refreshDashboard()" style="background: rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius: 10px;">
+                    <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-
-    {{-- ============================================================
-         KPI CARDS
-    ============================================================ --}}
+    {{-- KPI CARDS --}}
     <div class="row g-3 mb-3" id="kpiContainer"></div>
 
-
-    {{-- ============================================================
-         MONITORING SUMMARY
-    ============================================================ --}}
+    {{-- SUMMARY CARDS (CLICKABLE) --}}
     <div class="row g-3 mb-3">
-
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body py-3">
-                    <div class="monitor-summary">
-                        <div class="summary-icon">
-                            <i class="fas fa-server"></i>
-                        </div>
-
-                        <div>
-                            <div class="summary-label">TOTAL MONITORED DEVICE</div>
-                            <div class="summary-value" id="totalDeviceSummary">
-                                -
-                            </div>
-                        </div>
-                    </div>
+            <div class="summary-card-new" style="--accent:#3b82f6;" onclick="showSummary('total')">
+                <div class="summary-icon-new" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb;">
+                    <i class="fas fa-server"></i>
                 </div>
+                <div style="flex:1;">
+                    <div class="section-subtitle-new">TOTAL MONITORED DEVICE</div>
+                    <div class="fw-bold" style="font-size:1.2rem;color:#0f172a;letter-spacing:-0.3px;" id="totalDeviceSummary">-</div>
+                </div>
+                <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
             </div>
         </div>
-
-
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body py-3">
-                    <div class="monitor-summary">
-                        <div class="summary-icon">
-                            <i class="fas fa-stopwatch"></i>
-                        </div>
-
-                        <div>
-                            <div class="summary-label">AVERAGE LATENCY</div>
-                            <div class="summary-value" id="averageLatencySummary">
-                                -
-                            </div>
-                        </div>
-                    </div>
+            <div class="summary-card-new" style="--accent:#10b981;" onclick="showSummary('latency')">
+                <div class="summary-icon-new" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669;">
+                    <i class="fas fa-stopwatch"></i>
                 </div>
+                <div style="flex:1;">
+                    <div class="section-subtitle-new">AVERAGE LATENCY</div>
+                    <div class="fw-bold" style="font-size:1.2rem;color:#0f172a;letter-spacing:-0.3px;" id="averageLatencySummary">-</div>
+                </div>
+                <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
             </div>
         </div>
-
-
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body py-3">
-                    <div class="monitor-summary">
-                        <div class="summary-icon" style="background:#fef2f2;color:#dc2626;">
-                            <i class="fas fa-bell"></i>
-                        </div>
-
-                        <div>
-                            <div class="summary-label">TOTAL ALERTS</div>
-                            <div class="summary-value" id="lastPollingSummary">
-                                -
-                            </div>
-                        </div>
-                    </div>
+            <div class="summary-card-new" style="--accent:#ef4444;" onclick="showSummary('alerts')">
+                <div class="summary-icon-new" style="background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626;">
+                    <i class="fas fa-bell"></i>
                 </div>
+                <div style="flex:1;">
+                    <div class="section-subtitle-new">TOTAL ALERTS</div>
+                    <div class="fw-bold" style="font-size:1.2rem;color:#0f172a;letter-spacing:-0.3px;" id="lastPollingSummary">-</div>
+                </div>
+                <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
             </div>
         </div>
-
     </div>
 
-
-    {{-- ============================================================
-         LATENCY MONITORING
-    ============================================================ --}}
+    {{-- LATENCY CHART --}}
     <div class="row g-3 mb-3">
-
         <div class="col-12">
-
-            <div class="card latency-card">
-
-                <div class="card-header">
-
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-
-                        <div>
-                            <div class="section-title">
-                                <i class="fas fa-chart-line text-primary me-2"></i>
-                                Network Latency Monitoring
-                            </div>
-
-                            <div class="section-subtitle">
-                                Average ICMP latency across monitored network links
-                            </div>
-                        </div>
-
-                        <select
-                            id="latencyPeriod"
-                            class="form-select form-select-sm"
-                            style="width:auto;">
-
-                            <option value="6">Last 6 Hours</option>
-                            <option value="12">Last 12 Hours</option>
-                            <option value="24" selected>Last 24 Hours</option>
-                            <option value="168">Last 7 Days</option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card-body">
-
-                    <div class="latency-summary mb-3">
-
-                        <div class="latency-summary-item">
-                            <span class="label">Current</span>
-                            <span class="value" id="latencyCurrent">-</span>
-                        </div>
-
-                        <div class="latency-summary-item">
-                            <span class="label">Average</span>
-                            <span class="value" id="latencyAverage">-</span>
-                        </div>
-
-                        <div class="latency-summary-item">
-                            <span class="label">Peak</span>
-                            <span class="value" id="latencyPeak">-</span>
-                        </div>
-
-                    </div>
-
-
-                    <div class="latency-chart-wrapper">
-                        <canvas id="latencyChart"></canvas>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================================================
-         NETWORK HEALTH + RECENT ALERTS
-    ============================================================ --}}
-    <div class="row g-3 mb-3">
-
-        {{-- NETWORK HEALTH --}}
-        <div class="col-lg-6">
-
-            <div class="card h-100">
-
-                <div class="card-header">
-
-                    <div class="section-title">
-                        <i class="fas fa-heartbeat text-success me-2"></i>
-                        Network Health
-                    </div>
-
-                    <div class="section-subtitle">
-                        Current health by network segment
-                    </div>
-
-                </div>
-
-                <div class="card-body" id="healthContainer"></div>
-
-            </div>
-
-        </div>
-
-
-        {{-- RECENT ALERTS --}}
-        <div class="col-lg-6">
-
-            <div class="card h-100">
-
-                <div class="card-header">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-                            <div class="section-title">
-                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                                Recent Alerts
-                            </div>
-
-                            <div class="section-subtitle">
-                                Device requiring attention
-                            </div>
-                        </div>
-
-                        <a
-                            href="{{ route('admin.notifikasi') }}"
-                            class="text-primary small">
-                            Lihat semua →
-                        </a>
-
-                    </div>
-
-                </div>
-
-                <div class="card-body" id="alertContainer"></div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================================================
-         RECENT ACTIVITY
-    ============================================================ --}}
-    <div class="row g-3 mb-3">
-
-        <div class="col-12">
-
-            <div class="card">
-
-                <div class="card-header">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-                            <div class="section-title">
-                                <i class="fas fa-history text-primary me-2"></i>
-                                Recent Activity
-                            </div>
-
-                            <div class="section-subtitle">
-                                Latest device status activity
-                            </div>
-                        </div>
-
-                        <a
-                            href="{{ route('admin.log') }}"
-                            class="text-primary small">
-                            Lihat semua →
-                        </a>
-
-                    </div>
-
-                </div>
-
-                <div class="card-body p-0">
-
-                    <div
-                        class="activity-feed"
-                        id="activityContainer">
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================================================
-         KPI DETAIL MODAL
-    ============================================================ --}}
-    <div
-        class="modal fade"
-        id="kpiDetailModal"
-        tabindex="-1"
-        aria-hidden="true">
-
-        <div class="modal-dialog modal-xl modal-dialog-centered kpi-modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header">
-
-                    <h5
-                        class="modal-title"
-                        id="kpiDetailTitle">
-                        Daftar Device
-                    </h5>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                    </button>
-
-                </div>
-
-                <div
-                    class="modal-body"
-                    id="kpiDetailBody">
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================================================
-         DEVICE DETAIL MODAL
-    ============================================================ --}}
-    <div
-        class="modal fade"
-        id="routerDetailModal"
-        tabindex="-1"
-        aria-hidden="true">
-
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-
-            <div class="modal-content">
-
-                <div class="modal-header">
-
+            <div class="noc-card">
+                <div class="noc-card-header">
                     <div>
-                        <h5
-                            class="modal-title mb-1"
-                            id="detailModalTitle">
-                            Device Detail
-                        </h5>
-
-                        <small
-                            class="text-muted"
-                            id="detailModalSubtitle">
-                        </small>
+                        <h6 class="section-title-new">
+                            <i class="fas fa-chart-area"></i>
+                            Network Latency Monitoring
+                        </h6>
+                        <div class="section-subtitle-new">Average ICMP latency across monitored network links</div>
                     </div>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                    </button>
-
+                    <select id="latencyPeriod" class="form-select form-select-sm" style="width:auto;border-radius:10px;">
+                        <option value="6">Last 6 Hours</option>
+                        <option value="12">Last 12 Hours</option>
+                        <option value="24" selected>Last 24 Hours</option>
+                        <option value="168">Last 7 Days</option>
+                    </select>
                 </div>
-
-                <div
-                    class="modal-body"
-                    id="detailModalBody">
+                <div class="noc-card-body">
+                    <div class="d-flex gap-3 mb-4 flex-wrap">
+                        <div class="latency-summary-item">
+                            <div class="label">Current</div>
+                            <div class="value" id="latencyCurrent">-</div>
+                        </div>
+                        <div class="latency-summary-item">
+                            <div class="label">Average</div>
+                            <div class="value" id="latencyAverage">-</div>
+                        </div>
+                        <div class="latency-summary-item">
+                            <div class="label">Peak</div>
+                            <div class="value" id="latencyPeak">-</div>
+                        </div>
+                    </div>
+                    <div class="latency-chart-wrapper">
+                        <canvas id="latencyChart" style="display:block"></canvas>
+                        <div id="latencyEmpty" class="text-center text-muted" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;font-size:13px;">
+                            <i class="fas fa-chart-line" style="font-size:40px;color:#cbd5e1;margin-bottom:12px;"></i>
+                            <p class="mb-0">Belum ada data riwayat ping.<br>Scheduler mengisi otomatis setiap 1 menit.</p>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                        Tutup
-                    </button>
-
-                </div>
-
             </div>
-
         </div>
-
     </div>
 
+    {{-- RECENT ALERTS + RECENT ACTIVITY --}}
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="noc-card h-100">
+            <div class="noc-card-header">
+                <div>
+                    <h6 class="section-title-new">
+                        <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                        Recent Alerts
+                    </h6>
+                    <div class="section-subtitle-new">Device yang membutuhkan perhatian</div>
+                </div>
+                <a href="{{ route('admin.notifikasi') }}" class="small text-primary">Lihat semua →</a>
+            </div>
+            <div class="noc-card-body" id="alertContainer"></div>
+        </div>
+    </div>
 
-    {{-- ============================================================
-         FOOTER
-    ============================================================ --}}
+    <div class="col-lg-6">
+        <div class="noc-card h-100">
+            <div class="noc-card-header">
+                <div>
+                    <h6 class="section-title-new">
+                        <i class="fas fa-history"></i>
+                        Recent Activity
+                    </h6>
+                    <div class="section-subtitle-new">Aktivitas status device terbaru</div>
+                </div>
+                <a href="{{ route('admin.log') }}" class="small text-primary">Lihat semua →</a>
+            </div>
+            <div id="activityContainer"></div>
+        </div>
+    </div>
+</div>
+
+    {{-- FOOTER --}}
     <div class="mt-4 text-center text-muted small border-top pt-3">
-
-        Copyright PT Radnet Digital Indonesia
-        &copy; {{ date('Y') }}.
-        All Right Reserved.
-
+        Copyright PT Radnet Digital Indonesia &copy; {{ date('Y') }}. All Right Reserved.
     </div>
+</div>
 
+{{-- KPI DETAIL MODAL --}}
+<div class="modal fade" id="kpiDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width:min(96vw,1440px);">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="kpiDetailTitle">Daftar Device</h5>
+                    <div class="text-muted small mt-1" id="kpiDetailSubtitle"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="kpiDetailBody"></div>
+        </div>
+    </div>
+</div>
+
+{{-- DEVICE DETAIL MODAL --}}
+<div class="modal fade" id="routerDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1" id="detailModalTitle">Device Detail</h5>
+                    <small class="text-muted" id="detailModalSubtitle"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @endsection
 
 
 @push('scripts')
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ============================================================
-       1. NETWORK DATA — from database via controller
-       ============================================================ */
-
+       DATA
+    ============================================================ */
     const rawDevices = @json($devices);
-
     const allDevices = rawDevices.map(d => ({
         id: String(d.id),
         name: d.name,
@@ -1078,1459 +629,480 @@ document.addEventListener('DOMContentLoaded', function () {
     }));
 
     const deviceMap = {};
-
     allDevices.forEach(d => { deviceMap[d.id] = d; });
 
+    const statusColor = s => ({ up: '#10b981', down: '#ef4444', warning: '#f59e0b' }[s] || '#94a3b8');
+    const statusBadge = s => ({ up: 'success', down: 'danger', warning: 'warning' }[s] || 'secondary');
+    const statusText = s => ({ up: 'UP', down: 'DOWN', warning: 'WARNING' }[s] || s.toUpperCase());
 
     /* ============================================================
-       3. HELPERS
+       KPI CALC
     ============================================================ */
-
-    function statusBadge(status) {
-
-        const map = {
-            up: 'success',
-            down: 'danger',
-            warning: 'warning'
-        };
-
-        return map[status] || 'secondary';
-
-    }
-
-
-    function statusColor(status) {
-
-        const map = {
-            up: '#22c55e',
-            down: '#ef4444',
-            warning: '#eab308'
-        };
-
-        return map[status] || '#94a3b8';
-
-    }
-
-
-    function statusText(status) {
-
-        const map = {
-            up: 'UP',
-            down: 'DOWN',
-            warning: 'WARNING'
-        };
-
-        return map[status] || status.toUpperCase();
-
-    }
-
-
-    function formatTime(datetime) {
-
-        if (!datetime) {
-            return '-';
-        }
-
-        return datetime.split(' ')[1] || datetime;
-
-    }
-
-
-    /* ============================================================
-       4. KPI CALCULATION
-    ============================================================ */
-
     const total = allDevices.length;
-
-    const upCount =
-        allDevices.filter(d => d.status === 'up').length;
-
-    const downCount =
-        allDevices.filter(d => d.status === 'down').length;
-
-    const warningCount =
-        allDevices.filter(d => d.status === 'warning').length;
-
+    const upCount = allDevices.filter(d => d.status === 'up').length;
+    const downCount = allDevices.filter(d => d.status === 'down').length;
+    const warningCount = allDevices.filter(d => d.status === 'warning').length;
 
     let respondedSum = 0;
-
-    allDevices.forEach(device => {
-
-        const responded = parseFloat(device.responded);
-
-        if (!isNaN(responded)) {
-            respondedSum += responded;
-        }
-
+    allDevices.forEach(d => {
+        const r = parseFloat(d.responded);
+        if (!isNaN(r)) respondedSum += r;
     });
-
-
-    const availability =
-        total > 0
-            ? respondedSum / total
-            : 0;
-
+    const availability = total > 0 ? respondedSum / total : 0;
 
     /* ============================================================
-       5. KPI RENDER
+       KPI RENDER
     ============================================================ */
-
     document.getElementById('kpiContainer').innerHTML = `
-
         <div class="col-sm-6 col-xl-3">
-
-            <div
-                class="kpi-card up"
-                onclick="showKpiDetail('up')">
-
-                <div class="d-flex justify-content-between">
-
+            <div class="kpi-card-new up" onclick="showKpiDetail('up')">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-
-                        <div class="kpi-number text-success">
-                            ${upCount}
+                        <div class="kpi-number-new" id="kpiUpNumber">${upCount}</div>
+                        <div class="kpi-label-new">Devices UP</div>
+                        <div class="kpi-sub-new">
+                            <i class="fas fa-arrow-up"></i>
+                            ${total ? Math.round((upCount / total) * 100) : 0}% of monitored
                         </div>
-
-                        <div class="kpi-label">
-                            <i class="fas fa-check-circle text-success me-1"></i>
-                            Devices UP
-                        </div>
-
-                        <div class="kpi-sub">
-                            ${total ? Math.round((upCount / total) * 100) : 0}% of monitored devices
-                        </div>
-
                     </div>
-
-                    <div class="kpi-icon">
-                        <i class="fas fa-check"></i>
-                    </div>
-
+                    <div class="kpi-icon-circle"><i class="fas fa-check"></i></div>
                 </div>
-
             </div>
-
         </div>
 
-
         <div class="col-sm-6 col-xl-3">
-
-            <div
-                class="kpi-card down"
-                onclick="showKpiDetail('down')">
-
-                <div class="d-flex justify-content-between">
-
+            <div class="kpi-card-new down" onclick="showKpiDetail('down')">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-
-                        <div class="kpi-number text-danger">
-                            ${downCount}
+                        <div class="kpi-number-new" id="kpiDownNumber">${downCount}</div>
+                        <div class="kpi-label-new">Devices DOWN</div>
+                        <div class="kpi-sub-new">
+                            <i class="fas fa-exclamation-circle"></i>
+                            ${downCount > 0 ? 'Perlu tindakan segera' : 'Semua device normal'}
                         </div>
-
-                        <div class="kpi-label">
-                            <i class="fas fa-times-circle text-danger me-1"></i>
-                            Devices DOWN
-                        </div>
-
-                        <div class="kpi-sub">
-                            ${downCount > 0
-                                ? 'Perlu tindakan segera'
-                                : 'Semua device normal'}
-                        </div>
-
                     </div>
-
-                    <div class="kpi-icon">
-                        <i class="fas fa-power-off"></i>
-                    </div>
-
+                    <div class="kpi-icon-circle"><i class="fas fa-power-off"></i></div>
                 </div>
-
             </div>
-
         </div>
 
-
         <div class="col-sm-6 col-xl-3">
-
-            <div
-                class="kpi-card warning"
-                onclick="showKpiDetail('warning')">
-
-                <div class="d-flex justify-content-between">
-
+            <div class="kpi-card-new warning" onclick="showKpiDetail('warning')">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-
-                        <div class="kpi-number text-warning">
-                            ${warningCount}
+                        <div class="kpi-number-new" id="kpiWarningNumber">${warningCount}</div>
+                        <div class="kpi-label-new">Warning</div>
+                        <div class="kpi-sub-new">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ${warningCount > 0 ? 'Latency tinggi' : 'Tidak ada warning'}
                         </div>
-
-                        <div class="kpi-label">
-                            <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                            Warning
-                        </div>
-
-                        <div class="kpi-sub">
-                            ${warningCount > 0
-                                ? 'Latency / packet loss tinggi'
-                                : 'Tidak ada warning'}
-                        </div>
-
                     </div>
-
-                    <div class="kpi-icon">
-                        <i class="fas fa-exclamation"></i>
-                    </div>
-
+                    <div class="kpi-icon-circle"><i class="fas fa-exclamation"></i></div>
                 </div>
-
             </div>
-
         </div>
 
-
         <div class="col-sm-6 col-xl-3">
-
-            <div
-                class="kpi-card availability"
-                onclick="showKpiDetail('all')">
-
-                <div class="d-flex justify-content-between">
-
+            <div class="kpi-card-new availability" onclick="showKpiDetail('all')">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-
-                        <div class="kpi-number text-primary">
-                            ${availability.toFixed(1)}%
+                        <div class="kpi-number-new" id="kpiAvailabilityNumber">${availability.toFixed(1)}%</div>
+                        <div class="kpi-label-new">Availability</div>
+                        <div class="kpi-sub-new">
+                            <i class="fas fa-signal"></i>
+                            Last 24 hours
                         </div>
-
-                        <div class="kpi-label">
-                            <i class="fas fa-signal text-primary me-1"></i>
-                            Availability
-                        </div>
-
-                        <div class="kpi-sub">
-                            Monitoring period: 24 hours
-                        </div>
-
                     </div>
-
-                    <div class="kpi-icon">
-                        <i class="fas fa-wifi"></i>
-                    </div>
-
+                    <div class="kpi-icon-circle"><i class="fas fa-wifi"></i></div>
                 </div>
-
             </div>
-
         </div>
-
     `;
 
+    /* ============================================================
+       SUMMARY
+    ============================================================ */
+    const averageLatency = total > 0
+        ? allDevices.reduce((s, d) => s + Number(d.avgDelay || 0), 0) / total
+        : 0;
+    const totalAlerts = allDevices.reduce((s, d) => s + Number(d.alerts || 0), 0);
+
+    document.getElementById('totalDeviceSummary').textContent = `${total} devices`;
+    document.getElementById('averageLatencySummary').textContent = `${averageLatency.toFixed(1)} ms`;
+    document.getElementById('lastPollingSummary').textContent = `${totalAlerts} alerts`;
 
     /* ============================================================
-       6. MONITORING SUMMARY
+       LATENCY CHART
     ============================================================ */
+    let latencyHistory = @json($latencyHistory);
+    const initialLatency = latencyHistory['24'].values;
 
-    const averageLatency =
-        total > 0
-            ? allDevices.reduce(
-                (sum, device) => sum + Number(device.avgDelay || 0),
-                0
-            ) / total
-            : 0;
+    const ctx = document.getElementById('latencyChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 340);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
+    gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.12)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
-    const totalAlerts =
-        allDevices.reduce(
-            (sum, device) => sum + Number(device.alerts || 0),
-            0
-        );
-
-
-    document.getElementById('totalDeviceSummary').textContent =
-        `${total} devices`;
-
-
-    document.getElementById('averageLatencySummary').textContent =
-        `${averageLatency.toFixed(1)} ms`;
-
-
-    document.getElementById('lastPollingSummary').textContent =
-        `${totalAlerts} alerts`;
-
-
-    /* ============================================================
-       7. NETWORK HEALTH
-    ============================================================ */
-
-    const health = [
-
-        {
-            name: 'Core Network',
-            value: 99
+    const latencyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyHistory['24'].labels,
+            datasets: [{
+                label: 'Average Latency',
+                data: initialLatency,
+                borderColor: '#3b82f6',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#1e40af',
+                spanGaps: true,
+                animation: { duration: 1200, easing: 'easeOutQuart' }
+            }]
         },
-
-        {
-            name: 'Distribution',
-            value: 96
-        },
-
-        {
-            name: 'Access Network',
-            value: 98
-        }
-
-    ];
-
-
-    function healthColor(value) {
-
-        if (value >= 98) {
-            return '#22c55e';
-        }
-
-        if (value >= 90) {
-            return '#eab308';
-        }
-
-        return '#ef4444';
-
-    }
-
-
-    document.getElementById('healthContainer').innerHTML =
-        health.map(item => {
-
-            const color = healthColor(item.value);
-
-            return `
-
-                <div class="health-item">
-
-                    <div class="health-top">
-
-                        <span class="health-name">
-
-                            <span
-                                class="health-dot"
-                                style="background:${color}">
-                            </span>
-
-                            ${item.name}
-
-                        </span>
-
-                        <span
-                            class="health-value"
-                            style="color:${color}">
-                            ${item.value}%
-                        </span>
-
-                    </div>
-
-                    <div class="health-bar">
-
-                        <span
-                            style="
-                                width:${item.value}%;
-                                background:${color};
-                            ">
-                        </span>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }).join('');
-
-
-    /* ============================================================
-       8. LATENCY HISTORY
-    ============================================================ */
-
-    const latencyHistory = {
-
-        '6': {
-            labels: [
-                '10:00',
-                '11:00',
-                '12:00',
-                '13:00',
-                '14:00',
-                '15:00'
-            ],
-            values: [
-                18,
-                21,
-                19,
-                25,
-                22,
-                23
-            ]
-        },
-
-        '12': {
-            labels: [
-                '04:00',
-                '05:00',
-                '06:00',
-                '07:00',
-                '08:00',
-                '09:00',
-                '10:00',
-                '11:00',
-                '12:00',
-                '13:00',
-                '14:00',
-                '15:00'
-            ],
-            values: [
-                17,
-                18,
-                21,
-                20,
-                19,
-                24,
-                18,
-                21,
-                19,
-                25,
-                22,
-                23
-            ]
-        },
-
-        '24': {
-            labels: [
-                '16:00',
-                '18:00',
-                '20:00',
-                '22:00',
-                '00:00',
-                '02:00',
-                '04:00',
-                '06:00',
-                '08:00',
-                '10:00',
-                '12:00',
-                '14:00'
-            ],
-            values: [
-                20,
-                21,
-                18,
-                23,
-                19,
-                17,
-                18,
-                21,
-                19,
-                21,
-                19,
-                23
-            ]
-        },
-
-        '168': {
-            labels: [
-                'Mon',
-                'Tue',
-                'Wed',
-                'Thu',
-                'Fri',
-                'Sat',
-                'Sun'
-            ],
-            values: [
-                19,
-                21,
-                20,
-                24,
-                22,
-                18,
-                23
-            ]
-        }
-
-    };
-
-
-    /* ============================================================
-       9. LATENCY CHART
-    ============================================================ */
-
-    const initialLatency =
-        latencyHistory['24'].values;
-
-
-    const latencyChart =
-        new Chart(
-            document.getElementById('latencyChart'),
-            {
-
-                type: 'line',
-
-                data: {
-
-                    labels:
-                        latencyHistory['24'].labels,
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                'Average Latency',
-
-                            data:
-                                initialLatency,
-
-                            borderColor:
-                                '#3b82f6',
-
-                            backgroundColor:
-                                'rgba(59,130,246,.08)',
-
-                            borderWidth:
-                                2,
-
-                            tension:
-                                .35,
-
-                            fill:
-                                true,
-
-                            pointRadius:
-                                3,
-
-                            pointHoverRadius:
-                                5,
-
-                            pointBackgroundColor:
-                                '#3b82f6'
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    interaction: {
-
-                        intersect: false,
-
-                        mode: 'index'
-
-                    },
-
-                    plugins: {
-
-                        legend: {
-                            display: false
-                        },
-
-                        tooltip: {
-
-                            callbacks: {
-
-                                label: function (context) {
-
-                                    return `${context.parsed.y} ms`;
-
-                                }
-
-                            }
-
-                        }
-
-                    },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            grid: {
-                                color: '#f1f5f9'
-                            },
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    'Latency (ms)'
-
-                            }
-
-                        },
-
-                        x: {
-
-                            grid: {
-                                display: false
-                            },
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    'Time'
-
-                            }
-
-                        }
-
-                    }
-
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#e2e8f0',
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: false,
+                    callbacks: { label: c => `Latency: ${c.parsed.y} ms` }
                 }
-
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f5f9', drawBorder: false },
+                    ticks: { color: '#94a3b8', font: { size: 11 } },
+                    title: { display: true, text: 'Latency (ms)', color: '#64748b', font: { size: 11, weight: '600' } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11 } },
+                    title: { display: true, text: 'Time', color: '#64748b', font: { size: 11, weight: '600' } }
+                }
             }
-        );
-
+        }
+    });
 
     function updateLatencySummary(values) {
-
-        if (!values || !values.length) {
+        const present = (values || []).filter(v => v !== null && v !== undefined && !isNaN(v));
+        if (!present.length) {
+            ['latencyCurrent', 'latencyAverage', 'latencyPeak'].forEach(id =>
+                document.getElementById(id).textContent = '-');
             return;
         }
-
-        const current =
-            values[values.length - 1];
-
-        const average =
-            values.reduce(
-                (sum, value) => sum + value,
-                0
-            ) / values.length;
-
-        const peak =
-            Math.max(...values);
-
-
-        document.getElementById('latencyCurrent').textContent =
-            `${current} ms`;
-
-        document.getElementById('latencyAverage').textContent =
-            `${average.toFixed(1)} ms`;
-
-        document.getElementById('latencyPeak').textContent =
-            `${peak} ms`;
-
+        const current = present[present.length - 1];
+        const average = present.reduce((s, v) => s + v, 0) / present.length;
+        const peak = Math.max(...present);
+        document.getElementById('latencyCurrent').textContent = `${current} ms`;
+        document.getElementById('latencyAverage').textContent = `${average.toFixed(1)} ms`;
+        document.getElementById('latencyPeak').textContent = `${peak} ms`;
     }
 
+    function syncLatencyState(values) {
+        const hasData = (values || []).some(v => v !== null && v !== undefined);
+        document.getElementById('latencyEmpty').style.display = hasData ? 'none' : 'flex';
+        document.getElementById('latencyChart').style.display = hasData ? 'block' : 'none';
+    }
 
     updateLatencySummary(initialLatency);
+    syncLatencyState(initialLatency);
 
-
-    document
-        .getElementById('latencyPeriod')
-        .addEventListener(
-            'change',
-            function () {
-
-                const data =
-                    latencyHistory[this.value];
-
-                if (!data) {
-                    return;
-                }
-
-                latencyChart.data.labels =
-                    data.labels;
-
-                latencyChart.data.datasets[0].data =
-                    data.values;
-
-                latencyChart.update();
-
-                updateLatencySummary(
-                    data.values
-                );
-
-            }
-        );
-
+    document.getElementById('latencyPeriod').addEventListener('change', function () {
+        const data = latencyHistory[this.value];
+        if (!data) return;
+        latencyChart.data.labels = data.labels;
+        latencyChart.data.datasets[0].data = data.values;
+        latencyChart.update();
+        updateLatencySummary(data.values);
+        syncLatencyState(data.values);
+    });
 
     /* ============================================================
-       10. RECENT ALERTS
+       RECENT ALERTS
     ============================================================ */
+    const alerts = allDevices
+        .filter(d => d.status === 'down' || d.status === 'warning')
+        .sort((a, b) => b.alerts - a.alerts)
+        .slice(0, 6);
 
-    const alerts =
-        allDevices
-            .filter(
-                device =>
-                    device.status === 'down' ||
-                    device.status === 'warning'
-            )
-            .sort(
-                (a, b) =>
-                    b.alerts - a.alerts
-            )
-            .slice(0, 5);
-
-
-    document.getElementById('alertContainer').innerHTML =
-
-        alerts.length === 0
-
-            ? `
-
-                <div class="empty-state">
-
-                    <i class="fas fa-check-circle text-success d-block"></i>
-
-                    Tidak ada alert aktif
-
+    document.getElementById('alertContainer').innerHTML = alerts.length === 0
+    ? `<div class="text-center text-muted py-5">
+            <i class="fas fa-check-circle" style="font-size:42px;color:#10b981;display:block;margin-bottom:12px;"></i>
+            <div class="fw-semibold">Tidak ada alert aktif</div>
+            <div class="small mt-1">Semua device dalam kondisi normal</div>
+       </div>`
+    : alerts.map(d => `
+        <div class="alert-item-new ${d.status === 'down' ? 'critical' : 'warning'}" onclick="showDetail('${d.id}')">
+            <div class="alert-icon-new">
+                <i class="fas ${d.status === 'down' ? 'fa-times' : 'fa-exclamation'}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:12.5px;font-weight:700;color:#0f172a;">${d.name}</div>
+                <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
+                    ${d.ip} · ${d.avgDelay} ms · ${d.alerts} alerts
                 </div>
-
-            `
-
-            :
-
-            alerts.map(device => `
-
-                <div
-                    class="alert-item ${device.status === 'down'
-                        ? 'critical'
-                        : 'warning'}"
-                    onclick="showDetail('${device.id}')">
-
-                    <div class="alert-icon">
-
-                        <i class="fas ${
-                            device.status === 'down'
-                                ? 'fa-times'
-                                : 'fa-exclamation'
-                        }"></i>
-
-                    </div>
-
-                    <div>
-
-                        <div class="alert-name">
-                            ${device.name}
-                        </div>
-
-                        <div class="alert-ip">
-                            ${device.ip}
-                            · ${device.avgDelay} ms · ${device.alerts} alerts
-                        </div>
-
-                    </div>
-
-                    <div class="alert-time">
-                        ${device.period}
-                    </div>
-
-                </div>
-
-            `).join('');
-
+            </div>
+            <div style="font-size:10.5px;color:#94a3b8;white-space:nowrap;">${d.period}</div>
+        </div>
+    `).join('');
 
     /* ============================================================
-       11. RECENT ACTIVITY
+       RECENT ACTIVITY
     ============================================================ */
+    const activities = [...allDevices].sort((a, b) => b.alerts - a.alerts).slice(0, 6);
 
-    const activities =
-        [...allDevices]
-            .sort(
-                (a, b) =>
-                    b.alerts - a.alerts
-            )
-            .slice(0, 6);
-
-
-    document.getElementById('activityContainer').innerHTML =
-
-        activities.length === 0
-
-            ? `
-
-                <div class="empty-state">
-
-                    <i class="fas fa-history d-block"></i>
-
-                    Belum ada aktivitas tercatat
-
-                </div>
-
-            `
-
-            :
-
-            activities.map(device => {
-
-                return `
-
-                    <div
-                        class="feed-item"
-                        onclick="showDetail('${device.id}')">
-
-                        <div class="feed-time">
-                            ${device.period}
-                        </div>
-
-                        <span
-                            class="feed-marker"
-                            style="
-                                background:${statusColor(device.status)}
-                            ">
-                        </span>
-
-                        <div class="feed-body">
-
-                            <div class="feed-title">
-                                ${device.name} · ${device.ip}
-                            </div>
-
-                            <div class="feed-desc">
-
-                                ${device.responded}% responded · ${device.avgDelay} ms avg
-
-                                <span
-                                    class="badge bg-${statusBadge(device.status)}">
-                                    ${statusText(device.status)}
-                                </span>
-
-                            </div>
-
-                        </div>
-
+    document.getElementById('activityContainer').innerHTML = activities.length === 0
+        ? `<div class="text-center text-muted py-5">
+                <i class="fas fa-history" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
+                Belum ada aktivitas tercatat
+           </div>`
+        : activities.map((d, i) => `
+            <div class="feed-item-new" style="animation-delay:${i * 0.05}s" onclick="showDetail('${d.id}')">
+                <div style="min-width:60px;color:#64748b;font-size:11px;font-weight:700;padding-top:2px;">${d.period}</div>
+                <span style="width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${statusColor(d.status)};box-shadow:0 0 0 4px ${statusColor(d.status)}22;"></span>
+                <div style="flex:1;">
+                    <div style="font-weight:700;font-size:12.5px;color:#0f172a;">${d.name} · ${d.ip}</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:3px;">
+                        ${d.responded}% responded · ${d.avgDelay} ms avg
+                        <span class="badge bg-${statusBadge(d.status)} ms-2" style="font-size:9.5px;">${statusText(d.status)}</span>
                     </div>
-
-                `;
-
-            }).join('');
-
+                </div>
+            </div>
+        `).join('');
 
     /* ============================================================
-       12. KPI DETAIL
+       HELPER: RENDER TABLE
     ============================================================ */
-
-    window.showKpiDetail = function (filter) {
-
-        let title;
-        let devices;
-
-
-        if (filter === 'up') {
-
-            title = 'Daftar Device UP';
-
-            devices =
-                allDevices.filter(
-                    d => d.status === 'up'
-                );
-
+    function renderDeviceTable(devices, options = {}) {
+        if (devices.length === 0) {
+            return `<div class="text-center text-muted py-5">
+                <i class="fas fa-inbox" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
+                <div class="fw-semibold">Tidak ada device</div>
+            </div>`;
         }
 
-        else if (filter === 'down') {
+        const sortBy = options.sortBy || null;
 
-            title = 'Daftar Device DOWN';
-
-            devices =
-                allDevices.filter(
-                    d => d.status === 'down'
-                );
-
+        // Urutkan kalau ada sortBy (khusus untuk latency & alerts)
+        if (sortBy === 'latency') {
+            devices = [...devices].sort((a, b) => Number(b.avgDelay || 0) - Number(a.avgDelay || 0));
+        } else if (sortBy === 'alerts') {
+            devices = [...devices].sort((a, b) => Number(b.alerts || 0) - Number(a.alerts || 0));
         }
 
-        else if (filter === 'warning') {
-
-            title = 'Daftar Device WARNING';
-
-            devices =
-                allDevices.filter(
-                    d => d.status === 'warning'
-                );
-
-        }
-
-        else {
-
-            title = 'Semua Device';
-
-            devices = allDevices;
-
-        }
-
-
-        document.getElementById('kpiDetailTitle')
-            .textContent = title;
-
-
-        document.getElementById('kpiDetailBody')
-            .innerHTML = `
-
-                <div class="kpi-table-wrap">
-
-                    <table class="table table-hover align-middle kpi-table mb-0 w-100">
-
-                        <thead class="table-light kpi-table-head">
-
-                            <tr>
-
-                                <th>Name</th>
-
-                                <th>Type</th>
-
-                                <th># Polls</th>
-
-                                <th>% Responded</th>
-
-                                <th>% Missed</th>
-
-                                <th>Down time</th>
-
-                                <th>Period</th>
-
-                                <th># Alerts</th>
-
-                                <th>Avg delay</th>
-
-                                <th>Min delay</th>
-
-                                <th>Max delay</th>
-
-                                <th>Status</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            ${
-                                devices.length === 0
-
-                                ?
-
-                                `
-
-                                <tr>
-
-                                    <td
-                                        colspan="12"
-                                        class="text-center text-muted py-4">
-
-                                        Tidak ada device
-
-                                    </td>
-
-                                </tr>
-
-                                `
-
-                                :
-
-                                devices.map(device => `
-
-                                    <tr
-                                        style="cursor:pointer"
-                                        class="${device.status === 'down' ? 'table-danger' : device.status === 'warning' ? 'table-warning' : ''}"
-                                        onclick="
-                                            showDetail('${device.id}')
-                                        ">
-
-                                        <td class="device-cell">
-
-                                            <div class="device-name">
-                                                ${device.name}
-                                            </div>
-
-                                            <div class="device-ip">
-                                                ${device.ip}
-                                            </div>
-
-                                        </td>
-
-                                        <td>
-                                            ${device.type}
-                                        </td>
-
-                                        <td>
-                                            ${device.polls.toLocaleString()}
-                                        </td>
-
-                                        <td>
-                                            ${device.responded}%
-                                        </td>
-
-                                        <td>
-                                            ${device.missed}%
-                                        </td>
-
-                                        <td>
-                                            ${device.downTime}
-                                        </td>
-
-                                        <td>
-                                            ${device.period}
-                                        </td>
-
-                                        <td>
-                                            ${device.alerts > 0
-                                                ? '<span class="badge bg-danger">' + device.alerts + '</span>'
-                                                : '<span class="text-muted">0</span>'
-                                            }
-                                        </td>
-
-                                        <td>
-                                            ${device.avgDelay} ms
-                                        </td>
-
-                                        <td>
-                                            ${device.minDelay} ms
-                                        </td>
-
-                                        <td>
-                                            ${device.maxDelay.toLocaleString()} ms
-                                        </td>
-
-                                        <td>
-
-                                            <span
-                                                class="badge bg-${statusBadge(device.status)}">
-
-                                                ${statusText(device.status)}
-
-                                            </span>
-
-                                        </td>
-
-                                    </tr>
-
-                                `).join('')
-                            }
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                <div class="text-muted small mt-2">
-
-                    <i class="fas fa-info-circle me-1"></i>
-
-                    Klik baris device untuk melihat detail monitoring.
-
-                </div>
-
-            `;
-
-
-        new bootstrap.Modal(
-            document.getElementById('kpiDetailModal')
-        ).show();
-
-    };
-
-
-    /* ============================================================
-       13. DEVICE DETAIL
-    ============================================================ */
-
-    window.showDetail = function (deviceId) {
-
-        const device =
-            deviceMap[deviceId];
-
-        if (!device) {
-            return;
-        }
-
-        const badge =
-            statusBadge(device.status);
-
-        const kpiModalElement =
-            document.getElementById('kpiDetailModal');
-
-        const kpiModal =
-            bootstrap.Modal.getInstance(
-                kpiModalElement
-            );
-
-        if (kpiModal) {
-            kpiModal.hide();
-        }
-
-        document.getElementById('detailModalTitle')
-            .textContent =
-                `Device Detail: ${device.name}`;
-
-        document.getElementById('detailModalSubtitle')
-            .textContent =
-                `${device.ip} · ${device.hostname || device.name}`;
-
-
-        document.getElementById('detailModalBody')
-            .innerHTML = `
-
-                <div class="row g-3 mb-3">
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div
-                                class="value text-${badge}">
-                                ${statusText(device.status)}
-                            </div>
-
-                            <div class="label">
-                                Current Status
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.responded}%
-                            </div>
-
-                            <div class="label">
-                                Responded
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.missed}%
-                            </div>
-
-                            <div class="label">
-                                Missed
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.alerts}
-                            </div>
-
-                            <div class="label">
-                                Alerts
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="row g-3 mb-3">
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.polls.toLocaleString()}
-                            </div>
-
-                            <div class="label">
-                                Total Polls
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.avgDelay} ms
-                            </div>
-
-                            <div class="label">
-                                Avg Delay
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.minDelay} ms
-                            </div>
-
-                            <div class="label">
-                                Min Delay
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <div class="detail-stat">
-
-                            <div class="value">
-                                ${device.maxDelay.toLocaleString()} ms
-                            </div>
-
-                            <div class="label">
-                                Max Delay
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="row g-3">
-
-                    <div class="col-md-6">
-
-                        <div class="site-summary">
-
-                            <div class="site-summary-item">
-
-                                <span>Name</span>
-
-                                <strong>
-                                    ${device.name}
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>IP Address</span>
-
-                                <strong>
-                                    ${device.ip}
-                                </strong>
-
-                            </div>
-
-
-                            <div class="site-summary-item">
-
-                                <span>Type</span>
-
-                                <strong>
-                                    ${device.type}
-                                </strong>
-
-                            </div>
-
-                            <div class="site-summary-item">
-
-                                <span>Down Time</span>
-
-                                <strong>
-                                    ${device.downTime}
-                                </strong>
-
-                            </div>
-
-                            <div class="site-summary-item">
-
-                                <span>Period</span>
-
-                                <strong>
-                                    ${device.period}
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-6">
-
-                        <div class="site-summary">
-
-                            <div class="site-summary-item">
-
-                                <span>Monitoring Status</span>
-
-                                <span class="badge bg-${badge}">
-                                    ${statusText(device.status)}
-                                </span>
-
-                            </div>
-
-                            <div class="site-summary-item">
-
-                                <span>Polling</span>
-
-                                <strong>
-                                    ${device.type}
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <h6 class="mb-2 mt-4">
-
-                    <i class="fas fa-terminal text-primary me-2"></i>
-
-                    Recent Log Extract
-
-                </h6>
-
-                <pre class="device-log">${
-                    device.status === 'up'
-                        ? 'UP ' + device.name + ' (' + device.ip + ') avg=' + device.avgDelay + 'ms'
-                        : device.status === 'down'
-                            ? 'DOWN ' + device.name + ' (' + device.ip + ') - No response'
-                            : 'WARNING ' + device.name + ' (' + device.ip + ') - High latency'
-                }</pre>
-
-            `;
-
-
-        new bootstrap.Modal(
-            document.getElementById('routerDetailModal')
-        ).show();
-
-    };
-
-
-    /* ============================================================
-       14. LIVE CLOCK
-    ============================================================ */
-
-    function updateClock() {
-
-        const now =
-            new Date();
-
-
-        const year =
-            now.getFullYear();
-
-
-        const month =
-            String(
-                now.getMonth() + 1
-            ).padStart(2, '0');
-
-
-        const day =
-            String(
-                now.getDate()
-            ).padStart(2, '0');
-
-
-        const hours =
-            String(
-                now.getHours()
-            ).padStart(2, '0');
-
-
-        const minutes =
-            String(
-                now.getMinutes()
-            ).padStart(2, '0');
-
-
-        const seconds =
-            String(
-                now.getSeconds()
-            ).padStart(2, '0');
-
-
-        document.getElementById(
-            'dashboardClock'
-        ).textContent =
-            `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
-
+        const hasLatencyHighlight = sortBy === 'latency';
+        const hasAlertsHighlight = sortBy === 'alerts';
+
+        return `
+            <div class="kpi-table-wrap">
+                <table class="table align-middle kpi-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th><th>Type</th>
+                            <th class="text-end">Latency</th>
+                            <th class="text-end">Alerts</th>
+                            <th class="text-end">Responded</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${devices.map((d, i) => {
+                            const latColor = hasLatencyHighlight
+                                ? (Number(d.avgDelay) > 100 ? '#ef4444' : Number(d.avgDelay) > 50 ? '#f59e0b' : '#10b981')
+                                : '#0f172a';
+                            const alertColor = hasAlertsHighlight && d.alerts > 0 ? '#ef4444' : '#0f172a';
+
+                            return `
+                            <tr onclick="showDetail('${d.id}')">
+                                <td style="color:#94a3b8;font-weight:600;">${i + 1}</td>
+                                <td>
+                                    <div style="font-weight:700;color:#0f172a;">${d.name}</div>
+                                    <div style="font-family:monospace;font-size:11px;color:#64748b;">${d.ip}</div>
+                                </td>
+                                <td>${d.type}</td>
+                                <td class="text-end" style="color:${latColor};font-weight:${hasLatencyHighlight ? '700' : '500'};">
+                                    ${d.avgDelay} ms
+                                </td>
+                                <td class="text-end" style="color:${alertColor};font-weight:${hasAlertsHighlight ? '700' : '500'};">
+                                    ${d.alerts}
+                                </td>
+                                <td class="text-end">${d.responded}%</td>
+                                <td>
+                                    <span class="badge bg-${statusBadge(d.status)}">${statusText(d.status)}</span>
+                                </td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-muted small mt-3">
+                <i class="fas fa-info-circle me-1"></i> Klik baris device untuk melihat detail monitoring.
+            </div>
+        `;
     }
 
-
-    updateClock();
-
-    setInterval(
-        updateClock,
-        1000
-    );
-
-
     /* ============================================================
-       15. DASHBOARD REFRESH
+       KPI DETAIL
     ============================================================ */
+    window.showKpiDetail = function (filter) {
+        let title, subtitle, devices;
+        if (filter === 'up') { title = 'Daftar Device UP'; subtitle = 'Device yang sedang aktif & merespon'; devices = allDevices.filter(d => d.status === 'up'); }
+        else if (filter === 'down') { title = 'Daftar Device DOWN'; subtitle = 'Device yang tidak merespon'; devices = allDevices.filter(d => d.status === 'down'); }
+        else if (filter === 'warning') { title = 'Daftar Device WARNING'; subtitle = 'Device dengan latency tinggi'; devices = allDevices.filter(d => d.status === 'warning'); }
+        else { title = 'Semua Device'; subtitle = 'Seluruh device yang dimonitor'; devices = allDevices; }
 
-    window.refreshDashboard = function () {
-
-        const icon =
-            document.getElementById('refreshIcon');
-
-
-        icon.classList.add(
-            'fa-spin'
-        );
-
-
-        setTimeout(
-            function () {
-
-                window.location.reload();
-
-            },
-            500
-        );
-
+        document.getElementById('kpiDetailTitle').textContent = title;
+        document.getElementById('kpiDetailSubtitle').textContent = subtitle + ` · Total: ${devices.length}`;
+        document.getElementById('kpiDetailBody').innerHTML = renderDeviceTable(devices);
+        new bootstrap.Modal(document.getElementById('kpiDetailModal')).show();
     };
 
+    /* ============================================================
+       SUMMARY CARD CLICK (TOTAL / LATENCY / ALERTS)
+    ============================================================ */
+    window.showSummary = function (type) {
+        let title, subtitle, devices, sortBy = null;
 
+        if (type === 'total') {
+            title = 'Total Monitored Device';
+            subtitle = 'Seluruh device yang terdaftar di sistem';
+            devices = allDevices;
+        } else if (type === 'latency') {
+            title = 'Average Latency — Ranking Device';
+            subtitle = 'Device diurutkan dari latency tertinggi';
+            devices = allDevices.filter(d => Number(d.avgDelay) > 0);
+            sortBy = 'latency';
+        } else if (type === 'alerts') {
+            title = 'Total Alerts — Ranking Device';
+            subtitle = 'Device diurutkan dari jumlah alert terbanyak';
+            devices = allDevices.filter(d => Number(d.alerts) > 0);
+            sortBy = 'alerts';
+        }
+
+        document.getElementById('kpiDetailTitle').textContent = title;
+        document.getElementById('kpiDetailSubtitle').textContent = subtitle + ` · Total: ${devices.length}`;
+        document.getElementById('kpiDetailBody').innerHTML = renderDeviceTable(devices, { sortBy });
+        new bootstrap.Modal(document.getElementById('kpiDetailModal')).show();
+    };
+
+    /* ============================================================
+       DEVICE DETAIL
+    ============================================================ */
+    window.showDetail = function (deviceId) {
+        const device = deviceMap[deviceId];
+        if (!device) return;
+
+        const badge = statusBadge(device.status);
+        const kpiModal = bootstrap.Modal.getInstance(document.getElementById('kpiDetailModal'));
+        if (kpiModal) kpiModal.hide();
+
+        document.getElementById('detailModalTitle').textContent = `Device Detail: ${device.name}`;
+        document.getElementById('detailModalSubtitle').textContent = `${device.ip} · ${device.name}`;
+
+        document.getElementById('detailModalBody').innerHTML = `
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold text-${badge}" style="font-size:1.3rem;">${statusText(device.status)}</div><div class="small text-muted mt-1">Current Status</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.responded}%</div><div class="small text-muted mt-1">Responded</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.missed}%</div><div class="small text-muted mt-1">Missed</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.alerts}</div><div class="small text-muted mt-1">Alerts</div></div></div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);"><div class="fw-bold" style="font-size:1.1rem;">${device.polls.toLocaleString()}</div><div class="small text-muted mt-1">Total Polls</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.avgDelay} ms</div><div class="small text-muted mt-1">Avg Delay</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.minDelay} ms</div><div class="small text-muted mt-1">Min Delay</div></div></div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);"><div class="fw-bold" style="font-size:1.1rem;">${device.maxDelay.toLocaleString()} ms</div><div class="small text-muted mt-1">Max Delay</div></div></div>
+            </div>
+            <div class="rounded-3 p-3" style="background:#f8fafc;border:1px solid #eef2f7;">
+                <div class="row g-2">
+                    <div class="col-md-6"><strong class="small text-muted">Name:</strong> <span class="ms-2">${device.name}</span></div>
+                    <div class="col-md-6"><strong class="small text-muted">IP:</strong> <span class="ms-2" style="font-family:monospace;">${device.ip}</span></div>
+                    <div class="col-md-6"><strong class="small text-muted">Type:</strong> <span class="ms-2">${device.type}</span></div>
+                    <div class="col-md-6"><strong class="small text-muted">Down Time:</strong> <span class="ms-2">${device.downTime}</span></div>
+                </div>
+            </div>
+            <h6 class="mb-2 mt-4 fw-bold"><i class="fas fa-terminal text-primary me-2"></i>Recent Log Extract</h6>
+            <pre style="background:#0f172a;color:#cbd5e1;padding:14px;border-radius:10px;font-size:11.5px;line-height:1.6;margin:0;">${
+                device.status === 'up' ? `UP ${device.name} (${device.ip}) avg=${device.avgDelay}ms` :
+                device.status === 'down' ? `DOWN ${device.name} (${device.ip}) - No response` :
+                `WARNING ${device.name} (${device.ip}) - High latency`
+            }</pre>
+        `;
+        new bootstrap.Modal(document.getElementById('routerDetailModal')).show();
+    };
+
+    /* ============================================================
+       CLOCK
+    ============================================================ */
+    function updateClock() {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('dashboardClock').textContent =
+            `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /* ============================================================
+       REFRESH
+    ============================================================ */
+    window.refreshDashboard = function () {
+        document.getElementById('refreshIcon').classList.add('fa-spin');
+        setTimeout(() => window.location.reload(), 500);
+    };
+
+    /* ============================================================
+       AUTO-REFRESH
+    ============================================================ */
+    setInterval(function () {
+        fetch("{{ route('admin.dashboard.data') }}", {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+            }
+        })
+        .then(r => r.json())
+        .then(payload => {
+            if (!payload || !payload.latencyHistory) return;
+            latencyHistory = payload.latencyHistory;
+            const period = document.getElementById('latencyPeriod').value;
+            const data = latencyHistory[period];
+            if (data) {
+                latencyChart.data.labels = data.labels;
+                latencyChart.data.datasets[0].data = data.values;
+                latencyChart.update('none');
+                updateLatencySummary(data.values);
+                syncLatencyState(data.values);
+            }
+            const summary = payload.summary;
+            if (summary) {
+                const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+                setText('kpiUpNumber', summary.up);
+                setText('kpiDownNumber', summary.down);
+                setText('kpiWarningNumber', summary.warning);
+                setText('kpiAvailabilityNumber', `${summary.availability.toFixed(1)}%`);
+                setText('totalDeviceSummary', `${summary.total} devices`);
+                setText('averageLatencySummary', `${summary.averageLatency} ms`);
+                setText('lastPollingSummary', `${summary.totalAlerts} alerts`);
+            }
+        })
+        .catch(() => {});
+    }, 30000);
 });
-
 </script>
-
 @endpush

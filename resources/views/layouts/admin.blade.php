@@ -7,12 +7,35 @@
     <meta name="description" content="Monitoring Jaringan & Admin Dashboard">
 
     <title>
-        @yield('title', 'NioBoard - Admin Dashboard')
+        @yield('title', 'RadneXt - Admin Dashboard')
     </title>
 
     <link rel="shortcut icon" href="{{ asset('admin-assets/images/favicon.png') }}">
 
     <link rel="stylesheet" href="{{ asset('admin-assets/assets/css/style.css') }}">
+
+    <style>
+        {{-- =========================================================
+            GLOBAL OVERRIDES (RadneXt)
+            Hapus spasi kosong besar di atas judul halaman
+        ========================================================== --}}
+        .nk-content { padding-top: 0 !important; }
+        .nk-content-body { padding-top: 0 !important; margin-top: 0 !important; }
+        .nk-content-body > .nk-block:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+        .nk-block-head { margin-top: 0 !important; }
+        .nk-block-head-content { padding-top: 0 !important; }
+        .nk-page-head { margin-top: 0 !important; }
+        .nk-content .nk-content-inner { padding-top: 0 !important; }
+
+        {{-- =========================================================
+            LOGO RADNEXT DI SIDEBAR
+            - Biarkan logo tampil utuh (tidak dipotong wrapper 34px)
+            - Sembunyikan logo saat sidebar dikecilkan (compact)
+        ========================================================== --}}
+        .nk-sidebar-brand .logo-wrap { height: auto; overflow: visible; }
+        .nk-sidebar-brand .logo-wrap img { display: block; }
+        .is-compact:not(:hover) .nk-sidebar-brand .logo-wrap img { display: none; }
+    </style>
 
     @stack('styles')
 </head>
