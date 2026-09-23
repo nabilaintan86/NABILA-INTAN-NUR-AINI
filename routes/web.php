@@ -6,14 +6,16 @@ use App\Http\Controllers\AuthController;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MonitoringController;
-use App\Http\Controllers\Admin\MapController;
 use App\Http\Controllers\Admin\LogHistoryController;
 use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\TroubleshootingController;
 use App\Http\Controllers\Admin\KelolaRouterController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\MapController;
+use App\Http\Controllers\Admin\MapEditorController;
 use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\TelegramWebhookController;
 
 
 /*
@@ -79,13 +81,41 @@ Route::prefix('admin')
         Route::get('/monitoring', [MonitoringController::class, 'index'])
             ->name('monitoring');
 
-        // Network Map - topologi jaringan
+        // Endpoint JSON data topology (dipakai auto-refresh status tiap 30 dtk)
+        // Dipakai oleh komponen network-topology pada /admin/monitoring.
+        Route::get('/monitoring/data', [MonitoringController::class, 'data'])
+            ->name('monitoring.data');
+
+        // Detail satu device (popup MAP RADNET) - read-only, tanpa ping.
+        Route::get('/monitoring/device/{device}', [MonitoringController::class, 'device'])
+            ->name('monitoring.device');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Network Map
+        |--------------------------------------------------------------------------
+        */
+
+        // Halaman Network Map (gambar MAP.png + marker device)
         Route::get('/map', [MapController::class, 'index'])
             ->name('map');
 
-        // Endpoint JSON data map (dipakai auto-refresh status tiap 30 dtk)
-        Route::get('/map/data', [MapController::class, 'data'])
-            ->name('map.data');
+        // Map Editor: atur posisi device pada gambar
+        Route::get('/map-editor', [MapEditorController::class, 'index'])
+            ->name('map.editor');
+
+        // Endpoint JSON list device + posisi (dipakai halaman /admin/map)
+        Route::get('/map-editor/data', [MapEditorController::class, 'data'])
+            ->name('map.editor.data');
+
+        // Simpan koordinat device
+        Route::post('/map-editor/save', [MapEditorController::class, 'save'])
+            ->name('map.editor.save');
+
+        // Reset posisi 1 device / semua device
+        Route::post('/map-editor/reset', [MapEditorController::class, 'reset'])
+            ->name('map.editor.reset');
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
@@ -105,6 +135,11 @@ Route::prefix('admin')
 
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])
             ->name('notifikasi');
+
+        // Tandai satu notifikasi sebagai sudah dibaca
+        Route::patch('/notifikasi/{notification}/read', [NotifikasiController::class, 'markAsRead'])
+            ->whereNumber('notification')
+            ->name('notifikasi.read');
 
 
         /*
@@ -180,3 +215,16 @@ Route::prefix('admin')
                 ->name('kelola-user.destroy');
         });
     });
+
+/*
+|--------------------------------------------------------------------------
+| TELEGRAM BOT WEBHOOK
+|--------------------------------------------------------------------------
+| Endpoint callback yang dipanggil Telegram Bot API saat ada update
+| (mis. user menekan /start). Nilai chat_id disimpan sebagai subscriber
+| agar notifikasi device DOWN/RECOVERED otomatis terkirim ke semua subscriber.
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/telegram/webhook', [TelegramWebhookController::class, 'handle'])
+    ->name('telegram.webhook');

@@ -45,7 +45,15 @@
                         </div>
                     </li>
                     <li>
-                        <button class="btn btn-icon btn-sm btn-zoom d-sm-none" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas"><em class="icon ni ni-bell"></em></button><button class="btn btn-icon btn-md btn-zoom d-none d-sm-inline-flex" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas"><em class="icon ni ni-bell"></em></button>
+                        @php $unreadNotice = \App\Models\DeviceNotification::where('is_read', false)->count(); @endphp
+                        <button class="btn btn-icon btn-sm btn-zoom position-relative d-sm-none" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas">
+                            <em class="icon ni ni-bell"></em>
+                            @if($unreadNotice > 0)<span class="badge bg-danger position-absolute" style="top:-4px;right:-4px;font-size:.6rem;">{{ $unreadNotice > 99 ? '99+' : $unreadNotice }}</span>@endif
+                        </button>
+                        <button class="btn btn-icon btn-md btn-zoom position-relative d-none d-sm-inline-flex" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas">
+                            <em class="icon ni ni-bell"></em>
+                            @if($unreadNotice > 0)<span class="badge bg-danger position-absolute" style="top:-4px;right:-4px;font-size:.6rem;">{{ $unreadNotice > 99 ? '99+' : $unreadNotice }}</span>@endif
+                        </button>
                     </li>
                     <li class="dropdown">
                         <a href="{{ url('/admin') }}#" data-bs-toggle="dropdown">

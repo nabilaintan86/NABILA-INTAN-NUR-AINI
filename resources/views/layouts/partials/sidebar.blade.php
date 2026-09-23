@@ -104,11 +104,27 @@
                             class="nk-menu-link"
                         >
                             <span class="nk-menu-icon">
-                                <em class="icon ni ni-map"></em>
+                                <em class="icon ni ni-location"></em>
                             </span>
 
                             <span class="nk-menu-text">
                                 Network Map
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Map Editor --}}
+                    <li class="nk-menu-item">
+                        <a
+                            href="{{ route('admin.map.editor') }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-edit"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Map Editor
                             </span>
                         </a>
                     </li>

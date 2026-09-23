@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             TroubleshootingLogSeeder::class,
             MapPlazaBRISeeder::class,
             PopMappingSeeder::class,
+            DeviceConnectionSeeder::class,
         ]);
     }
 }

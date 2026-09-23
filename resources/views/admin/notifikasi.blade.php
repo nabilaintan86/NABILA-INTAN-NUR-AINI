@@ -248,140 +248,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ── PLACEHOLDER DATA: ganti dengan data asli dari backend ── */
-    var notifications = [
-        {
-            id: 1,
-            device: 'PJB',
-            ip: '202.154.4.134',
-            status: 'down',
-            event: 'DOWN',
-            message: 'Host Unreachable - 100% packet loss, no response sejak 14:50',
-            time: '2026-09-09T14:50:00',
-            timeLabel: '4 jam yang lalu',
-            latency: null,
-            monitorType: 'ICMP',
-            read: false
-        },
-        {
-            id: 2,
-            device: 'SBY-JKT',
-            ip: '202.154.0.29',
-            status: 'warning',
-            event: 'WARNING',
-            message: 'Packet loss 15%, avg delay 120ms - koneksi tidak stabil',
-            time: '2026-09-09T15:30:00',
-            timeLabel: '30 menit yang lalu',
-            latency: 120,
-            monitorType: 'ICMP',
-            read: false
-        },
-        {
-            id: 3,
-            device: 'POP Gresik',
-            ip: '202.154.4.254',
-            status: 'online',
-            event: 'BACK ONLINE',
-            message: 'Device kembali aktif - Response 12ms',
-            time: '2026-09-09T15:47:00',
-            timeLabel: '13 menit yang lalu',
-            latency: 12,
-            monitorType: 'ICMP',
-            read: true
-        },
-        {
-            id: 4,
-            device: 'Border',
-            ip: '202.154.4.3',
-            status: 'warning',
-            event: 'WARNING',
-            message: 'Packet loss 1% - latency meningkat dari 3ms ke 8ms',
-            time: '2026-09-09T15:10:00',
-            timeLabel: '50 menit yang lalu',
-            latency: 8,
-            monitorType: 'ICMP',
-            read: true
-        },
-        {
-            id: 5,
-            device: 'SMKN-1',
-            ip: '202.154.4.241',
-            status: 'online',
-            event: 'BACK ONLINE',
-            message: 'Device recovered - Response 11ms',
-            time: '2026-09-09T15:35:00',
-            timeLabel: '25 menit yang lalu',
-            latency: 11,
-            monitorType: 'ICMP',
-            read: true
-        },
-        {
-            id: 6,
-            device: 'Intiland 1',
-            ip: '202.154.4.4',
-            status: 'down',
-            event: 'DOWN',
-            message: 'Request timeout - Host Unreachable',
-            time: '2026-09-09T13:20:00',
-            timeLabel: '2 jam yang lalu',
-            latency: null,
-            monitorType: 'ICMP',
-            read: false
-        },
-        {
-            id: 7,
-            device: 'IIX-JI',
-            ip: '218.100.32.1',
-            status: 'online',
-            event: 'BACK ONLINE',
-            message: 'Normal - Response 5ms, 0% packet loss',
-            time: '2026-09-09T15:45:00',
-            timeLabel: '15 menit yang lalu',
-            latency: 5,
-            monitorType: 'ICMP',
-            read: true
-        },
-        {
-            id: 8,
-            device: '56.17',
-            ip: '202.154.56.17',
-            status: 'down',
-            event: 'DOWN',
-            message: 'Host Unreachable - Missed 200 consecutive polls',
-            time: '2026-09-09T12:00:00',
-            timeLabel: '3 jam yang lalu',
-            latency: null,
-            monitorType: 'ICMP',
-            read: false
-        },
-        {
-            id: 9,
-            device: 'SBY-JKT',
-            ip: '202.154.0.29',
-            status: 'down',
-            event: 'DOWN',
-            message: 'Complete outage - 100% packet loss',
-            time: '2026-09-09T11:00:00',
-            timeLabel: '4 jam yang lalu',
-            latency: null,
-            monitorType: 'ICMP',
-            read: true
-        },
-        {
-            id: 10,
-            device: 'POP Gresik',
-            ip: '202.154.4.254',
-            status: 'warning',
-            event: 'WARNING',
-            message: 'High latency detected - avg delay 45ms (normal: 12ms)',
-            time: '2026-09-09T14:15:00',
-            timeLabel: '1 jam yang lalu',
-            latency: 45,
-            monitorType: 'ICMP',
-            read: true
-        }
-    ];
-    /* ── END PLACEHOLDER ────────────────────────────────────────── */
+    /* ── DATA DARI BACKEND (tabel device_notifications) ── */
+    var notifications = @json($notifications ?? []);
 
     var currentFilter = 'all';
     var notifList     = document.getElementById('notifList');
@@ -476,8 +344,19 @@ document.addEventListener('DOMContentLoaded', function () {
         var n = notifications.find(function (x) { return x.id === id; });
         if (!n) return;
 
-        /* mark as read */
+        /* mark as read (frontend + backend) */
+        var wasUnread = !n.read;
         n.read = true;
+        if (wasUnread) {
+            var url = '{{ route('admin.notifikasi.read', ['notification' => '__ID__']) }}'.replace('__ID__', id);
+            fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            });
+        }
         updateCounts();
         render();
 

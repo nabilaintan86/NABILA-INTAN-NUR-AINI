@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Device;
+use App\Models\DeviceNotification;
 use App\Models\MonitoringLog;
+use App\Services\TelegramService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class MonitorDevices extends Command
 {
@@ -63,7 +66,7 @@ class MonitorDevices extends Command
         return self::SUCCESS;
     }
 
-    private function pingDevice(Device $device): bool
+    protected function pingDevice(Device $device): bool
     {
         $ip = trim($device->ip_address);
 
@@ -102,6 +105,12 @@ class MonitorDevices extends Command
         $now = now();
 
         /*
+         * Simpan status lama SEBELUM diupdate oleh hasil ping terbaru.
+         * Dipakai sebagai pembanding untuk mendeteksi perubahan status.
+         */
+        $previousStatus = strtolower((string) $device->status);
+
+        /*
         |--------------------------------------------------------------------------
         | DEVICE UP
         |--------------------------------------------------------------------------
@@ -132,6 +141,14 @@ class MonitorDevices extends Command
                 $now
             );
 
+            $this->handleStatusTransition(
+                $device,
+                $previousStatus,
+                'up',
+                $latency,
+                $now
+            );
+
             return true;
         }
 
@@ -152,6 +169,14 @@ MonitoringLog::create([
 
         $this->updateDeviceStatistics(
             $device,
+            'down',
+            null,
+            $now
+        );
+
+        $this->handleStatusTransition(
+            $device,
+            $previousStatus,
             'down',
             null,
             $now
@@ -239,6 +264,138 @@ MonitoringLog::create([
         $device->update($updateData);
     }
 
+    /**
+     * Deteksi perubahan status dan kirim notifikasi ke web + Telegram.
+     *
+     * Hanya transisi UP -> DOWN dan DOWN -> UP yang memicu notifikasi.
+     * Status yang tidak berubah (UP -> UP / DOWN -> DOWN), status kosong/null,
+     * atau status yang tidak dikenal tidak akan memicu notifikasi apa pun.
+     */
+    private function handleStatusTransition(
+        Device $device,
+        ?string $previousStatus,
+        string $newStatus,
+        ?int $latency,
+        $now
+    ): void {
+        /*
+        |--------------------------------------------------------------------------
+        | Edge case: device belum pernah punya status (null / kosong).
+        | Jangan kirim alert palsu saat monitoring pertama kali dijalankan.
+        |--------------------------------------------------------------------------
+        */
+
+        if (empty($previousStatus)) {
+            return;
+        }
+
+        if (!in_array($previousStatus, ['up', 'down'], true)) {
+            return;
+        }
+
+        if (!in_array($newStatus, ['up', 'down'], true)) {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tidak ada perubahan status -> tidak ada notifikasi
+        | UP -> UP : skip
+        | DOWN -> DOWN : skip
+        |--------------------------------------------------------------------------
+        */
+
+        if ($previousStatus === $newStatus) {
+            return;
+        }
+
+        $waktu = $now->format('Y-m-d H:i:s');
+
+        $this->recordWebNotification($device, $previousStatus, $latency, $waktu);
+        $this->sendTelegramNotification($device, $previousStatus, $newStatus, $waktu);
+    }
+
+    private function recordWebNotification(
+        Device $device,
+        string $previousStatus,
+        ?int $latency,
+        string $waktu
+    ): void {
+        try {
+            DeviceNotification::create([
+                'device_id'   => $device->id,
+                'device_name' => $device->name,
+                'ip_address'  => $device->ip_address,
+                'event_type'  => $previousStatus === 'up' ? 'down' : 'recovered',
+                'event'       => $previousStatus === 'up' ? 'DOWN' : 'BACK ONLINE',
+                'status'      => $previousStatus === 'up' ? 'down' : 'online',
+                'message'     => $previousStatus === 'up'
+                    ? 'Device tidak merespons ping. Host unreachable.'
+                    : ($latency !== null
+                        ? "Device kembali aktif, respons {$latency} ms."
+                        : 'Device kembali aktif dan merespons ping.'),
+                'latency'     => $latency,
+                'is_read'     => false,
+                'checked_at'  => $waktu,
+            ]);
+
+            $this->info(
+                "Notifikasi web: {$device->name} -> "
+                .($previousStatus === 'up' ? 'DOWN' : 'BACK ONLINE')
+            );
+        } catch (\Throwable $e) {
+            $this->error(
+                "Gagal menyimpan notifikasi web untuk {$device->name}: {$e->getMessage()}"
+            );
+        }
+    }
+
+    private function sendTelegramNotification(
+        Device $device,
+        string $previousStatus,
+        string $newStatus,
+        string $waktu
+    ): void {
+        try {
+            $telegram = app(TelegramService::class);
+
+            $data = [
+                'device' => $device->name,
+                'ip'     => $device->ip_address,
+                'type'   => $device->type,
+                'time'   => $waktu,
+            ];
+
+            if ($previousStatus === 'up' && $newStatus === 'down') {
+                if (!$telegram->broadcastDeviceDown($data)) {
+                    Log::warning('Telegram broadcast DOWN gagal terkirim ke semua penerima', [
+                        'device' => $device->name,
+                        'ip'     => $device->ip_address,
+                        'time'   => $waktu,
+                    ]);
+                }
+            } elseif ($previousStatus === 'down' && $newStatus === 'up') {
+                if (!$telegram->broadcastDeviceRecovered($data)) {
+                    Log::warning('Telegram broadcast RECOVERED gagal terkirim ke semua penerima', [
+                        'device' => $device->name,
+                        'ip'     => $device->ip_address,
+                        'time'   => $waktu,
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Telegram notification error untuk device', [
+                'device' => $device->name,
+                'ip'     => $device->ip_address,
+                'error'  => $e->getMessage(),
+            ]);
+
+            $this->error(
+                "Gagal mengirim Telegram untuk {$device->name}: {$e->getMessage()}"
+            );
+        }
+    }
+
     private function parseLatency(string $output): int
     {
         /*
@@ -258,11 +415,7 @@ MonitoringLog::create([
             return (int) round((float) $matches[1]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | macOS
-        |--------------------------------------------------------------------------
-        */
+      
 
         if (
             preg_match(

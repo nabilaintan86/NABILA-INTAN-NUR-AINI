@@ -4,79 +4,8 @@
 
 @push('styles')
 <style>
-    /* ── Map area ─────────────────────────────────────── */
-    .monitoring-map-area {
-        min-height: 520px;
-        background: linear-gradient(135deg, #f8f9fc 0%, #eef1f6 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: .5rem;
-        padding: 1.25rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .monitoring-map-area:hover {
-        border-color: #b4bdd4;
-    }
-
-    /* ── Grid node (CSS Grid, 1 node = 1 device) ────── */
-    .monitoring-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
-        gap: 12px;
-        width: 100%;
-    }
-    .monitoring-node {
-        width: 100%;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        border: 2px solid rgba(255,255,255,.9);
-        padding: 0;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0,0,0,.12);
-        transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .monitoring-node:hover,
-    .monitoring-node:focus-visible {
-        transform: scale(1.35);
-        box-shadow: 0 4px 12px rgba(0,0,0,.2);
-        z-index: 1;
-    }
-    .node-up      { background-color: #22c55e; }
-    .node-down    { background-color: #ef4444; animation: node-pulse 1.6s ease-out infinite; }
-    .node-unknown { background-color: #94a3b8; }
-
-    /* Animasi pulse untuk device DOWN */
-    @keyframes node-pulse {
-        0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
-        70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
-        100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-    }
-
-    /* ── Legend map ──────────────────────────────────── */
-    .monitoring-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        justify-content: center;
-        margin-top: 1rem;
-        font-size: .78rem;
-        color: #5e6b7b;
-    }
-    .monitoring-legend .legend-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .monitoring-legend .legend-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-    }
-    .monitoring-legend .legend-dot.up      { background-color: #22c55e; }
-    .monitoring-legend .legend-dot.down    { background-color: #ef4444; }
-    .monitoring-legend .legend-dot.unknown { background-color: #94a3b8; }
+    /* Topology map disediakan oleh komponen
+       admin.components.network-topology (single source of truth). */
 
     /* ── KPI cards clickable ─────────────────────────── */
     .kpi-card {
@@ -153,8 +82,6 @@
     }
 
     @media (max-width: 767.98px) {
-        .monitoring-map-area { min-height: 320px; }
-        .monitoring-grid { gap: 8px; }
         .modal-monitoring .table { font-size: .8rem; }
         .modal-monitoring .table thead th,
         .modal-monitoring .table tbody td { padding: .5rem; }
@@ -244,32 +171,12 @@
             </div>
             <span class="text-xs text-soft">RADNET Wireless Network 2025</span>
         </div>
-        <div class="monitoring-map-area mt-3">
-            {{-- Grid node: 1 bulat kecil = 1 device, warna sesuai status --}}
-            <div class="monitoring-grid" id="monitoringGrid">
-                @foreach($devices as $device)
-                    <button
-                        type="button"
-                        class="monitoring-node node-{{ $device->status }}"
-                        title="{{ $device->name }} ({{ $device->ip_address }})"
-                        aria-label="{{ $device->name }}"
-                        onclick="showDeviceDetail('{{ $device->id }}')">
-                    </button>
-                @endforeach
-            </div>
-
-            {{-- Legend --}}
-            <div class="monitoring-legend">
-                <span class="legend-item">
-                    <span class="legend-dot up"></span> UP ({{ $totalUp }})
-                </span>
-                <span class="legend-item">
-                    <span class="legend-dot down"></span> DOWN ({{ $totalDown }})
-                </span>
-                <span class="legend-item">
-                    <span class="legend-dot unknown"></span> UNKNOWN ({{ $totalUnknown }})
-                </span>
-            </div>
+        <div class="mt-3">
+            @include('admin.components.network-topology', [
+                'topology' => $topology ?? null,
+                'endpoint' => route('admin.monitoring.data'),
+                'deviceEndpoint' => route('admin.monitoring.device', ['device' => '__DEVICE_ID__']),
+            ])
         </div>
     </div>
 </div>
@@ -316,19 +223,6 @@
         </div>
     </div>
 </div>
-
-{{-- Modal: Detail Device (dibuka dari klik node / baris) --}}
-<div class="modal fade modal-monitoring" id="modalDeviceDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deviceDetailTitle">Detail Device</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="deviceDetailBody"></div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -370,30 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return html;
     }
 
-    /* ── Build detail device (modal) ───────────────────────── */
-    function buildDeviceDetail(d) {
-        function row(label, value) {
-            return '<tr><td class="text-muted">' + label + '</td>' +
-                '<td class="text-end"><strong>' + (value === null || value === undefined || value === '' ? '-' : value) + '</strong></td></tr>';
-        }
-        var html = '<div class="table-responsive"><table class="table"><tbody>';
-        html += row('Nama Perangkat', d.name);
-        html += row('IP Address', d.ip_address);
-        html += row('Type', d.type);
-        html += '<tr><td class="text-muted">Status</td><td class="text-end">' + statusBadge(d.status) + '</td></tr>';
-        html += row('Jumlah Polls', d.polls);
-        html += row('Responded', d.responded_percentage !== null ? d.responded_percentage + '%' : '-');
-        html += row('Missed', d.missed_percentage !== null ? d.missed_percentage + '%' : '-');
-        html += row('Down Time', d.down_time);
-        html += row('Period', d.period);
-        html += row('Alerts', d.alerts_count > 0 ? d.alerts_count : 0);
-        html += row('Rata-rata Delay', d.avg_delay !== null ? d.avg_delay + ' ms' : '-');
-        html += row('Min Delay', d.min_delay !== null ? d.min_delay + ' ms' : '-');
-        html += row('Max Delay', d.max_delay !== null ? d.max_delay + ' ms' : '-');
-        html += '</tbody></table></div>';
-        return html;
-    }
-
     /* ── Open modal KPI berdasarkan status ─────────────────── */
     window.openKpiModal = function (type) {
         var bsModal;
@@ -409,15 +279,6 @@ document.addEventListener('DOMContentLoaded', function () {
             bsModal = new bootstrap.Modal(document.getElementById('modalServices'));
         }
         bsModal.show();
-    };
-
-    /* ── Open modal detail device dari node map ─────────────── */
-    window.showDeviceDetail = function (id) {
-        var device = devices.find(function (d) { return String(d.id) === String(id); });
-        if (!device) return;
-        document.getElementById('deviceDetailTitle').textContent = 'Detail Device';
-        document.getElementById('deviceDetailBody').innerHTML = buildDeviceDetail(device);
-        new bootstrap.Modal(document.getElementById('modalDeviceDetail')).show();
     };
 
 });

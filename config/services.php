@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'telegram' => [
+        'bot_token'          => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id'            => env('TELEGRAM_CHAT_ID'),
+        'webhook_secret'     => env('TELEGRAM_WEBHOOK_SECRET'),
+        // Jeda (detik) sebelum coba ulang saat getUpdates gagal (telegram:poll).
+        'poll_retry_delay'   => env('TELEGRAM_POLL_RETRY_DELAY', 5),
+    ],
+
 ];

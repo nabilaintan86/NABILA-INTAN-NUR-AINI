@@ -30,6 +30,7 @@ class Device extends Model
         'pop_name',
         'pos_x',
         'pos_y',
+        'map_positioned',
     ];
 
     protected $casts = [
@@ -42,6 +43,7 @@ class Device extends Model
         'max_delay'             => 'integer',
         'pos_x'                 => 'integer',
         'pos_y'                 => 'integer',
+        'map_positioned'        => 'boolean',
     ];
 
     public function activityLogs()

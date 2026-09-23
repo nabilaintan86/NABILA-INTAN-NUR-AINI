@@ -4,439 +4,419 @@
 
 @push('styles')
 <style>
-    /* ===========================================================
-       NETWORK MAP — Pure HTML/CSS (WhaTsUp-style)
-       =========================================================== */
-
-    .nm-header {
+    .nm2-head {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 12px;
         margin-bottom: 16px;
     }
-    .nm-header-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #0f172a;
+    .nm2-badge-count { font-size: 12px; }
+    .nm2-stage {
+        position: relative;
+        overflow: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fbfdff;
+        padding: 12px;
     }
-    .nm-legend {
-        display: flex;
-        gap: 14px;
-        font-size: 11px;
-        color: #64748b;
-    }
-    .nm-legend span { display: inline-flex; align-items: center; gap: 5px; }
-    .nm-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
+    .nm2-canvas {
+        position: relative;
         display: inline-block;
+        min-width: 100%;
     }
-    .nm-dot-up      { background: #10b981; }
-    .nm-dot-down    { background: #ef4444; }
-    .nm-dot-warning { background: #f59e0b; }
-    .nm-dot-unknown { background: #cbd5e1; }
-
-    .nm-refresh {
-        font-size: 11px;
-        color: #94a3b8;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
+    .nm2-canvas img {
+        display: block;
+        max-width: none;
+        user-select: none;
+        -webkit-user-drag: none;
     }
-    .nm-refresh .icon { font-size: 12px; }
-
-    /* ---- Grid: POP groups ---- */
-    .nm-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 16px;
-    }
-
-    /* ---- Single POP group ---- */
-    .nm-group {
-        border: 1px solid #d1d5db;
+    .nm2-marker {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        transform: translate(-50%, -50%);
         border-radius: 8px;
         background: #fff;
-        overflow: hidden;
-    }
-
-    .nm-group-head {
+        border: 2px solid #94a3b8;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, .30);
         display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        background: #f8fafc;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    .nm-group-head-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: #0f172a;
-        text-transform: uppercase;
-        letter-spacing: .3px;
-    }
-    .nm-group-head-count {
-        font-size: 10px;
-        font-weight: 600;
-        color: #94a3b8;
-        background: #f1f5f9;
-        border-radius: 10px;
-        padding: 1px 7px;
-    }
-    .nm-group-head-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-left: auto;
-        flex-shrink: 0;
-    }
-
-    .nm-group-body {
-        padding: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    /* ---- Device card (compact) ---- */
-    .nm-dev {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        background: #fff;
-        cursor: pointer;
-        transition: box-shadow .15s, border-color .15s;
-        min-width: 0;
-        flex: 1 1 auto;
-        max-width: 220px;
-    }
-    .nm-dev:hover {
-        border-color: #93c5fd;
-        box-shadow: 0 1px 4px rgba(59,130,246,.15);
-    }
-
-    .nm-dev-icon {
-        width: 28px;
-        height: 28px;
-        flex-shrink: 0;
-        border-radius: 4px;
-        object-fit: contain;
-        background: #f8fafc;
-        padding: 2px;
-    }
-
-    .nm-dev-info {
-        min-width: 0;
-        flex: 1;
-    }
-    .nm-dev-name {
-        font-size: 11px;
-        font-weight: 600;
-        color: #0f172a;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .nm-dev-name .nm-dot {
-        width: 7px;
-        height: 7px;
-        flex-shrink: 0;
-    }
-    .nm-dev-ip {
-        font-size: 10px;
-        color: #94a3b8;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .nm-dev-links {
-        flex-shrink: 0;
-        font-size: 9px;
-        font-weight: 600;
-        color: #3b82f6;
-        background: #eff6ff;
-        border-radius: 8px;
-        padding: 1px 6px;
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-    }
-
-    /* ---- Detail popup (shown on device click) ---- */
-    .nm-detail-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,.25);
-        z-index: 999;
         align-items: center;
         justify-content: center;
-    }
-    .nm-detail-overlay.active { display: flex; }
-    .nm-detail-card {
-        background: #fff;
-        border-radius: 10px;
-        padding: 20px 24px;
-        min-width: 280px;
-        max-width: 380px;
-        box-shadow: 0 8px 30px rgba(0,0,0,.18);
-        position: relative;
-    }
-    .nm-detail-card .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 14px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        color: #94a3b8;
         cursor: pointer;
-        line-height: 1;
+        z-index: 5;
+        transition: transform .1s ease, box-shadow .1s ease;
     }
-    .nm-detail-card .close-btn:hover { color: #334155; }
-    .nm-detail-card h3 {
-        font-size: 14px;
-        font-weight: 700;
-        margin: 0 0 10px;
+    .nm2-marker:hover {
+        transform: translate(-50%, -50%) scale(1.12);
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .40);
+    }
+    .nm2-marker img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+    }
+    .nm2-marker .nm2-status {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+    }
+    .nm2-marker.st-up      { border-color: #22c55e; }
+    .nm2-marker.st-down    { border-color: #ef4444; }
+    .nm2-marker.st-other   { border-color: #f59e0b; }
+    .nm2-marker.st-up .nm2-status      { background: #22c55e; }
+    .nm2-marker.st-down .nm2-status    { background: #ef4444; }
+    .nm2-marker.st-other .nm2-status   { background: #f59e0b; }
+    .nm2-marker-label {
+        position: absolute;
+        bottom: -19px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, .85);
+        color: #fff;
+        font-size: 10.5px;
+        line-height: 1;
+        padding: 3px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+    .nm2-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    /* ── Detail popup device ── */
+    .nm2-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, .38);
+        z-index: 1050;
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        padding: 16px;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .25s ease, visibility .25s ease;
     }
-    .nm-detail-card h3 img {
-        width: 24px;
-        height: 24px;
+    .nm2-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
     }
-    .nm-detail-row {
+    .nm2-card {
+        background: #fff;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 700px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, .28);
+    }
+    .nm2-head-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 20px;
+        background: #1e40af;
+        color: #fff;
+    }
+    .nm2-head-card h5 { margin: 0; color: #fff; }
+    .nm2-close {
+        border: none;
+        background: rgba(255,255,255,.08);
+        border-radius: 6px;
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+    .nm2-close:hover { background: rgba(255,255,255,.2); }
+    .nm2-body { padding: 16px 20px 20px; }
+    .nm2-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 40px 0;
+        color: #64748b;
+        font-size: 13px;
+    }
+    .nm2-row {
         display: flex;
         justify-content: space-between;
-        padding: 4px 0;
-        font-size: 12px;
+        gap: 16px;
+        padding: 9px 0;
+        font-size: 12.5px;
         border-bottom: 1px solid #f1f5f9;
     }
-    .nm-detail-row:last-child { border-bottom: none; }
-    .nm-detail-label { color: #64748b; }
-    .nm-detail-value { font-weight: 600; color: #0f172a; }
-
-    /* ---- Empty state ---- */
-    .nm-empty {
-        text-align: center;
-        padding: 60px 20px;
-        color: #94a3b8;
+    .nm2-row:last-child { border-bottom: none; }
+    .nm2-label { color: #64748b; }
+    .nm2-value { font-weight: 600; color: #0f172a; text-align: right; word-break: break-word; }
+    .nm2-status-badge { font-weight: 700; }
+    .nm2-status-badge.up    { color: #16a34a; }
+    .nm2-status-badge.down  { color: #dc2626; }
+    .nm2-status-badge.warning { color: #d97706; }
+    .nm2-status-badge.other { color: #64748b; }
+    .nm2-log {
+        margin-top: 4px;
+        padding: 8px 10px;
+        border-left: 3px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 0 6px 6px 0;
+        font-size: 12px;
+        color: #475569;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
     }
-    .nm-empty .icon { font-size: 48px; margin-bottom: 8px; }
-
-    /* ---- Responsive ---- */
-    @media (max-width: 640px) {
-        .nm-grid {
-            grid-template-columns: 1fr;
-        }
-        .nm-dev { max-width: 100%; }
-    }
+    .nm2-log.up { border-left-color: #22c55e; }
+    .nm2-log.down { border-left-color: #ef4444; }
+    .nm2-log.warning { border-left-color: #f59e0b; }
+    .nm2-log .t { color: #94a3b8; font-family: ui-monospace, monospace; }
+    .nm2-log .s { font-weight: 700; }
+    .nm2-log.up .s { color: #16a34a; }
+    .nm2-log.down .s { color: #dc2626; }
+    .nm2-log.warning .s { color: #d97706; }
 </style>
 @endpush
 
 @section('content')
-<div class="nk-content">
-    <div class="container">
-        <div class="nk-content-inner">
-            <div class="nk-content-body">
 
-                <div class="nk-block-head">
-                    <div class="nk-block-head-between flex-wrap gap g-2">
-                        <div class="nk-block-head-content">
-                            <nav>
-                                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                                    <li class="breadcrumb-item">
-                                        <a href="{{ route('admin.dashboard') }}">Home</a>
-                                    </li>
-                                    <li class="breadcrumb-item active" aria-current="page">
-                                        Network Map
-                                    </li>
-                                </ol>
-                            </nav>
-                        </div>
-                        <div class="nk-block-head-content">
-                            <span class="nm-refresh">
-                                <em class="icon ni ni-reload"></em>
-                                <span id="lastUpdated">Memuat...</span>
-                            </span>
-                        </div>
+<div class="nm2-head">
+    <div class="d-flex align-items-center gap-3">
+        <h5 class="title mb-0">Network Map</h5>
+        <span class="badge bg-primary nm2-badge-count">
+            {{ $positionedDevices->count() }} / {{ $devices->count() }} device diposisikan
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.map.editor') }}" class="btn btn-primary btn-sm">
+            <em class="icon ni ni-edit"></em> Map Editor
+        </a>
+    </div>
+</div>
+
+{{-- PETA ── --}}
+<div class="card">
+    <div class="card-body">
+        <div class="nm2-stage">
+            <div class="nm2-canvas" id="mapCanvas">
+                <img src="{{ asset('images/devices/MAP.png') }}" alt="Network Map" id="mapImg" draggable="false">
+
+                @forelse ($positionedDevices as $device)
+                    @php
+                        $iconMap = ['router' => 'router.png', 'server' => 'server.png', 'switch' => 'switch.png', 'wifi' => 'wifi.png', 'pc' => 'pc.png'];
+                        $iconFile = $iconMap[strtolower((string) $device->icon_type)] ?? 'pc.png';
+                    @endphp
+                    <div
+                        class="nm2-marker st-{{ $device->status === 'down' ? 'down' : ($device->status === 'up' ? 'up' : 'other') }}"
+                        data-id="{{ $device->id }}"
+                        data-x="{{ $device->pos_x }}"
+                        data-y="{{ $device->pos_y }}"
+                        title="{{ $device->name }} ({{ $device->ip_address }})"
+                    >
+                        <img src="{{ asset('images/devices/' . $iconFile) }}" alt="">
+                        <span class="nm2-status"></span>
+                        <span class="nm2-marker-label">{{ $device->name }}</span>
                     </div>
-                </div>
-
-                <div class="nk-block">
-                    <div class="card">
-                        <div class="card-body">
-
-                            @if(!empty($groups['groups']) && count($groups['groups']) > 0)
-
-                                <div class="nm-header">
-                                    <div class="nm-header-title">RADNET Wireless Network 2025</div>
-                                    <div class="nm-legend">
-                                        <span><span class="nm-dot nm-dot-up"></span> UP</span>
-                                        <span><span class="nm-dot nm-dot-down"></span> DOWN</span>
-                                        <span><span class="nm-dot nm-dot-warning"></span> WARNING</span>
-                                    </div>
-                                </div>
-
-                                <div class="nm-grid" id="nmGrid">
-                                    @foreach($groups['groups'] as $popName => $group)
-                                        @php
-                                            $upCount = collect($group['devices'])->where('status', 'up')->count();
-                                            $downCount = collect($group['devices'])->where('status', 'down')->count();
-                                            $totalCount = count($group['devices']);
-                                            $groupDot = $downCount > 0 ? 'down' : ($upCount === $totalCount ? 'up' : 'warning');
-                                        @endphp
-                                        <div class="nm-group">
-                                            <div class="nm-group-head">
-                                                <span class="nm-group-head-title">{{ $popName }}</span>
-                                                <span class="nm-group-head-count">{{ $totalCount }}</span>
-                                                <span class="nm-group-head-dot nm-dot nm-dot-{{ $groupDot }}"></span>
-                                            </div>
-                                            <div class="nm-group-body">
-                                                @foreach($group['devices'] as $device)
-                                                    <div class="nm-dev"
-                                                         data-id="{{ $device['id'] }}"
-                                                         data-name="{{ $device['name'] }}"
-                                                         data-ip="{{ $device['ip'] }}"
-                                                         data-status="{{ $device['status'] }}"
-                                                         data-pop="{{ $popName }}"
-                                                         data-icon="{{ asset('images/devices/' . $device['icon_type'] . '.png') }}"
-                                                         onclick="showDetail(this)">
-                                                        <img class="nm-dev-icon"
-                                                             src="{{ asset('images/devices/' . $device['icon_type'] . '.png') }}"
-                                                             alt="{{ $device['icon_type'] }}"
-                                                             onerror="this.src='{{ asset('images/devices/server.png') }}'">
-                                                        <div class="nm-dev-info">
-                                                            <div class="nm-dev-name">
-                                                                <span class="nm-dot nm-dot-{{ $device['status'] }}"
-                                                                      data-status-dot="{{ $device['id'] }}"></span>
-                                                                {{ $device['name'] }}
-                                                            </div>
-                                                            <div class="nm-dev-ip">{{ $device['ip'] }}</div>
-                                                        </div>
-                                                        @if($device['connections'] > 0)
-                                                            <span class="nm-dev-links"
-                                                                  title="{{ $device['connections'] }} link aktif">
-                                                                <em class="icon ni ni-link"></em>{{ $device['connections'] }}
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-
-                            @else
-                                <div class="nm-empty">
-                                    <div class="icon">🗺️</div>
-                                    <p>Belum ada data jaringan untuk ditampilkan.</p>
-                                </div>
-                            @endif
-
-                        </div>
-                    </div>
-                </div>
-
+                @empty
+                @endforelse
             </div>
         </div>
     </div>
 </div>
 
-<!-- Detail popup -->
-<div class="nm-detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
-    <div class="nm-detail-card">
-        <button class="close-btn" onclick="closeDetail()">&times;</button>
-        <h3>
-            <img id="detailIcon" src="" alt="">
-            <span id="detailName"></span>
-        </h3>
-        <div class="nm-detail-row">
-            <span class="nm-detail-label">IP Address</span>
-            <span class="nm-detail-value" id="detailIP"></span>
+{{-- DEVICE BELUM DIPOSISIKAN ── --}}
+@if ($unpositionedDevices->isNotEmpty())
+<div class="card mt-3">
+    <div class="card-body">
+        <div class="card-title-group mb-3">
+            <div class="card-title">
+                <h6 class="title">
+                    Belum diposisikan
+                    <span class="badge bg-danger ms-1">{{ $unpositionedDevices->count() }}</span>
+                </h6>
+            </div>
+            <a href="{{ route('admin.map.editor') }}" class="btn btn-sm btn-outline-primary">Atur sekarang</a>
         </div>
-        <div class="nm-detail-row">
-            <span class="nm-detail-label">Lokasi / POP</span>
-            <span class="nm-detail-value" id="detailPOP"></span>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>IP Address</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($unpositionedDevices as $device)
+                        <tr>
+                            <td><strong>{{ $device->name }}</strong></td>
+                            <td><code>{{ $device->ip_address }}</code></td>
+                            <td>{{ $device->type }}</td>
+                            <td>
+                                <span class="badge bg-{{ $device->status === 'up' ? 'success' : ($device->status === 'down' ? 'danger' : 'warning') }}">
+                                    {{ strtoupper($device->status) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-        <div class="nm-detail-row">
-            <span class="nm-detail-label">Status</span>
-            <span class="nm-detail-value" id="detailStatus"></span>
+    </div>
+</div>
+@endif
+
+{{-- POPUP DETAIL ── --}}
+<div class="nm2-overlay" id="nm2Overlay" role="dialog" aria-modal="true">
+    <div class="nm2-card">
+        <div class="nm2-head-card">
+            <h5 id="nm2Name">-</h5>
+            <button type="button" class="nm2-close" id="nm2Close" aria-label="Tutup">&times;</button>
+        </div>
+        <div class="nm2-body">
+            <div class="nm2-loading" id="nm2Loading">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Memuat detail device...
+            </div>
+            <div id="nm2Content" style="display:none;">
+                <div class="nm2-row"><span class="nm2-label">Address</span><span class="nm2-value" id="nm2Addr">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Last Poll</span><span class="nm2-value" id="nm2LastPoll">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Status</span><span class="nm2-value nm2-status-badge" id="nm2Status">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Type</span><span class="nm2-value" id="nm2Type">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">POP</span><span class="nm2-value" id="nm2Pop">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Responded</span><span class="nm2-value" id="nm2Responded">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Avg Delay</span><span class="nm2-value" id="nm2Avg">-</span></div>
+                <div class="nm2-row"><span class="nm2-label">Down Time</span><span class="nm2-value" id="nm2Down">-</span></div>
+                <h6 class="mt-4 mb-2">Log terakhir</h6>
+                <div id="nm2Logs"></div>
+            </div>
         </div>
     </div>
 </div>
 @endsection
 
-
 @push('scripts')
 <script>
-(function () {
-    var lastUpdated = document.getElementById('lastUpdated');
+document.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('mapCanvas');
+    var img    = document.getElementById('mapImg');
+    var deviceUrl = @json(route('admin.monitoring.device', ['device' => '__DEVICE_ID__']));
 
-    function updateTimestamp() {
-        lastUpdated.textContent = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
+    var naturalW = 0, naturalH = 0;
+
+    img.addEventListener('load', positionMarkers);
+    if (img.complete && img.naturalWidth) positionMarkers();
+
+    function positionMarkers() {
+        naturalW = img.naturalWidth;
+        naturalH = img.naturalHeight;
+        if (!naturalW || !naturalH) return;
+        canvas.querySelectorAll('.nm2-marker').forEach(function (m) {
+            m.style.left = (Number(m.dataset.x) / naturalW * 100) + '%';
+            m.style.top  = (Number(m.dataset.y) / naturalH * 100) + '%';
+        });
     }
 
-    updateTimestamp();
+    /* ── Detail popup ── */
+    var overlay   = document.getElementById('nm2Overlay');
+    var loading   = document.getElementById('nm2Loading');
+    var content   = document.getElementById('nm2Content');
+    var logsBox   = document.getElementById('nm2Logs');
 
-    /* ---- Auto refresh status tiap 30 detik ---- */
-    setInterval(function () {
-        fetch('{{ route('admin.map.data') }}', {
-            headers: { 'Accept': 'application/json' }
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (payload) {
-            var groups = payload.groups || {};
-            for (var popName in groups) {
-                var devs = groups[popName].devices || [];
-                for (var i = 0; i < devs.length; i++) {
-                    var d = devs[i];
-                    var dot = document.querySelector('[data-status-dot="' + d.id + '"]');
-                    if (dot) {
-                        dot.className = 'nm-dot nm-dot-' + d.status;
-                    }
-                }
-            }
-            updateTimestamp();
-        })
-        .catch(function () {
-            lastUpdated.textContent = 'Gagal memperbarui status.';
+    function esc(v) {
+        return String(v === null || v === undefined ? '' : v)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function fmt(v) { return (v === null || v === undefined || v === '') ? '-' : String(v); }
+    function pct(v) {
+        if (v === null || v === undefined || v === '') return '-';
+        return Number(v).toFixed(2) + '%';
+    }
+    function normalize(s) {
+        s = String(s || '').toLowerCase();
+        return (s === 'up' || s === 'down' || s === 'warning') ? s : 'other';
+    }
+
+    function renderDetail(d) {
+        d = d || {};
+        var dev = d.device || d;
+        var st  = d.stats || {};
+
+        document.getElementById('nm2Name').textContent = fmt(dev.name);
+        document.getElementById('nm2Addr').textContent = fmt(dev.ip_address || dev.ip);
+        document.getElementById('nm2LastPoll').textContent = fmt(st.last_poll);
+        document.getElementById('nm2Type').textContent = fmt(st.type || dev.type || 'ICMP');
+        document.getElementById('nm2Pop').textContent = fmt(dev.pop_name || dev.pop);
+        document.getElementById('nm2Responded').textContent = pct(st.responded_pct);
+        document.getElementById('nm2Avg').textContent = (st.avg_delay === null || st.avg_delay === '' || st.avg_delay === undefined) ? '-' : (Number(st.avg_delay) + ' ms');
+        document.getElementById('nm2Down').textContent = fmt(st.down_time);
+
+        var status = normalize(dev.status);
+        var stEl = document.getElementById('nm2Status');
+        stEl.className = 'nm2-value nm2-status-badge ' + status;
+        stEl.textContent = String(status).toUpperCase();
+
+        var logs = d.logs || [];
+        logsBox.innerHTML = logs.length
+            ? logs.map(function (l) {
+                var s = normalize(l.status);
+                return '<div class="nm2-log ' + s + '">' +
+                    '<span class="t">' + esc(l.time) + '</span>' +
+                    '<span class="s">' + s.toUpperCase() + '</span>' +
+                    '<span>' + esc(l.message || '') + '</span>' +
+                    '</div>';
+            }).join('')
+            : (d.error ? '<div class="nm2-log">' + esc(d.error) + '</div>' : '<div class="nm2-log">Belum ada log.</div>');
+
+        loading.style.display = 'none';
+        content.style.display = '';
+        overlay.classList.add('active');
+    }
+
+    canvas.querySelectorAll('.nm2-marker').forEach(function (m) {
+        m.addEventListener('click', function () {
+            var id = m.dataset.id;
+            overlay.classList.add('active');
+            loading.style.display = '';
+            content.style.display = 'none';
+
+            var url = String(deviceUrl).replace('__DEVICE_ID__', encodeURIComponent(id));
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(function (res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(renderDetail)
+                .catch(function () {
+                    renderDetail({ device: {}, stats: {}, logs: [], error: 'Data device tidak ditemukan.' });
+                });
         });
-    }, 30000);
-})();
+    });
 
-/* ---- Detail popup ---- */
-function showDetail(el) {
-    document.getElementById('detailIcon').src = el.dataset.icon;
-    document.getElementById('detailName').textContent = el.dataset.name;
-    document.getElementById('detailIP').textContent = el.dataset.ip;
-    document.getElementById('detailPOP').textContent = el.dataset.pop;
-
-    var st = el.dataset.status.toUpperCase();
-    var stEl = document.getElementById('detailStatus');
-    stEl.textContent = st;
-    stEl.style.color = el.dataset.status === 'down' ? '#ef4444' :
-                        el.dataset.status === 'warning' ? '#f59e0b' : '#10b981';
-
-    document.getElementById('detailOverlay').classList.add('active');
-}
-
-function closeDetail() {
-    document.getElementById('detailOverlay').classList.remove('active');
-}
-
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeDetail();
+    function closeDetail() { overlay.classList.remove('active'); }
+    document.getElementById('nm2Close').addEventListener('click', closeDetail);
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeDetail();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) closeDetail();
+    });
 });
 </script>
 @endpush
