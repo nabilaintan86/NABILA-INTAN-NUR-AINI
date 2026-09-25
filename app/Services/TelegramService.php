@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\TelegramSubscriber;
+use App\Models\TelegramUser;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class TelegramService
 {
@@ -20,7 +22,7 @@ class TelegramService
 
     public function isConfigured(): bool
     {
-        return !empty($this->botToken);
+        return ! empty($this->botToken);
     }
 
     /**
@@ -29,7 +31,7 @@ class TelegramService
      */
     public function sendToChat(string|int $chatId, string $text): bool
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::warning('Telegram tidak dikonfigurasi, pesan dilewati.');
 
             return false;
@@ -39,7 +41,7 @@ class TelegramService
             $response = Http::timeout(10)
                 ->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
                     'chat_id' => (string) $chatId,
-                    'text'    => $text,
+                    'text' => $text,
                 ]);
 
             if ($response->successful() && ($response->json('ok') ?? false)) {
@@ -48,8 +50,8 @@ class TelegramService
 
             Log::warning('Telegram gagal mengirim pesan', [
                 'chat_id' => (string) $chatId,
-                'status'  => $response->status(),
-                'body'    => $this->sanitize((string) $response->body()),
+                'status' => $response->status(),
+                'body' => $this->sanitize((string) $response->body()),
             ]);
 
             return false;
@@ -75,6 +77,22 @@ class TelegramService
         return $this->sendToChat($this->chatId, $text);
     }
 
+    public function broadcastApproved(string $text, array $context = []): array
+    {
+        $chatIds = [];
+
+        if (Schema::hasTable('telegram_users')) {
+            foreach (TelegramUser::query()
+                ->approved()
+                ->where('role', '!=', 'pending')
+                ->pluck('chat_id') as $chatId) {
+                $chatIds[(string) $chatId] = true;
+            }
+        }
+
+        return $this->sendToTargets(array_keys($chatIds), $text, $context);
+    }
+
     /**
      * Hapus webhook Telegram agar getUpdates (long polling) bisa dipakai.
      * drop_pending_updates=true membuang update lama yang menumpuk
@@ -82,7 +100,7 @@ class TelegramService
      */
     public function deleteWebhook(bool $dropPendingUpdates = true): bool
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return false;
         }
 
@@ -98,7 +116,7 @@ class TelegramService
 
             Log::warning('Telegram deleteWebhook gagal', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
         } catch (\Throwable $e) {
             Log::warning('Telegram deleteWebhook error: '.$e->getMessage());
@@ -115,14 +133,14 @@ class TelegramService
      */
     public function getUpdates(int $offset, int $timeout = 30): array|false
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return false;
         }
 
         try {
             $response = Http::timeout($timeout + 10)
                 ->post("https://api.telegram.org/bot{$this->botToken}/getUpdates", [
-                    'offset'  => $offset,
+                    'offset' => $offset,
                     'timeout' => $timeout,
                 ]);
 
@@ -132,7 +150,7 @@ class TelegramService
 
             Log::warning('Telegram getUpdates gagal', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
         } catch (\Throwable $e) {
             Log::warning('Telegram getUpdates error: '.$e->getMessage());
@@ -158,14 +176,14 @@ class TelegramService
     public function getUpdatesWithDetails(int $offset, int $timeout = 30): array
     {
         $failed = [
-            'ok'          => false,
-            'updates'     => [],
-            'status'      => null,
+            'ok' => false,
+            'updates' => [],
+            'status' => null,
             'description' => null,
-            'error'       => null,
+            'error' => null,
         ];
 
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             $failed['error'] = 'Bot token belum dikonfigurasi.';
 
             return $failed;
@@ -174,18 +192,18 @@ class TelegramService
         try {
             $response = Http::timeout($timeout + 10)
                 ->post("https://api.telegram.org/bot{$this->botToken}/getUpdates", [
-                    'offset'  => $offset,
+                    'offset' => $offset,
                     'timeout' => $timeout,
                 ]);
 
             $json = $response->json();
 
             return [
-                'ok'          => $response->successful() && !empty($json['ok']),
-                'updates'     => (array) ($json['result'] ?? []),
-                'status'      => $response->status(),
+                'ok' => $response->successful() && ! empty($json['ok']),
+                'updates' => (array) ($json['result'] ?? []),
+                'status' => $response->status(),
                 'description' => isset($json['description']) ? trim((string) $json['description']) : null,
-                'error'       => null,
+                'error' => null,
             ];
         } catch (\Throwable $e) {
             $failed['error'] = $this->sanitize($e->getMessage());
@@ -207,7 +225,7 @@ class TelegramService
 
     public function sendDeviceDown(array $data): bool
     {
-        if (!$this->hasDeviceData($data)) {
+        if (! $this->hasDeviceData($data)) {
             return false;
         }
 
@@ -216,7 +234,7 @@ class TelegramService
 
     public function sendDeviceRecovered(array $data): bool
     {
-        if (!$this->hasDeviceData($data)) {
+        if (! $this->hasDeviceData($data)) {
             return false;
         }
 
@@ -228,15 +246,15 @@ class TelegramService
      */
     public function broadcastDeviceDown(array $data): bool
     {
-        if (!$this->hasDeviceData($data)) {
+        if (! $this->hasDeviceData($data)) {
             return false;
         }
 
         return $this->broadcast($this->deviceDownText($data), [
             'notification' => 'down',
-            'device'       => $data['device'],
-            'ip'           => $data['ip'],
-            'time'         => $data['time'],
+            'device' => $data['device'],
+            'ip' => $data['ip'],
+            'time' => $data['time'],
         ]);
     }
 
@@ -245,15 +263,15 @@ class TelegramService
      */
     public function broadcastDeviceRecovered(array $data): bool
     {
-        if (!$this->hasDeviceData($data)) {
+        if (! $this->hasDeviceData($data)) {
             return false;
         }
 
         return $this->broadcast($this->deviceRecoveredText($data), [
             'notification' => 'recovered',
-            'device'       => $data['device'],
-            'ip'           => $data['ip'],
-            'time'         => $data['time'],
+            'device' => $data['device'],
+            'ip' => $data['ip'],
+            'time' => $data['time'],
         ]);
     }
 
@@ -274,7 +292,7 @@ class TelegramService
             ."🔴 Status\nDOWN\n\n"
             ."🕐 Time\n{$data['time']} WIB\n\n"
             ."⚠️ Device tidak merespons ping.\n"
-            ."═══════════════════";
+            .'═══════════════════';
     }
 
     protected function deviceRecoveredText(array $data): string
@@ -289,7 +307,7 @@ class TelegramService
             ."🟢 Status\nUP\n\n"
             ."🕐 Time\n{$data['time']} WIB\n\n"
             ."✅ Device kembali merespons ping.\n"
-            ."═══════════════════";
+            .'═══════════════════';
     }
 
     /**
@@ -302,10 +320,13 @@ class TelegramService
      */
     protected function broadcast(string $text, array $context = []): bool
     {
-        $subscriberChatIds = TelegramSubscriber::where('is_active', true)
-            ->pluck('chat_id')
-            ->map(fn ($chatId): string => (string) $chatId)
-            ->all();
+        $managedMode = Schema::hasTable('telegram_users');
+        $subscriberChatIds = $managedMode
+            ? []
+            : TelegramSubscriber::where('is_active', true)
+                ->pluck('chat_id')
+                ->map(fn ($chatId): string => (string) $chatId)
+                ->all();
 
         $chatIds = [];
 
@@ -313,25 +334,46 @@ class TelegramService
             $chatIds[$chatId] = true;
         }
 
+        if ($managedMode) {
+            foreach (TelegramUser::query()
+                ->approved()
+                ->where('role', '!=', 'pending')
+                ->pluck('chat_id') as $chatId) {
+                $chatIds[(string) $chatId] = true;
+            }
+        }
+
         $defaultChatIncluded = false;
 
-        if (!empty($this->chatId)) {
+        if (! $managedMode && ! empty($this->chatId)) {
             $chatIds[(string) $this->chatId] = true;
             $defaultChatIncluded = true;
         }
 
-        $targets = array_keys($chatIds);
+        $result = $this->sendToTargets(array_keys($chatIds), $text, array_merge($context, [
+            'active_subscribers' => count($subscriberChatIds),
+            'default_chat_included' => $defaultChatIncluded,
+        ]));
+
+        return $result['sent'] > 0;
+    }
+
+    protected function sendToTargets(array $targets, string $text, array $context = []): array
+    {
+        $targets = array_values(array_unique(array_map('strval', $targets)));
 
         Log::info('Telegram broadcast diproses', array_merge($context, [
-            'active_subscribers'     => count($subscriberChatIds),
-            'default_chat_included'  => $defaultChatIncluded,
-            'target_count'           => count($targets),
+            'target_count' => count($targets),
         ]));
 
         if (empty($targets)) {
             Log::warning('Telegram broadcast dibatalkan: tidak ada penerima aktif', $context);
 
-            return false;
+            return [
+                'sent' => 0,
+                'failed' => [],
+                'target_count' => 0,
+            ];
         }
 
         $sent = 0;
@@ -346,18 +388,22 @@ class TelegramService
         }
 
         Log::info('Telegram broadcast selesai', array_merge($context, [
-            'target_count'  => count($targets),
+            'target_count' => count($targets),
             'success_count' => $sent,
-            'failed_count'  => count($failed),
-            'all_sent'      => count($targets) === $sent,
+            'failed_count' => count($failed),
+            'all_sent' => count($targets) === $sent,
         ]));
 
-        if (!empty($failed)) {
+        if (! empty($failed)) {
             Log::warning('Telegram broadcast: sebagian penerima gagal', array_merge($context, [
                 'failed_chat_ids' => $failed,
             ]));
         }
 
-        return $sent > 0;
+        return [
+            'sent' => $sent,
+            'failed' => $failed,
+            'target_count' => count($targets),
+        ];
     }
 }

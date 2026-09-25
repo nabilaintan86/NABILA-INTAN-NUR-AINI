@@ -12,7 +12,8 @@ class DeviceSeeder extends Seeder
         $devices = [
             [
                 'name'                  => 'POP Gresik',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.254',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.38,
@@ -27,7 +28,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'Intiland 1',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.4',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.84,
@@ -42,7 +44,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'PJB',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.134',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.73,
@@ -57,7 +60,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'Border',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.3',
                 'polls'                 => 15238,
                 'responded_percentage'  => 52.36,
@@ -72,7 +76,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'SMKN-1',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.241',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.32,
@@ -87,7 +92,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'SBY-JKT',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.0.29',
                 'polls'                 => 15238,
                 'responded_percentage'  => 97.70,
@@ -102,7 +108,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'IIX-JI',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '218.100.32.1',
                 'polls'                 => 15238,
                 'responded_percentage'  => 53.79,
@@ -117,7 +124,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => '56:17',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.56.17',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.91,
@@ -132,7 +140,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'DNS 1',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.10',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.95,
@@ -147,7 +156,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => '93.11',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.93.11',
                 'polls'                 => 15238,
                 'responded_percentage'  => 98.76,
@@ -162,7 +172,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'POP YPM',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.50',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.60,
@@ -177,7 +188,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'SM-FM',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.60',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.15,
@@ -192,7 +204,8 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name'                  => 'Pop Krian',
-                'type'                  => 'ICMP',
+                'type'                  => 'Router',
+                'protocol'              => 'ICMP',
                 'ip_address'            => '202.154.4.70',
                 'polls'                 => 15238,
                 'responded_percentage'  => 99.48,

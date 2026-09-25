@@ -163,182 +163,148 @@
 @endpush
 
 @section('content')
-<div class="nk-content">
-    <div class="container">
-        <div class="nk-content-inner">
-            <div class="nk-content-body">
 
-                {{-- HEADER --}}
-                <div class="nk-block-head">
-                    <div class="nk-block-head-between flex-wrap gap g-2">
-                        <div class="nk-block-head-content">
-                            <nav>
-                                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                                    <li class="breadcrumb-item">
-                                        <a href="{{ route('admin.dashboard') }}">Home</a>
-                                    </li>
-                                    <li class="breadcrumb-item active" aria-current="page">
-                                        Network Tools
-                                    </li>
-                                </ol>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- FORM PANEL --}}
-                <div class="nk-block">
-                    <form id="networkToolForm" autocomplete="off">
-
-                        <div class="tools-panel">
-
-                            <div class="tools-panel-head">
-                                <h5 class="tools-title">
-                                    <em class="icon ni ni-activity-round"></em>
-                                    Command Center — Diagnosa Jaringan
-                                </h5>
-                                <p class="tools-subtitle">
-                                    Ping, traceroute, DNS lookup &amp; port scan terhadap IP / domain target.
-                                </p>
-                            </div>
-
-                            <div class="tools-panel-body">
-
-                                {{-- TARGET --}}
-                                <div class="tools-field mb-4">
-                                    <label class="tools-label" for="toolTarget">Name / Address</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><em class="icon ni ni-globe"></em></span>
-                                        <input type="text" class="form-control" id="toolTarget" name="target"
-                                               placeholder="Contoh: 202.154.4.254 atau google.com"
-                                               required>
-                                    </div>
-                                </div>
-
-                                <div class="row g-4">
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolCount">Ping count</label>
-                                            <input type="number" class="form-control" id="toolCount" name="count"
-                                                   value="5" min="1" max="100">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolHops">Trace max hops</label>
-                                            <input type="number" class="form-control" id="toolHops" name="hops"
-                                                   value="32" min="1" max="64">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolLookupType">Lookup type</label>
-                                            <select class="form-select" id="toolLookupType" name="lookup_type">
-                                                <option value="A" selected>A</option>
-                                                <option value="AAAA">AAAA</option>
-                                                <option value="CNAME">CNAME</option>
-                                                <option value="MX">MX</option>
-                                                <option value="NS">NS</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolLookupServer">Lookup server</label>
-                                            <input type="text" class="form-control" id="toolLookupServer"
-                                                   name="lookup_server"
-                                                   placeholder="8.8.8.8 (kosong = default)">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolFirstPort">Scan first port</label>
-                                            <input type="number" class="form-control" id="toolFirstPort"
-                                                   name="first_port" value="1" min="1" max="65535">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolLastPort">Scan last port</label>
-                                            <input type="number" class="form-control" id="toolLastPort"
-                                                   name="last_port" value="512" min="1" max="65535">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="tools-field">
-                                            <label class="tools-label" for="toolScanTimeout">Scan timeout (ms 100-2000)</label>
-                                            <input type="number" class="form-control" id="toolScanTimeout"
-                                                   name="scan_timeout" value="300" min="100" max="2000">
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                {{-- ACTIONS --}}
-                                <div class="tools-actions">
-                                    <input type="hidden" name="action" id="toolAction" value="ping">
-                                    <button type="button" class="btn btn-primary btn-tool-ping" data-action="ping">
-                                        <em class="icon ni ni-send"></em>
-                                        <span>Ping</span>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
-                                        <em class="icon ni ni-route"></em>
-                                        <span>Trace</span>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
-                                        <em class="icon ni ni-search"></em>
-                                        <span>Lookup</span>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
-                                        <em class="icon ni ni-drag-alt"></em>
-                                        <span>Scan</span>
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-                {{-- CONSOLE OUTPUT --}}
-                <div class="nk-block mt-3">
-                    <div class="console-box">
-
-                        <div class="console-head">
-                            <span class="console-dot console-dot-red"></span>
-                            <span class="console-dot console-dot-yellow"></span>
-                            <span class="console-dot console-dot-green"></span>
-                            <h6 class="console-title">Terminal Output</h6>
-                            <div class="console-actions">
-                                <button type="button" class="btn btn-light btn-dim" id="btnConsoleCopy">
-                                    <em class="icon ni ni-copy me-1"></em>Salin
-                                </button>
-                                <button type="button" class="btn btn-outline-light btn-dim" id="btnConsoleClear">
-                                    <em class="icon ni ni-reload me-1"></em>Bersihkan
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="console-output" id="consoleOutput">
-                            <span class="console-hint">
-                                &gt; Pilih target di atas lalu klik <strong>Ping</strong>, <strong>Trace</strong>,
-                                <strong>Lookup</strong>, atau <strong>Scan</strong>.<br>
-                                Hasil eksekusi perintah akan muncul di sini secara real-time.
-                            </span>
-                        </div>
-
-                    </div>
-                </div>
-
+<div class="nk-block-head">
+    <div class="nk-block-head-between flex-wrap gap g-2">
+        <div class="nk-block-head-content">
+            <nav>
+                <ol class="breadcrumb breadcrumb-arrow mb-0">
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Network Tools
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{{-- FORM PANEL --}}
+<div class="nk-block">
+    <form id="networkToolForm" autocomplete="off">
+        <div class="tools-panel">
+            <div class="tools-panel-head">
+                <h5 class="tools-title">
+                    <em class="icon ni ni-activity-round"></em>
+                    Command Center — Diagnosa Jaringan
+                </h5>
+                <p class="tools-subtitle">
+                    Ping, traceroute, DNS lookup &amp; port scan terhadap IP / domain target.
+                </p>
             </div>
+            <div class="tools-panel-body">
+                {{-- TARGET --}}
+                <div class="tools-field mb-4">
+                    <label class="tools-label" for="toolTarget">Name / Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><em class="icon ni ni-globe"></em></span>
+                        <input type="text" class="form-control" id="toolTarget" name="target"
+                               placeholder="Contoh: 202.154.4.254 atau google.com"
+                               required>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolCount">Ping count</label>
+                            <input type="number" class="form-control" id="toolCount" name="count"
+                                   value="5" min="1" max="100">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolHops">Trace max hops</label>
+                            <input type="number" class="form-control" id="toolHops" name="hops"
+                                   value="32" min="1" max="64">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolLookupType">Lookup type</label>
+                            <select class="form-select" id="toolLookupType" name="lookup_type">
+                                <option value="A" selected>A</option>
+                                <option value="AAAA">AAAA</option>
+                                <option value="CNAME">CNAME</option>
+                                <option value="MX">MX</option>
+                                <option value="NS">NS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolLookupServer">Lookup server</label>
+                            <input type="text" class="form-control" id="toolLookupServer"
+                                   name="lookup_server"
+                                   placeholder="8.8.8.8 (kosong = default)">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolFirstPort">Scan first port</label>
+                            <input type="number" class="form-control" id="toolFirstPort"
+                                   name="first_port" value="1" min="1" max="65535">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolLastPort">Scan last port</label>
+                            <input type="number" class="form-control" id="toolLastPort"
+                                   name="last_port" value="512" min="1" max="65535">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="tools-field">
+                            <label class="tools-label" for="toolScanTimeout">Scan timeout (ms 100-2000)</label>
+                            <input type="number" class="form-control" id="toolScanTimeout"
+                                   name="scan_timeout" value="300" min="100" max="2000">
+                        </div>
+                    </div>
+                </div>
+                {{-- ACTIONS --}}
+                <div class="tools-actions">
+                    <input type="hidden" name="action" id="toolAction" value="ping">
+                    <button type="button" class="btn btn-primary btn-tool-ping" data-action="ping">
+                        <em class="icon ni ni-send"></em>
+                        <span>Ping</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
+                        <em class="icon ni ni-route"></em>
+                        <span>Trace</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
+                        <em class="icon ni ni-search"></em>
+                        <span>Lookup</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
+                        <em class="icon ni ni-drag-alt"></em>
+                        <span>Scan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{{-- CONSOLE OUTPUT --}}
+<div class="nk-block">
+    <div class="console-box">
+        <div class="console-head">
+            <span class="console-dot console-dot-red"></span>
+            <span class="console-dot console-dot-yellow"></span>
+            <span class="console-dot console-dot-green"></span>
+            <h6 class="console-title">Terminal Output</h6>
+            <div class="console-actions">
+                <button type="button" class="btn btn-light btn-dim" id="btnConsoleCopy">
+                    <em class="icon ni ni-copy me-1"></em>Salin
+                </button>
+                <button type="button" class="btn btn-outline-light btn-dim" id="btnConsoleClear">
+                    <em class="icon ni ni-reload me-1"></em>Bersihkan
+                </button>
+            </div>
+        </div>
+        <div class="console-output" id="consoleOutput">
+            <span class="console-hint">
+                &gt; Pilih target di atas lalu klik <strong>Ping</strong>, <strong>Trace</strong>,
+                <strong>Lookup</strong>, atau <strong>Scan</strong>.<br>
+                Hasil eksekusi perintah akan muncul di sini secara real-time.
+            </span>
         </div>
     </div>
 </div>

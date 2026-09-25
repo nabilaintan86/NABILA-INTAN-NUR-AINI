@@ -91,7 +91,7 @@
 
 @section('content')
 {{-- RINGKASAN STATUS --}}
-<div class="row g-gs mb-4">
+<div class="row g-gs">
     {{-- Items Up --}}
     <div class="col-sm-6 col-xl-4">
         <div class="card h-100 kpi-card" data-kpi="up" onclick="openKpiModal('up')">

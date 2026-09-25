@@ -61,8 +61,6 @@
         border-top: 2px solid #10b981;
         display: inline-block;
     }
-    .nm-legend-line-warn { border-top-color: #f59e0b; }
-    .nm-legend-line-down { border-top-color: #ef4444; }
 
     .nm-refresh {
         font-size: 11px;
@@ -79,11 +77,7 @@
         overflow-y: auto;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
-        background-color: #fbfdff;
-        background-image:
-            linear-gradient(rgba(125, 153, 178, .07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(125, 153, 178, .07) 1px, transparent 1px);
-        background-size: 24px 24px;
+        background: #fbfdff;
         padding: 6px;
     }
     .topo-svg {
@@ -93,38 +87,43 @@
     }
 
     /* ---- Container group (bounding area) ----
-       Kotak tegas sehingga tiap POP terbaca sebagai satu area topology.
-       vector-effect agar border POP tetap jelas walau map di-zoom keluar. */
+       Kotak tegas sehingga tiap POP terbaca sebagai SATU area topology
+       (gaya bounding group WhatsUp Gold). Latar lebih terang dari canvas,
+       border jelas, radius halus, dan judul POP sebagai TAG di border atas.
+       vector-effect agar border tetap tajam walau map di-zoom keluar. */
     .topo-area-rect {
-        fill: #edf4ef;
-        stroke: #7d99b2;
+        fill: #e9f2ec;
+        stroke: #5b7d99;
         stroke-width: 2;
         vector-effect: non-scaling-stroke;
-        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, .06));
+        filter: drop-shadow(0 2px 4px rgba(15, 23, 42, .10));
     }
+    /* Garis bantu zona konten di dalam kotak (halus, tidak mencolok). */
     .topo-area-inner {
-        fill: none;
-        stroke: #cfe3d8;
+        fill: rgba(255, 255, 255, .28);
+        stroke: #b8cdc0;
         stroke-width: 1;
+        stroke-dasharray: 4 4;
         vector-effect: non-scaling-stroke;
     }
-    .topo-area-band {
-        fill: #0f766e;
-        pointer-events: none;
+    /* TAG judul area: menyeberang border atas kotak seperti label group. */
+    .topo-area-tag {
+        fill: #16324f;
+        stroke: #0f2642;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, .18));
     }
-    .topo-area-band-label {
+    .topo-area-tag-name {
         font-size: 13px;
         font-weight: 800;
         fill: #ffffff;
         letter-spacing: .02em;
-        pointer-events: none;
     }
-    .topo-area-band-count {
-        font-size: 10px;
+    .topo-area-tag-count {
+        font-size: 11px;
         font-weight: 700;
-        fill: #cffaf1;
-        text-anchor: end;
-        pointer-events: none;
+        fill: #a9bcd0;
     }
     .topo-edge {
         stroke: #10b981;
@@ -133,21 +132,19 @@
         stroke-linecap: round;
         stroke-linejoin: round;
     }
-    .topo-edge-down { stroke: #ef4444; }
-    .topo-edge-warn { stroke: #f59e0b; }
 
     .topo-node { cursor: pointer; }
     .topo-node image { pointer-events: none; }
     .topo-node:hover image { opacity: .88; }
     .topo-node-label-name {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 600;
         fill: #0f172a;
         text-anchor: middle;
         pointer-events: none;
     }
     .topo-node-label-ip {
-        font-size: 8px;
+        font-size: 9px;
         fill: #64748b;
         text-anchor: middle;
         pointer-events: none;
@@ -361,8 +358,6 @@
         <span><span class="nm-dot nm-dot-down"></span> DOWN</span>
         <span><span class="nm-dot nm-dot-warning"></span> WARNING</span>
         <span><span class="nm-legend-line"></span> Link</span>
-        <span><span class="nm-legend-line nm-legend-line-warn"></span> Link Warning</span>
-        <span><span class="nm-legend-line nm-legend-line-down"></span> Link Down</span>
         @if($endpoint)
             <span class="nm-refresh">
                 <em class="icon ni ni-reload"></em>
@@ -373,7 +368,7 @@
 </div>
 
 <div class="topo-wrap">
-    <svg id="topo" class="topo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2246 2524" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="topo" class="topo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1740 1500" preserveAspectRatio="xMidYMid meet"></svg>
 </div>
 
 <div class="nm-empty" id="topoEmpty" style="display:none;">
@@ -498,16 +493,28 @@
     var refreshUrl  = {!! json_encode($endpoint) !!};
     var deviceUrlTemplate = {!! json_encode($deviceEndpoint) !!};
 
-    var ICON = 44;
-    // Jarak mundur ujung garis dari pusat node (setengah icon ~22-25 + celah),
-    // agar ARROWHEAD tampil di sisi target tanpa menutupi icon.
-    var EDGE_TRIM = 30;
+    // Device diperbesar ~1.14x (icon 44 -> 50) agar lebih terbaca/diklik.
+    var ICON = 50;
+    // Jarak mundur ujung garis dari pusat node (setengah icon ~28 + celah +
+    // panjang arrowhead), agar ARROWHEAD tampil di sisi target tanpa menutupi icon.
+    var EDGE_TRIM = 34;
     // icon_type -> file icon (fallback server.png)
-    var iconTypes = { router: 'router', switch: 'switch', server: 'server', pc: 'pc', wifi: 'wifi' };
+    var iconTypes = {
+        router: 'router',
+        switch: 'switch',
+        olt: 'switch',
+        epon: 'router',
+        server: 'server',
+        pc: 'pc',
+        other: 'pc',
+        wifi: 'wifi',
+        access_point: 'wifi',
+        'access point': 'wifi'
+    };
 
     function iconFile(type) {
         var t = String(type || '').toLowerCase();
-        return (iconTypes[t] || 'server') + '.png';
+        return (iconTypes[t] || iconTypes[t.replace(/[_ ]/g, '_')] || 'server') + '.png';
     }
 
     function el(tag, attrs, text) {
@@ -594,26 +601,15 @@
             }
         }
 
-        // Node terlalu berdekatan (trim akan melahap seluruh path) ->
-        // perkecil trim proporsional sehingga masih menyisakan segmen garis.
-        var total = 0;
-        for (var i = 0; i < clean.length - 1; i++) {
-            total += ptDist(clean[i], clean[i + 1]);
-        }
-        if (startTrim + endTrim > total) {
-            var avail = Math.max(total * 0.55, 4);
-            var f = (startTrim + endTrim) / avail;
-            startTrim = Math.max(2, Math.floor(startTrim / f));
-            endTrim = Math.max(2, Math.floor(endTrim / f));
-        }
-
         var s = trimStart(clean, startTrim);
         var e = trimEnd(clean, endTrim);
 
-        // Jaga-jaga bila masih bentrok (path nyaris nol): fallback lurus terpotong.
+        // Node terlalu berdekatan -> fallback path penuh agar tetap tersambung.
         if (e <= s) {
-            return 'M ' + clean[0].x + ' ' + clean[0].y +
-                   ' L ' + clean[clean.length - 1].x + ' ' + clean[clean.length - 1].y;
+            dx = b.x - a.x; dy = b.y - a.y;
+            return Math.abs(dx) >= Math.abs(dy)
+                ? 'M ' + a.x + ' ' + a.y + ' H ' + b.x + ' V ' + b.y
+                : 'M ' + a.x + ' ' + a.y + ' V ' + b.y + ' H ' + b.x;
         }
 
         var d = [];
@@ -624,37 +620,27 @@
     }
 
     /**
-     * Defs SVG: ARROWHEAD (panah) tiga warna sejalan dengan status link.
-     * - topoEdgeArrow      : hijau (normal / up)
-     * - topoEdgeArrowWarn  : kuning (warning)
-     * - topoEdgeArrowDown  : merah (down / gangguan)
+     * Defs SVG: ARROWHEAD (panah) hijau untuk ujung garis di sisi TARGET.
      * markerUnits=userSpaceOnUse -> ukuran panah konsisten dengan icon,
      * orient=auto -> panah mengikuti arah garis (source -> target).
      */
     function buildDefs() {
         var defs = el('defs');
-        var arrows = {
-            topoEdgeArrow: '#10b981',
-            topoEdgeArrowWarn: '#f59e0b',
-            topoEdgeArrowDown: '#ef4444'
-        };
-        Object.keys(arrows).forEach(function (id) {
-            var marker = el('marker', {
-                id: id,
-                viewBox: '0 0 14 14',
-                refX: '14',
-                refY: '7',
-                markerWidth: '14',
-                markerHeight: '14',
-                orient: 'auto',
-                markerUnits: 'userSpaceOnUse'
-            });
-            marker.appendChild(el('path', {
-                d: 'M 0 0 L 14 7 L 0 14 z',
-                fill: arrows[id]
-            }));
-            defs.appendChild(marker);
+        var marker = el('marker', {
+            id: 'topoEdgeArrow',
+            viewBox: '0 0 14 14',
+            refX: '14',
+            refY: '7',
+            markerWidth: '14',
+            markerHeight: '14',
+            orient: 'auto',
+            markerUnits: 'userSpaceOnUse'
         });
+        marker.appendChild(el('path', {
+            d: 'M 0 0 L 14 7 L 0 14 z',
+            fill: '#10b981'
+        }));
+        defs.appendChild(marker);
         return defs;
     }
 
@@ -672,30 +658,13 @@
         }
         svg.innerHTML = '';
 
-        // Map device id -> posisi node & status.
+        // Map device id -> posisi node.
         var pos = {};
         payload.areas.forEach(function (area) {
             (area.nodes || []).forEach(function (n) {
                 pos[n.id] = { x: n.x, y: n.y };
             });
         });
-        var statusById = {};
-        payload.areas.forEach(function (area) {
-            (area.nodes || []).forEach(function (n) {
-                statusById[n.id] = normalizeStatus(n.status);
-            });
-        });
-
-        function edgeColor(fromId, toId) {
-            var s1 = statusById[fromId], s2 = statusById[toId];
-            if (s1 === 'down' || s2 === 'down') {
-                return { cls: 'topo-edge-down', marker: 'url(#topoEdgeArrowDown)' };
-            }
-            if (s1 === 'warning' || s2 === 'warning') {
-                return { cls: 'topo-edge-warn', marker: 'url(#topoEdgeArrowWarn)' };
-            }
-            return { cls: '', marker: 'url(#topoEdgeArrow)' };
-        }
 
         // Defs arrowhead (dibuat ulang setiap render / auto-refresh).
         svg.appendChild(buildDefs());
@@ -707,53 +676,73 @@
 
             svg.appendChild(el('rect', {
                 x: area.x, y: area.y, width: area.w, height: area.h,
-                rx: 14, 'class': 'topo-area-rect'
+                rx: 16, 'class': 'topo-area-rect'
             }));
             svg.appendChild(el('rect', {
-                x: area.x + 5, y: area.y + 5,
-                width: Math.max(area.w - 10, 0), height: Math.max(area.h - 10, 0),
-                rx: 10, 'class': 'topo-area-inner'
+                x: area.x + 8, y: area.y + 8,
+                width: Math.max(area.w - 16, 0), height: Math.max(area.h - 16, 0),
+                rx: 12, 'class': 'topo-area-inner'
             }));
         });
 
         // 2) Garis koneksi DIRECTIONAL (panah di ujung sisi TARGET via marker-end).
-        //    Warna garis ikut status: hijau normal, kuning warning, merah down.
         (payload.edges || []).forEach(function (c) {
             var a = pos[c.from], b = pos[c.to];
             if (!a || !b) return;
-            var ec = edgeColor(c.from, c.to);
             svg.appendChild(el('path', {
                 d: orthoPath(a, b, EDGE_TRIM, EDGE_TRIM),
-                'class': 'topo-edge' + (ec.cls ? ' ' + ec.cls : ''),
-                'marker-end': ec.marker
+                'class': 'topo-edge',
+                'marker-end': 'url(#topoEdgeArrow)'
             }));
         });
 
-        // 3) Judul group: header band (pita) di puncak kotak + nama & jumlah perangkat.
+        // 3) Judul group: TAG menyeberang border atas kotak (nama + jumlah).
+        //    Tag dibatasi selebar box agar tidak meluber ke panel tetangga.
         payload.areas.forEach(function (area) {
             var nodes = area.nodes || [];
             if (!nodes.length) return;
 
             var nameTxt  = String(area.name) || '';
             var countTxt = nodes.length + ' perangkat';
-            var bandH = 32;
-            // Pita penuh selebar kotak; rect kedua menutup sudut bawah membulat.
+
+            var avail = Math.max(area.w - 30, 70);
+            var showCount = true;
+            var tagW = 14 + nameTxt.length * 8.0 + 12 + 8 + countTxt.length * 6.2 + 8;
+            if (tagW > avail) {
+                showCount = false;
+                tagW = 14 + nameTxt.length * 8.0 + 10;
+            }
+            if (tagW > avail) {
+                var maxChars = Math.max(1, Math.floor((avail - 14 - 16) / 8.0));
+                nameTxt = nameTxt.length > maxChars
+                    ? nameTxt.slice(0, maxChars - 1) + '…'
+                    : nameTxt;
+                tagW = 14 + nameTxt.length * 8.0 + 10;
+            }
+
+            var tagH = 34;
+            var tagY = area.y - 17;              // straddle border atas
+            var tagX = area.x + 18;              // offset 18 dari kiri kotak
+            var nameX = tagX + 14;               // pad kiri tag
+
             svg.appendChild(el('rect', {
-                x: area.x, y: area.y,
-                width: area.w, height: bandH,
-                rx: 14, 'class': 'topo-area-band'
-            }));
-            svg.appendChild(el('rect', {
-                x: area.x, y: area.y + bandH / 2,
-                width: area.w, height: bandH / 2,
-                'class': 'topo-area-band'
+                x: tagX, y: tagY, width: tagW, height: tagH,
+                rx: 9, 'class': 'topo-area-tag'
             }));
             svg.appendChild(el('text', {
-                x: area.x + 14, y: area.y + 21, 'class': 'topo-area-band-label'
+                x: nameX, y: area.y + 5, 'class': 'topo-area-tag-name'
             }, nameTxt));
-            svg.appendChild(el('text', {
-                x: area.x + area.w - 14, y: area.y + 21, 'class': 'topo-area-band-count'
-            }, countTxt));
+
+            if (showCount) {
+                var dotX  = nameX + nameTxt.length * 8.0 + 12;
+                var countX = dotX + 8;
+                svg.appendChild(el('circle', {
+                    cx: dotX, cy: area.y, r: 3, fill: '#f59e0b'
+                }));
+                svg.appendChild(el('text', {
+                    x: countX, y: area.y + 4, 'class': 'topo-area-tag-count'
+                }, countTxt));
+            }
         });
 
         // 4) Node = PNG icon + badge status kecil + label.
@@ -762,15 +751,13 @@
                 var size = n.isHub ? ICON + 6 : ICON;
                 var g = el('g', { 'class': 'topo-node', transform: 'translate(' + n.x + ',' + n.y + ')' });
 
-                // Area klik transparan (menutupi icon + label).
-                // Icon (PNG) & teks sengaja pointer-events:none agar tidak
-                // menghalangi klik pada halaman, sehingga tanpa area ini klik
-                // nyata di tengah node tidak mengenai <g>. 
+                // Mencakup icon + label; lebih besar mengikuti ukuran device
+                // agar target klik lebih luas (mudah diklik/di-touch).
                 g.appendChild(el('rect', {
-                    x: -44,
-                    y: -28,
-                    width: 88,
-                    height: 86,
+                    x: -50,
+                    y: -30,
+                    width: 100,
+                    height: 92,
                     fill: '#000',
                     'fill-opacity': 0,
                     'pointer-events': 'all'
@@ -788,28 +775,29 @@
                 // Status: badge kecil di pojok kanan-atas icon.
                 g.appendChild(el('circle', {
                     cx: size / 2 - 3,
-                    cy: -(size / 2) + 3,
+                    cy: -(size / 2) + 4,
                     r: 6,
                     fill: statusColor(n.status),
                     stroke: '#fff',
                     'stroke-width': 2
                 }));
 
-                // Label: nama + IP di bawah icon.
+                // Label: nama + IP di bawah icon (spasi 2px dari icon).
                 g.appendChild(el('text', {
-                    y: size / 2 + 13, 'class': 'topo-node-label-name'
+                    y: size / 2 + 14, 'class': 'topo-node-label-name'
                 }, shortName(n.name)));
                 g.appendChild(el('text', {
-                    y: size / 2 + 24, 'class': 'topo-node-label-ip'
+                    y: size / 2 + 26, 'class': 'topo-node-label-ip'
                 }, n.ip || ''));
 
-                g.appendChild(el('title', null, n.name + ' (' + (n.ip || '-') + ')\nPOP: ' + (n.pop || '-') + ' | Tipe: ' + (n.icon || '-') + ' | Status: ' + n.status + ' | Koneksi: ' + n.degree));
+                g.appendChild(el('title', null, n.name + ' (' + (n.ip || '-') + ')\nPOP: ' + (n.pop || '-') + ' | Tipe: ' + (n.type || '-') + ' | Protokol: ' + (n.protocol || '-') + ' | Status: ' + n.status + ' | Koneksi: ' + n.degree));
 
                 g.addEventListener('click', function () {
                     openDeviceDetail(n.id, {
                         name: n.name,
                         ip_address: n.ip,
-                        type: n.icon,
+                        type: n.type,
+                        protocol: n.protocol,
                         pop_name: n.pop,
                         status: n.status,
                         icon_type: n.icon,
@@ -945,7 +933,7 @@
         statusBox.className = 'nm-info-value nm-status-' + status;
         document.getElementById('detailStatusText').textContent = statusLabel(status).toUpperCase();
 
-        document.getElementById('statType').textContent = fmt(st.type || dev.type || dev.icon || 'ICMP');
+        document.getElementById('statType').textContent = fmt(st.protocol || st.type || dev.protocol || dev.type || dev.icon || 'ICMP');
         document.getElementById('statPolls').textContent = fmt(st.total_polls);
         document.getElementById('statResponded').textContent = pct(st.responded_pct);
         document.getElementById('statMissed').textContent = pct(st.missed_pct);
@@ -955,7 +943,7 @@
         document.getElementById('statMaxDelay').textContent = delay(st.max_delay);
 
         document.getElementById('addIP').textContent = fmt(dev.ip_address || dev.ip);
-        document.getElementById('addType').textContent = fmt(st.type || dev.type || dev.icon);
+        document.getElementById('addType').textContent = fmt(dev.type || st.type || dev.icon);
         document.getElementById('addPOP').textContent = fmt(dev.pop_name || dev.pop);
 
         renderLogs(d.logs, dev, d.error);

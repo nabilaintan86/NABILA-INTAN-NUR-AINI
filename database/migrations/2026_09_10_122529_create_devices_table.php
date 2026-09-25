@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('devices', function (Blueprint $table) {
+        Schema::create('device', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('type')->default('ICMP');
+            $table->string('type')->default('Server');
+            $table->text('deskripsi')->nullable();
+            $table->string('gambar')->nullable();
             $table->string('ip_address');
             $table->bigInteger('polls')->default(0);
             $table->decimal('responded_percentage', 6, 2)->default(100);
@@ -35,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('devices');
+        Schema::dropIfExists('device');
     }
 };

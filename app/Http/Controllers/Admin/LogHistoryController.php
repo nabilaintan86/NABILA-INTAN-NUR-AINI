@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LogArchive;
 use App\Models\MonitoringLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class LogHistoryController extends Controller
 {
@@ -61,12 +62,20 @@ class LogHistoryController extends Controller
 
     public function archive(Request $request)
     {
-        $query = LogArchive::query();
+        // Tab Arsip membaca monitoring_logs DAN log_archives. Tabel arsip
+        // baru terisi setelah `logs:archive` berjalan, jadi tanpa join ini
+        // data terbaru (masih di monitoring_logs) tidak akan pernah muncul.
+        $columns = ['id', 'device_id', 'device_name', 'ip_address', 'status', 'response_time', 'checked_at'];
 
-        $this->applyArchiveDateFilter($query, $request);
+        $current  = MonitoringLog::query()->select($columns);
+        $archived = LogArchive::query()->select($columns);
 
-        $logs = (clone $query)
+        $this->applyArchiveDateFilter($current, $request);
+        $this->applyArchiveDateFilter($archived, $request);
+
+        $logs = $current->unionAll($archived)
             ->orderByDesc('checked_at')
+            ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
@@ -74,18 +83,65 @@ class LogHistoryController extends Controller
 
         return response()->json([
             'html'  => $html,
-            'total' => (clone $query)->count(),
+            'total' => $logs->total(),
         ]);
     }
 
+    /**
+     * Filter rentang tanggal yang aman & inklusif.
+     *
+     * Input date picker bisa datang sebagai YYYY-MM-DD (input type=date),
+     * MM/DD/YYYY atau DD/MM/YYYY. Nilai diparsing sebagai tanggal lokal di
+     * timezone aplikasi (WIB), lalu:
+     *   - dari  -> startOfDay()  (00:00:00)
+     *   - sampai-> endOfDay()    (23:59:59)
+     * sehingga seluruh hari terakhir ikut tercakup (bukan hanya midnight).
+     * Kolom disimpan sebagai datetime (Y-m-d H:i:s), bukan string tanggal.
+     */
     protected function applyArchiveDateFilter($query, Request $request): void
     {
-        if ($request->filled('from')) {
-            $query->whereDate('checked_at', '>=', $request->input('from'));
+        $from = $this->parseDateBound($request->input('from'));
+        $to   = $this->parseDateBound($request->input('to'));
+
+        if ($from !== null) {
+            $query->where('checked_at', '>=', $from->copy()->startOfDay());
         }
 
-        if ($request->filled('to')) {
-            $query->whereDate('checked_at', '<=', $request->input('to'));
+        if ($to !== null) {
+            $query->where('checked_at', '<=', $to->copy()->endOfDay());
+        }
+    }
+
+    /**
+     * Parse input tanggal menjadi Carbon di timezone aplikasi.
+     * Mendukung beberapa format umum (Y-m-d, m/d/Y, d/m/Y, dst).
+     */
+    protected function parseDateBound(mixed $value): ?Carbon
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $value = trim($value);
+        $formats = ['Y-m-d', 'm/d/Y', 'd/m/Y', 'Y/m/d', 'd-m-Y', 'm-d-Y', 'Y-m-d H:i:s', 'm/d/Y H:i:s'];
+
+        foreach ($formats as $format) {
+            try {
+                $parsed = Carbon::createFromFormat($format, $value);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            // Pastikan seluruh token ter-parse (hindari 09/24/2026 dibaca keliru).
+            if ($parsed && $parsed->format($format) === $value) {
+                return $parsed->setTimezone(config('app.timezone'));
+            }
+        }
+
+        try {
+            return Carbon::parse($value)->setTimezone(config('app.timezone'));
+        } catch (\Throwable) {
+            return null;
         }
     }
 
@@ -114,7 +170,8 @@ class LogHistoryController extends Controller
             ],
             'device' => $device ? [
                 'name'                 => $device->name,
-                'type'                 => $device->type,
+                'type'                 => $device->display_type,
+                'protocol'             => $device->display_protocol,
                 'ip_address'           => $device->ip_address,
                 'status'               => $device->status,
                 'polls'                => (int) $device->polls,

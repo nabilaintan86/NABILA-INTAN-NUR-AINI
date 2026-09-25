@@ -97,38 +97,6 @@
                         </a>
                     </li>
 
-                    {{-- Network Map --}}
-                    <li class="nk-menu-item">
-                        <a
-                            href="{{ route('admin.map') }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-location"></em>
-                            </span>
-
-                            <span class="nk-menu-text">
-                                Network Map
-                            </span>
-                        </a>
-                    </li>
-
-                    {{-- Map Editor --}}
-                    <li class="nk-menu-item">
-                        <a
-                            href="{{ route('admin.map.editor') }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-edit"></em>
-                            </span>
-
-                            <span class="nk-menu-text">
-                                Map Editor
-                            </span>
-                        </a>
-                    </li>
-
                     {{-- Log History --}}
                     <li class="nk-menu-item">
                         <a
@@ -171,22 +139,6 @@
                         </h6>
                     </li>
 
-                    {{-- Troubleshooting --}}
-                    <li class="nk-menu-item">
-                        <a
-                            href="{{ route('admin.troubleshooting') }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-setting-alt"></em>
-                            </span>
-
-                            <span class="nk-menu-text">
-                                Troubleshooting
-                            </span>
-                        </a>
-                    </li>
-
                     {{-- Kelola Router --}}
                     <li class="nk-menu-item">
                         <a
@@ -199,6 +151,39 @@
 
                             <span class="nk-menu-text">
                                 Kelola Router
+                            </span>
+                        </a>
+                    </li>
+
+                    @auth
+                        <li class="nk-menu-item">
+                            <a
+                                href="{{ route('admin.device.notes.report') }}"
+                                class="nk-menu-link"
+                            >
+                                <span class="nk-menu-icon">
+                                    <em class="icon ni ni-note"></em>
+                                </span>
+
+                                <span class="nk-menu-text">
+                                    Report Catatan
+                                </span>
+                            </a>
+                        </li>
+                    @endauth
+
+                    {{-- DHCP Lease --}}
+                    <li class="nk-menu-item">
+                        <a
+                            href="{{ route('admin.dhcp-lease') }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-wifi"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                DHCP Lease
                             </span>
                         </a>
                     </li>
@@ -217,6 +202,30 @@
                                 <span class="nk-menu-text">
                                     Kelola User
                                 </span>
+                            </a>
+                        </li>
+
+                        @php
+                            $telegramPendingCount = \Illuminate\Support\Facades\Schema::hasTable('telegram_users')
+                                ? \App\Models\TelegramUser::where('is_approved', false)->count()
+                                : 0;
+                        @endphp
+                        <li class="nk-menu-item">
+                            <a
+                                href="{{ route('admin.telegram-users') }}"
+                                class="nk-menu-link"
+                            >
+                                <span class="nk-menu-icon">
+                                    <em class="icon ni ni-telegram"></em>
+                                </span>
+
+                                <span class="nk-menu-text">
+                                    Telegram Users
+                                </span>
+
+                                @if($telegramPendingCount > 0)
+                                    <span class="badge badge-warning rounded-pill ms-auto">{{ $telegramPendingCount }}</span>
+                                @endif
                             </a>
                         </li>
                     @endif
@@ -238,7 +247,7 @@
                             class="nk-menu-link"
                         >
                             <span class="nk-menu-icon">
-                                <em class="icon ni ni-chart-pie"></em>
+                                <em class="icon ni ni-chart-up"></em>
                             </span>
 
                             <span class="nk-menu-text">
@@ -254,7 +263,7 @@
                             class="nk-menu-link"
                         >
                             <span class="nk-menu-icon">
-                                <em class="icon ni ni-screwdriver"></em>
+                                <em class="icon ni ni-terminal"></em>
                             </span>
 
                             <span class="nk-menu-text">

@@ -14,9 +14,6 @@
                                     <nav>
                                         <ol class="breadcrumb breadcrumb-arrow mb-0">
                                             <li class="breadcrumb-item">
-                                                <a href="{{ url('/admin/apps/invoice/invoice-preview') }}#">Home</a>
-                                            </li>
-                                            <li class="breadcrumb-item">
                                                 <a href="{{ url('/admin/apps/invoice/invoice-preview') }}#">Invoice</a>
                                             </li>
                                             <li class="breadcrumb-item active" aria-current="page">

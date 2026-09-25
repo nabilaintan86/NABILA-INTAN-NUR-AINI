@@ -11,15 +11,13 @@ return new class extends Migration
         Schema::table('device', function (Blueprint $table) {
             $table->string('icon_type')->nullable()->after('status');
             $table->string('pop_name')->nullable()->after('icon_type');
-            $table->integer('pos_x')->nullable()->after('pop_name');
-            $table->integer('pos_y')->nullable()->after('pos_x');
         });
     }
 
     public function down(): void
     {
         Schema::table('device', function (Blueprint $table) {
-            $table->dropColumn(['icon_type', 'pop_name', 'pos_x', 'pos_y']);
+            $table->dropColumn(['icon_type', 'pop_name']);
         });
     }
 };

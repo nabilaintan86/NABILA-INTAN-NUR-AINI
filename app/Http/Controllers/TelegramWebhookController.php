@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\TelegramUpdateHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * LEGACY: endpoint webhook Telegram.
@@ -18,14 +19,23 @@ class TelegramWebhookController extends Controller
 {
     public function handle(Request $request): JsonResponse
     {
-        $secret = config('services.telegram.webhook_secret');
+        $secret = (string) config('services.telegram.webhook_secret');
+        $provided = (string) $request->header('X-Telegram-Bot-Api-Secret-Token', '');
+        $managedMode = Schema::hasTable('telegram_users');
 
-        if (!empty($secret)
-            && !hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token', ''))) {
+        if (($managedMode || app()->environment('production')) && $secret === '') {
+            return response()->json(['ok' => false, 'message' => 'Webhook secret belum dikonfigurasi.'], 503);
+        }
+
+        if ($secret !== '' && ! hash_equals($secret, $provided)) {
             return response()->json(['ok' => false], 403);
         }
 
-        app(TelegramUpdateHandler::class)->handleUpdate($request->json()->all());
+        $result = app(TelegramUpdateHandler::class)->handleUpdate($request->json()->all());
+
+        if ($result === false) {
+            return response()->json(['ok' => false, 'message' => 'Rate limit tercapai.'], 429);
+        }
 
         return response()->json(['ok' => true]);
     }

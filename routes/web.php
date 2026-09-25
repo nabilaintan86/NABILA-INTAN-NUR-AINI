@@ -1,22 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\AuthController;
-
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\MonitoringController;
-use App\Http\Controllers\Admin\LogHistoryController;
-use App\Http\Controllers\Admin\NotifikasiController;
-use App\Http\Controllers\Admin\TroubleshootingController;
+use App\Http\Controllers\Admin\DeviceDetailController;
+use App\Http\Controllers\Admin\DeviceNoteController;
+use App\Http\Controllers\Admin\DhcpLeaseController;
 use App\Http\Controllers\Admin\KelolaRouterController;
 use App\Http\Controllers\Admin\LaporanController;
-use App\Http\Controllers\Admin\MapController;
-use App\Http\Controllers\Admin\MapEditorController;
+use App\Http\Controllers\Admin\LogHistoryController;
+use App\Http\Controllers\Admin\MonitoringController;
+use App\Http\Controllers\Admin\NotifikasiController;
+use App\Http\Controllers\Admin\TelegramUserController;
 use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TelegramWebhookController;
-
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +45,6 @@ Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
     ->name('password.email');
 
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN
@@ -71,7 +68,6 @@ Route::prefix('admin')
         Route::get('/dashboard/data', [DashboardController::class, 'data'])
             ->name('dashboard.data');
 
-
         /*
         |--------------------------------------------------------------------------
         | Monitoring
@@ -89,33 +85,6 @@ Route::prefix('admin')
         // Detail satu device (popup MAP RADNET) - read-only, tanpa ping.
         Route::get('/monitoring/device/{device}', [MonitoringController::class, 'device'])
             ->name('monitoring.device');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Network Map
-        |--------------------------------------------------------------------------
-        */
-
-        // Halaman Network Map (gambar MAP.png + marker device)
-        Route::get('/map', [MapController::class, 'index'])
-            ->name('map');
-
-        // Map Editor: atur posisi device pada gambar
-        Route::get('/map-editor', [MapEditorController::class, 'index'])
-            ->name('map.editor');
-
-        // Endpoint JSON list device + posisi (dipakai halaman /admin/map)
-        Route::get('/map-editor/data', [MapEditorController::class, 'data'])
-            ->name('map.editor.data');
-
-        // Simpan koordinat device
-        Route::post('/map-editor/save', [MapEditorController::class, 'save'])
-            ->name('map.editor.save');
-
-        // Reset posisi 1 device / semua device
-        Route::post('/map-editor/reset', [MapEditorController::class, 'reset'])
-            ->name('map.editor.reset');
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
@@ -141,21 +110,11 @@ Route::prefix('admin')
             ->whereNumber('notification')
             ->name('notifikasi.read');
 
-
         /*
         |--------------------------------------------------------------------------
         | Manajemen
         |--------------------------------------------------------------------------
         */
-
-        Route::get('/troubleshooting', [TroubleshootingController::class, 'index'])
-            ->name('troubleshooting');
-
-        Route::post('/troubleshooting/diagnose', [TroubleshootingController::class, 'diagnose'])
-            ->name('troubleshooting.diagnose');
-
-        Route::post('/troubleshooting/resolve/{id}', [TroubleshootingController::class, 'resolve'])
-            ->name('troubleshooting.resolve');
 
         Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
             ->name('kelola-router');
@@ -169,9 +128,46 @@ Route::prefix('admin')
         Route::delete('/kelola-router/{device}', [KelolaRouterController::class, 'destroy'])
             ->name('kelola-router.destroy');
 
+        // Detail perangkat (read-only), dipakai sebagai target link nama device
+        // di tabel laporan & modal. Tidak mengubah status / menjalankan ping.
+        Route::get('/device/{device}/detail', [DeviceDetailController::class, 'show'])
+            ->name('device.detail');
+
+        Route::middleware('auth')->group(function () {
+            Route::get('/device-notes', [DeviceNoteController::class, 'report'])
+                ->name('device.notes.report');
+
+            Route::post('/device-notes', [DeviceNoteController::class, 'storeFromReport'])
+                ->name('device.notes.store-report');
+
+            Route::post('/device/{device}/notes', [DeviceNoteController::class, 'store'])
+                ->name('device.notes.store');
+
+            Route::put('/device-notes/{note}', [DeviceNoteController::class, 'update'])
+                ->name('device.notes.update');
+
+            Route::delete('/device-notes/{note}', [DeviceNoteController::class, 'destroy'])
+                ->name('device.notes.destroy');
+        });
+
+        // DHCP Lease - daftar perangkat yang mendapat IP dari DHCP
+        Route::get('/dhcp-lease', [DhcpLeaseController::class, 'index'])
+            ->name('dhcp-lease');
+
+        // Upload devices.csv lewat halaman (drag & drop / pilih file)
+        Route::post('/dhcp-lease/upload', [DhcpLeaseController::class, 'upload'])
+            ->name('dhcp-lease.upload');
+
+        // Import devices.csv dari path default (tombol "Import Sekarang" di empty state)
+        Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])
+            ->name('dhcp-lease.import');
 
         Route::get('/laporan', [LaporanController::class, 'index'])
             ->name('laporan');
+
+        // Export PDF laporan monitoring mengikuti periode aktif
+        Route::get('/laporan/pdf', [LaporanController::class, 'pdf'])
+            ->name('laporan.pdf');
 
         Route::get('/tools', [ToolsController::class, 'index'])
             ->name('tools');
@@ -187,7 +183,6 @@ Route::prefix('admin')
 
         Route::post('/tools/scan', [ToolsController::class, 'scan'])
             ->name('tools.scan');
-
 
         /*
         |--------------------------------------------------------------------------
@@ -214,6 +209,26 @@ Route::prefix('admin')
             Route::delete('/kelola-user/{user}', [UserController::class, 'destroy'])
                 ->name('kelola-user.destroy');
         });
+
+        Route::middleware(['auth', 'role:super_admin'])->group(function () {
+            Route::get('/telegram-users', [TelegramUserController::class, 'index'])
+                ->name('telegram-users');
+
+            Route::post('/telegram-users/{telegramUser}/approve', [TelegramUserController::class, 'approve'])
+                ->name('telegram-users.approve');
+
+            Route::post('/telegram-users/{telegramUser}/reject', [TelegramUserController::class, 'reject'])
+                ->name('telegram-users.reject');
+
+            Route::delete('/telegram-users/{telegramUser}', [TelegramUserController::class, 'destroy'])
+                ->name('telegram-users.destroy');
+
+            Route::post('/telegram-users/{telegramUser}/set-role', [TelegramUserController::class, 'setRole'])
+                ->name('telegram-users.set-role');
+
+            Route::post('/telegram-users/broadcast', [TelegramUserController::class, 'broadcast'])
+                ->name('telegram-users.broadcast');
+        });
     });
 
 /*
@@ -228,3 +243,6 @@ Route::prefix('admin')
 
 Route::post('/telegram/webhook', [TelegramWebhookController::class, 'handle'])
     ->name('telegram.webhook');
+
+Route::post('/api/telegram/webhook', [TelegramWebhookController::class, 'handle'])
+    ->name('telegram.webhook.api');

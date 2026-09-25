@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->foreign('device_id')
                 ->references('id')
-                ->on('devices')
+                ->on('device')
                 ->nullOnDelete();
         });
     }

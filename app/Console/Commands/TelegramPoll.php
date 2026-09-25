@@ -21,13 +21,13 @@ class TelegramPoll extends Command
         {--once : Proses satu batch update lalu keluar (untuk testing)}
         {--no-delete-webhook : Jangan panggil deleteWebhook saat start}';
 
-    protected $description = 'Long polling Telegram (getUpdates) untuk menerima /start subscriber';
+    protected $description = 'Long polling Telegram (getUpdates) untuk menerima dan memproses perintah';
 
     private bool $running = true;
 
     public function handle(TelegramService $telegram, TelegramUpdateHandler $handler): int
     {
-        if (!$telegram->isConfigured()) {
+        if (! $telegram->isConfigured()) {
             $this->error('TELEGRAM_BOT_TOKEN belum dikonfigurasi di .env');
 
             return self::FAILURE;
@@ -41,7 +41,7 @@ class TelegramPoll extends Command
         |--------------------------------------------------------------------------
         */
 
-        if (!$this->option('no-delete-webhook')) {
+        if (! $this->option('no-delete-webhook')) {
             if ($telegram->deleteWebhook()) {
                 $this->info('Webhook Telegram dihapus, getUpdates aktif.');
             } else {
@@ -57,7 +57,7 @@ class TelegramPoll extends Command
         while ($this->running) {
             $result = $telegram->getUpdatesWithDetails($offset);
 
-            if (!$result['ok']) {
+            if (! $result['ok']) {
                 $this->showError($result);
 
                 $this->warn("Coba lagi dalam {$retryDelay} detik...");
@@ -121,7 +121,7 @@ class TelegramPoll extends Command
 
     protected function registerStopSignals(): void
     {
-        if (!function_exists('pcntl_signal') || !function_exists('pcntl_async_signals')) {
+        if (! function_exists('pcntl_signal') || ! function_exists('pcntl_async_signals')) {
             return;
         }
 
@@ -150,11 +150,11 @@ class TelegramPoll extends Command
             $this->error("HTTP {$result['status']}");
         }
 
-        if (!empty($result['description'])) {
+        if (! empty($result['description'])) {
             $this->error('Telegram API: '.$this->sanitizeOutput($result['description']));
         }
 
-        if (!empty($result['error'])) {
+        if (! empty($result['error'])) {
             $this->error('Connection error: '.$this->sanitizeOutput($result['error']));
         }
 

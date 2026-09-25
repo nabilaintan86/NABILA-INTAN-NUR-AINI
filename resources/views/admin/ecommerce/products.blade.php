@@ -14,9 +14,6 @@
                                     <nav>
                                         <ol class="breadcrumb breadcrumb-arrow mb-0">
                                             <li class="breadcrumb-item">
-                                                <a href="{{ url('/admin/ecommerce/products') }}#">Home</a>
-                                            </li>
-                                            <li class="breadcrumb-item">
                                                 <a href="{{ url('/admin/ecommerce/products') }}#">ecommerce</a>
                                             </li>
                                             <li class="breadcrumb-item active" aria-current="page">

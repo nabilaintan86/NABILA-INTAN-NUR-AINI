@@ -524,7 +524,7 @@
     </div>
 
     {{-- RECENT ALERTS + RECENT ACTIVITY --}}
-<div class="row g-3 mb-3">
+<div class="row g-3">
     <div class="col-lg-6">
         <div class="noc-card h-100">
             <div class="noc-card-header">

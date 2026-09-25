@@ -362,7 +362,7 @@ MonitoringLog::create([
             $data = [
                 'device' => $device->name,
                 'ip'     => $device->ip_address,
-                'type'   => $device->type,
+                'type'   => $device->display_protocol,
                 'time'   => $waktu,
             ];
 

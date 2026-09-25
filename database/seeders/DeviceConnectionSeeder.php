@@ -266,15 +266,15 @@ class DeviceConnectionSeeder extends Seeder
      * Duplikat/non-canonical yang muncul saat audit (dari data actual DB).
      */
     protected array $nonCanonical = [
-        'TPS 1'                 => ['name' => 'TPS 1', 'ip' => '202.154.4.21', 'reason' => 'Device dummy lama (MapPlazaBRISeeder). Canonical TPS 1 = 192.168.90.13'],
-        'Switch SFP'            => ['name' => 'Switch SFP', 'ip' => '202.154.4.24', 'reason' => 'Device dummy lama (MapPlazaBRISeeder).'],
-        'Dst BRI'               => ['name' => 'Dst BRI', 'ip' => '202.154.4.20', 'reason' => 'Device dummy lama (MapPlazaBRISeeder).'],
-        'TPS 2'                 => ['name' => 'TPS 2', 'ip' => '202.154.4.22', 'reason' => 'Device dummy lama, tidak ada di map.'],
-        'EBAY'                  => ['name' => 'EBAY', 'ip' => '202.154.4.23', 'reason' => 'Device dummy lama, tidak ada di map.'],
-        'Dist BRI'              => ['name' => 'Dist BRI', 'ip' => '202.154.4.4', 'reason' => 'IP bertabrakan dgn Intiland 1 (core). Tidak terhubung di map.'],
-        '93.11 (202.154.93.11)' => ['name' => '93.11', 'ip' => '202.154.93.11', 'reason' => 'Bukan yg di map (map pakai 192.168.93.11).'],
+        'TPS 1'                 => ['name' => 'TPS 1', 'ip' => '202.154.4.21', 'reason' => 'Device dummy lama. Canonical TPS 1 = 192.168.90.13'],
+        'Switch SFP'            => ['name' => 'Switch SFP', 'ip' => '202.154.4.24', 'reason' => 'Device dummy lama.'],
+        'Dst BRI'               => ['name' => 'Dst BRI', 'ip' => '202.154.4.20', 'reason' => 'Device dummy lama.'],
+        'TPS 2'                 => ['name' => 'TPS 2', 'ip' => '202.154.4.22', 'reason' => 'Device dummy lama, tidak ada di topology.'],
+        'EBAY'                  => ['name' => 'EBAY', 'ip' => '202.154.4.23', 'reason' => 'Device dummy lama, tidak ada di topology.'],
+        'Dist BRI'              => ['name' => 'Dist BRI', 'ip' => '202.154.4.4', 'reason' => 'IP bertabrakan dgn Intiland 1 (core). Tidak terhubung di topology.'],
+        '93.11 (202.154.93.11)' => ['name' => '93.11', 'ip' => '202.154.93.11', 'reason' => 'Bukan yg di topology (pakai 192.168.93.11).'],
         'SM-FM (202.154.4.60)'  => ['name' => 'SM-FM', 'ip' => '202.154.4.60', 'reason' => 'Bukan core Sham FM (pakai 202.154.4.222).'],
-        'Pop Krian (202.154.4.70)' => ['name' => 'Pop Krian', 'ip' => '202.154.4.70', 'reason' => 'Bukan device POP Yapalis di map.'],
+        'Pop Krian (202.154.4.70)' => ['name' => 'Pop Krian', 'ip' => '202.154.4.70', 'reason' => 'Bukan device POP Yapalis di topology.'],
         'DNS 1 (202.154.4.10)'  => ['name' => 'DNS 1', 'ip' => '202.154.4.10', 'reason' => 'Di luar topology.'],
         'KOMINFO (202.154.4.94)' => ['name' => 'KOMINFO', 'ip' => '202.154.4.94', 'reason' => 'Berkaitan dgn PDI-Router (Sham FM). Kominfo Rajasa = 202.154.4.226.'],
     ];

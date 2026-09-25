@@ -16,16 +16,74 @@
 
     <style>
         {{-- =========================================================
-            GLOBAL OVERRIDES (RadneXt)
-            Hapus spasi kosong besar di atas judul halaman
+            STANDARD LAYOUT ADMIN
+            .admin-content = SATU-SATUNYA grid horizontal untuk seluruh
+            halaman admin. Halaman tidak boleh menambah .nk-content /
+            .container sendiri di dalam @yield('content').
         ========================================================== --}}
-        .nk-content { padding-top: 0 !important; }
-        .nk-content-body { padding-top: 0 !important; margin-top: 0 !important; }
-        .nk-content-body > .nk-block:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-        .nk-block-head { margin-top: 0 !important; }
-        .nk-block-head-content { padding-top: 0 !important; }
-        .nk-page-head { margin-top: 0 !important; }
-        .nk-content .nk-content-inner { padding-top: 0 !important; }
+        .admin-content {
+            --admin-gutter: 1.5rem;
+            --admin-gap: 1.5rem;
+            --admin-gap-head: 2rem;
+            --admin-radius: .5rem;
+            width: 100%;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1.25rem var(--admin-gutter) var(--admin-gutter);
+        }
+
+        {{-- Padding horizontal & max-width hanya boleh dari .admin-content --}}
+        .nk-content { padding: 0 !important; }
+
+        {{-- Lipat wrapper lama (nk-content > container > nk-content-inner >
+             nk-content-body) supaya halaman lama ikut satu container yang
+             sama, tanpa padding ganda. --}}
+        .nk-content-body .nk-content,
+        .nk-content-body .container,
+        .nk-content-body .container-fluid,
+        .nk-content-body .nk-content-inner {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nk-content-body .nk-content-body {
+            height: auto;
+            min-height: 0;
+            overflow: visible;
+        }
+
+        {{-- Satu pola jarak vertikal: semua section memakai --admin-gap,
+             block judul halaman memakai --admin-gap-head. --}}
+        .nk-content-body > * + *,
+        .nk-content-body > .nk-block + .nk-block { margin-top: var(--admin-gap); }
+        .nk-content-body > *:first-child { margin-top: 0; }
+        .nk-content-body > .nk-block { margin-top: var(--admin-gap); }
+        .nk-content-body > .nk-block:first-child { margin-top: 0; }
+        .nk-content-body > .nk-block-head { margin-top: var(--admin-gap); margin-bottom: 0; }
+        .nk-content-body > .nk-block-head:first-child { margin-top: 0; }
+        .nk-content-body > .nk-block-head + * { margin-top: var(--admin-gap-head); }
+
+        {{-- Radius seragam untuk card / panel / pembungkus tabel --}}
+        .admin-content :is(
+            .card,
+            .nk-block,
+            .panel,
+            .stat-chip,
+            .modal-content,
+            .kpi-card,
+            .kpi-table-wrap,
+            .noc-card,
+            .stat-card,
+            .lp-card,
+            .telegram-card,
+            .telegram-stat,
+            .dhcp-panel,
+            .dhcp-table-wrap,
+            .tools-panel
+        ) {
+            border-radius: var(--admin-radius);
+        }
 
         {{-- =========================================================
             LOGO RADNEXT DI SIDEBAR
@@ -60,11 +118,9 @@
 
                 {{-- CONTENT --}}
                 <div class="nk-content">
-                    <div class="container-fluid">
-                        <div class="nk-content-inner">
-                            <div class="nk-content-body">
-                                @yield('content')
-                            </div>
+                    <div class="admin-content">
+                        <div class="nk-content-body">
+                            @yield('content')
                         </div>
                     </div>
                 </div>

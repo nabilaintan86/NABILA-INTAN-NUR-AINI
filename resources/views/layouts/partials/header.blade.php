@@ -2,20 +2,6 @@
     <div class="container-fluid">
         <div class="nk-header-wrap">
 
-            @php
-                $pageTitles = [
-                    'admin.dashboard' => 'Dashboard',
-                    'admin.monitoring' => 'Monitoring Jaringan',
-                    'admin.log' => 'Log History',
-                    'admin.notifikasi' => 'Notifikasi',
-                    'admin.troubleshooting' => 'Troubleshooting',
-                    'admin.kelola-router' => 'Kelola Router',
-                    'admin.laporan' => 'Laporan & Grafik',
-                    'admin.tools' => 'Network Tools',
-                ];
-                $currentRoute = request()->route() ? request()->route()->getName() : '';
-            @endphp
-
             <div class="d-flex align-items-center">
                 <div class="nk-sidebar-toggle">
                     <button class="btn btn-sm btn-icon btn-zoom sidebar-toggle d-sm-none"><em class="icon ni ni-menu"></em></button><button class="btn btn-md btn-icon btn-zoom sidebar-toggle d-none d-sm-inline-flex"><em class="icon ni ni-menu"></em></button>
@@ -25,7 +11,7 @@
                 </div>
                 <div class="d-none d-sm-flex flex-column justify-content-center ms-1 ms-xl-2">
                     <small class="overline-title mb-0">RadneXt NOC</small>
-                    <h5 class="mb-0">{{ $pageTitles[$currentRoute] ?? 'Dashboard' }}</h5>
+                    <h5 class="mb-0">{{ $pageTitle }}</h5>
                 </div>
             </div>
 

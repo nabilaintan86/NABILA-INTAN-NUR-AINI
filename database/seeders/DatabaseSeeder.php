@@ -20,8 +20,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DeviceSeeder::class,
             ActivityLogSeeder::class,
-            TroubleshootingLogSeeder::class,
-            MapPlazaBRISeeder::class,
             PopMappingSeeder::class,
             DeviceConnectionSeeder::class,
         ]);
