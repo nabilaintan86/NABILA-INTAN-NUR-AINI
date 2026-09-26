@@ -15,7 +15,13 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (auth()->check() && auth()->user()->role !== $role) {
+        // If user is not authenticated, redirect to login.
+        if (! auth()->check()) {
+            return redirect()->guest(route('login'));
+        }
+
+        // If authenticated but role mismatch, forbid.
+        if (auth()->user()->role !== $role) {
             abort(403);
         }
 

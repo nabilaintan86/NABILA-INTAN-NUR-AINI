@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Device;
 use App\Models\DeviceNotification;
 use App\Models\MonitoringLog;
+use App\Services\DeviceCsvService;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -15,12 +16,13 @@ class MonitorDevices extends Command
 
     protected $description = 'Ping semua device dan update status ke database';
 
-    public function handle()
+    public function handle(DeviceCsvService $source)
     {
-        $devices = Device::all();
+        // Hanya perangkat resmi (devices.csv) yang diping, satu kali per IP.
+        $devices = $source->officialDevicesUnique();
 
         if ($devices->isEmpty()) {
-            $this->warn('Tidak ada device yang ditemukan di tabel device.');
+            $this->warn('Tidak ada device resmi yang terdaftar di devices.csv.');
             return self::SUCCESS;
         }
 

@@ -30,6 +30,7 @@ class Device extends Model
         'max_delay',
         'status',
         'icon_type',
+        'router_version',
         'pop_name',
         'deskripsi',
         'gambar',

@@ -116,17 +116,28 @@ Route::prefix('admin')
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
-            ->name('kelola-router');
+        // Kelola Router
+        Route::middleware('auth')->group(function () {
+            // Read-only access (admin and super_admin)
+            Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
+                ->name('kelola-router');
 
-        Route::post('/kelola-router', [KelolaRouterController::class, 'store'])
-            ->name('kelola-router.store');
+            // Detail perangkat readable by authenticated users
+            Route::get('/device/{device}/detail', [DeviceDetailController::class, 'show'])
+                ->name('device.detail');
 
-        Route::put('/kelola-router/{device}', [KelolaRouterController::class, 'update'])
-            ->name('kelola-router.update');
+            // Mutating actions: only super_admin
+            Route::middleware('role:super_admin')->group(function () {
+                Route::post('/kelola-router', [KelolaRouterController::class, 'store'])
+                    ->name('kelola-router.store');
 
-        Route::delete('/kelola-router/{device}', [KelolaRouterController::class, 'destroy'])
-            ->name('kelola-router.destroy');
+                Route::put('/kelola-router/{device}', [KelolaRouterController::class, 'update'])
+                    ->name('kelola-router.update');
+
+                Route::delete('/kelola-router/{device}', [KelolaRouterController::class, 'destroy'])
+                    ->name('kelola-router.destroy');
+            });
+        });
 
         // Detail perangkat (read-only), dipakai sebagai target link nama device
         // di tabel laporan & modal. Tidak mengubah status / menjalankan ping.
@@ -168,6 +179,12 @@ Route::prefix('admin')
         // Export PDF laporan monitoring mengikuti periode aktif
         Route::get('/laporan/pdf', [LaporanController::class, 'pdf'])
             ->name('laporan.pdf');
+
+        // Export PDF laporan per perangkat (menambahi, tidak mengganti,
+        // route laporan.pdf di atas).
+        Route::get('/laporan/perangkat/{device}/pdf', [LaporanController::class, 'perangkatPdf'])
+            ->whereNumber('device')
+            ->name('laporan.perangkat.pdf');
 
         Route::get('/tools', [ToolsController::class, 'index'])
             ->name('tools');

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Laporan Monitoring {{ $period['label'] }}</title>
+    <title>Laporan &amp; Grafik {{ $period['label'] }}</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -42,6 +42,22 @@
         .b-rec  { background: #e8f6ee; color: #106b41; }
         .b-ongoing { background: #ecebfd; color: #4F46E5; }
 
+        /* Grafik batang (DomPDF: blok + lebar persen) */
+        table.barchart { margin-bottom: 4px; }
+        table.barchart td { border: 0; padding: 1px 3px; vertical-align: middle; }
+        table.barchart .bc-lbl { width: 46px; color: #64748b; font-size: 7.5px; }
+        table.barchart .bc-track { background: #f1f5f9; }
+        table.barchart .bc-val { width: 58px; text-align: right; font-weight: 700; color: #1e293b; }
+        table.barchart .bc-note { width: 92px; text-align: right; color: #94a3b8; font-size: 7.5px; }
+        div.bc-fill { height: 7px; }
+        .b-indigo { background-color: #4F46E5; }
+        .b-green  { background-color: #16a34a; }
+        .b-amber  { background-color: #d97706; }
+        .b-red    { background-color: #dc2626; }
+        .legend { font-size: 7.5px; color: #64748b; margin-top: 3px; }
+        .legend span { margin-right: 10px; }
+        .swatch { display: inline-block; width: 7px; height: 7px; margin-right: 3px; }
+
         .footer {
             position: fixed;
             bottom: 0;
@@ -59,9 +75,9 @@
 <body>
 
     <div class="brand">
-        <h1>Laporan Monitoring Jaringan</h1>
+        <h1>Laporan &amp; Grafik Jaringan</h1>
         <div class="subtitle">RADNEXT NOC</div>
-        <div class="meta">Dashboard Laporan Monitoring &middot; Dihasilkan {{ now()->format('d M Y H:i:s') }}</div>
+        <div class="meta">Laporan Keseluruhan &middot; Dihasilkan {{ now()->format('d M Y H:i:s') }}</div>
     </div>
 
     <h2>Ringkasan {{ ucfirst($period['type']) }}</h2>
@@ -69,6 +85,37 @@
         Periode: {{ $period['label'] }}
         &middot; {{ $period['start']->format('d M Y H:i') }} &mdash; {{ $period['end']->format('d M Y H:i') }}
     </div>
+
+    <h2>Total Perangkat</h2>
+    @if(! empty($deviceSummary))
+    <table>
+        <thead>
+            <tr>
+                <th class="num">Total</th>
+                <th class="num">UP</th>
+                <th class="num">DOWN</th>
+                <th class="num">WARNING</th>
+                <th class="num">UNKNOWN</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="num"><b>{{ number_format($deviceSummary['total'] ?? 0) }}</b></td>
+                <td class="num up">{{ number_format($deviceSummary['up'] ?? 0) }}</td>
+                <td class="num down">{{ number_format($deviceSummary['down'] ?? 0) }}</td>
+                <td class="num warn">{{ number_format($deviceSummary['warning'] ?? 0) }}</td>
+                <td class="num">{{ number_format($deviceSummary['unknown'] ?? 0) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="muted">
+        Sumber: devices.csv ({{ number_format($deviceSummary['csv_rows'] ?? 0) }} baris,
+        {{ number_format($deviceSummary['csv_unique_ips'] ?? 0) }} IP unik).
+        Status di atas adalah status terkini perangkat, bukan status pada periode.
+    </p>
+    @else
+    <p class="muted">Data perangkat tidak tersedia.</p>
+    @endif
 
     <table class="summary">
         <tr>
@@ -136,6 +183,42 @@
         </tbody>
     </table>
 
+    <h2>Grafik Network Availability ({{ $period['granularity'] === 'hour' ? 'per jam' : 'per hari' }})</h2>
+    @php
+        $availRows = [];
+        $availMax  = 0;
+
+        foreach (($availability['labels'] ?? []) as $i => $label) {
+            $value = ($availability['availability'][$i] ?? null) !== null
+                ? (float) $availability['availability'][$i]
+                : null;
+
+            $availRows[] = ['label' => $label, 'value' => $value];
+
+            if ($value !== null) {
+                $availMax = max($availMax, $value);
+            }
+        }
+
+        $availTone = function ($value) {
+            return $value === null
+                ? ''
+                : ($value >= 99 ? 'b-green' : ($value >= 90 ? 'b-amber' : 'b-red'));
+        };
+    @endphp
+    @include('admin.partials.pdf-bar-chart', [
+        'rows'     => $availRows,
+        'max'      => $availMax > 0 ? $availMax : null,
+        'suffix'   => '%',
+        'decimals' => 2,
+        'tone'     => $availTone,
+    ])
+    <div class="legend">
+        <span><i class="swatch b-green"></i>&ge; 99%</span>
+        <span><i class="swatch b-amber"></i>90% &ndash; 98,99%</span>
+        <span><i class="swatch b-red"></i>&lt; 90%</span>
+    </div>
+
     <h2>Network Availability</h2>
     @if(count($availability['labels'] ?? []))
     <table>
@@ -159,6 +242,48 @@
     @else
     <p class="muted">Tidak ada data.</p>
     @endif
+
+    <h2>Grafik Response Time (ms)</h2>
+    @php
+        $respRows = [];
+        $respMax  = 0;
+
+        foreach (($response['labels'] ?? []) as $i => $label) {
+            $value = ($response['avg'][$i] ?? null) !== null ? (float) $response['avg'][$i] : null;
+            $min   = ($response['min'][$i] ?? null) !== null ? (int) $response['min'][$i] : null;
+            $max   = ($response['max'][$i] ?? null) !== null ? (int) $response['max'][$i] : null;
+
+            $respRows[] = [
+                'label' => $label,
+                'value' => $value,
+                'note'  => ($min !== null || $max !== null)
+                    ? 'min '.($min !== null ? $min : '-').' / max '.($max !== null ? $max : '-')
+                    : '',
+            ];
+
+            if ($value !== null) {
+                $respMax = max($respMax, $value);
+            }
+        }
+
+        $respTone = function ($value) {
+            return $value === null
+                ? ''
+                : ($value <= 50 ? 'b-green' : ($value <= 150 ? 'b-amber' : 'b-red'));
+        };
+    @endphp
+    @include('admin.partials.pdf-bar-chart', [
+        'rows'     => $respRows,
+        'max'      => $respMax > 0 ? $respMax : null,
+        'suffix'   => '',
+        'decimals' => 0,
+        'tone'     => $respTone,
+    ])
+    <div class="legend">
+        <span><i class="swatch b-green"></i>&le; 50 ms</span>
+        <span><i class="swatch b-amber"></i>51 &ndash; 150 ms</span>
+        <span><i class="swatch b-red"></i>&gt; 150 ms</span>
+    </div>
 
     <h2>Response Time (ms)</h2>
     @if(count($response['labels'] ?? []))
@@ -266,7 +391,7 @@
     @endif
 
     <div class="footer">
-        Laporan Monitoring Jaringan RADNEXT NOC &middot; Dihasilkan secara otomatis {{ now()->format('d M Y H:i:s') }}
+        Laporan &amp; Grafik Keseluruhan RADNEXT NOC &middot; Dihasilkan secara otomatis {{ now()->format('d M Y H:i:s') }}
     </div>
 
 </body>

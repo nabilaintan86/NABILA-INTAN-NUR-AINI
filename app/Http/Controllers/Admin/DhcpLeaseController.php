@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DhcpLease;
+use App\Services\DeviceCsvService;
 use App\Services\DhcpImporter;
 use App\Services\DhcpRecognition;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class DhcpLeaseController extends Controller
 
     public const PER_PAGE_OPTIONS = [25, 50, 100];
 
-    public function index(Request $request)
+    public function index(Request $request, DeviceCsvService $deviceSource)
     {
         $syncNotice = null;
         if (DhcpImporter::autoSyncEnabled() && ! DhcpLease::exists()) {
@@ -75,7 +76,7 @@ class DhcpLeaseController extends Controller
             'q' => $q === '' ? null : ['label' => 'Hostname', 'value' => $q],
         ]);
 
-        $recognition = new DhcpRecognition;
+        $recognition = new DhcpRecognition($deviceSource);
         $lastUpdatedAt = DhcpLease::query()->max('last_seen') ?: DhcpLease::query()->max('updated_at');
 
         return view('admin.dhcp-lease', [
@@ -93,6 +94,7 @@ class DhcpLeaseController extends Controller
             'perPage' => $perPage,
             'perPageOptions' => self::PER_PAGE_OPTIONS,
             'knownDeviceCount' => $recognition->knownCount(),
+            'deviceSource' => $deviceSource->officialSummary(),
             'hasData' => DhcpLease::exists(),
             'syncNotice' => $syncNotice,
             'lastUpdatedAt' => $lastUpdatedAt ? Carbon::parse($lastUpdatedAt)->format('d M Y H:i:s') : '-',

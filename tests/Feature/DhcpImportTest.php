@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Models\DhcpLease;
+use App\Services\DeviceCsvService;
 use Illuminate\Http\UploadedFile;
 use Tests\Feature\Concerns\CreatesDhcpTables;
 use Tests\TestCase;
@@ -18,6 +19,25 @@ class DhcpImportTest extends TestCase
         $this->createDhcpTables();
     }
 
+    /**
+     * Known Device hanya berasal dari devices.csv, jadi test harus memberi tahu
+     * IP mana yang terdaftar resmi — bukan mengandalkan isi tabel device.
+     */
+    protected function useRegistryCsv(string $content): \Closure
+    {
+        $path = tempnam(sys_get_temp_dir(), 'registry-').'.csv';
+        file_put_contents($path, $content);
+        $this->beforeApplicationDestroyed(fn () => is_file($path) && @unlink($path));
+
+        $this->app->singleton(DeviceCsvService::class, fn () => new DeviceCsvService()->usePath($path));
+
+        return function () use ($path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        };
+    }
+
     public function test_dhcp_import_command_imports_and_classifies_rows(): void
     {
         Device::create([
@@ -25,6 +45,10 @@ class DhcpImportTest extends TestCase
             'ip_address' => '192.168.1.1',
             'pop_name' => 'Surabaya',
         ]);
+
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
 
         $csv = [
             'mac_address,ip_address,hostname,client_id,vendor,router,location,lease_start,lease_end,first_seen,last_seen',
@@ -36,9 +60,14 @@ class DhcpImportTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'dhcp_').'.csv';
         file_put_contents($path, implode("\n", $csv)."\n");
 
-        $this->artisan('dhcp:import', ['file' => $path])
-            ->expectsOutputToContain('3 lease berhasil di-import, 1 Known, 1 New, 1 Unknown.')
-            ->assertExitCode(0);
+        try {
+            $this->artisan('dhcp:import', ['file' => $path])
+                ->expectsOutputToContain('3 lease berhasil di-import, 1 Known, 1 New, 1 Unknown.')
+                ->assertExitCode(0);
+        } finally {
+            @unlink($path);
+            $restoreRegistry();
+        }
 
         $this->assertSame(3, DhcpLease::count());
         $this->assertSame(1, DhcpLease::where('classification', 'known')->count());
@@ -88,6 +117,10 @@ class DhcpImportTest extends TestCase
             'pop_name' => 'Surabaya',
         ]);
 
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
+
         $csv = [
             'mac_address,ip_address,hostname,vendor,router,location',
             'AA:BB:CC:00:00:21,192.168.1.1,pop-sby,MikroTik,Router A,',
@@ -96,15 +129,19 @@ class DhcpImportTest extends TestCase
 
         $file = UploadedFile::fake()->createWithContent('devices.csv', implode("\n", $csv)."\n");
 
-        $response = $this->post(route('admin.dhcp-lease.upload'), ['csv_file' => $file]);
+        try {
+            $response = $this->post(route('admin.dhcp-lease.upload'), ['csv_file' => $file]);
 
-        $response->assertOk()
-            ->assertJsonStructure(['success', 'message', 'counts'])
-            ->assertJsonPath('counts.total', 2)
-            ->assertJsonPath('counts.known', 1);
+            $response->assertOk()
+                ->assertJsonStructure(['success', 'message', 'counts'])
+                ->assertJsonPath('counts.total', 2)
+                ->assertJsonPath('counts.known', 1);
 
-        $this->assertStringContainsString('Berhasil import', $response->json('message'));
-        $this->assertSame(2, DhcpLease::count());
+            $this->assertStringContainsString('Berhasil import', $response->json('message'));
+            $this->assertSame(2, DhcpLease::count());
+        } finally {
+            $restoreRegistry();
+        }
     }
 
     public function test_dhcp_lease_upload_endpoint_rejects_non_csv_and_bad_columns(): void

@@ -12,22 +12,44 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Sumber data terpusat untuk daftar perangkat di seluruh aplikasi.
  *
- * Tabel 'devices' adalah sumber operasional (source of truth) untuk daftar
- * perangkat — isinya disinkronkan dari files devices.csv oleh Database\Seeders\DeviceSeeder
- * (updateOrCreate per IP+nama) sehingga jumlah baris === baris data CSV (116).
+ * devices.csv (folder project) adalah DAFTAR RESMI perangkat. File ini yang
+ * menentukan perangkat mana yang officially dimonitor, sehingga seluruh
+ * statistik (Total Device, Monitoring, Known Device DHCP, dsb.) memakai
+ * himpunan yang sama.
  *
- * Status perangkat (up/down/warning) dibaca DARI kolom status tabel 'devices'
- * (hasil seeder / operasional monitoring), bukan ditebak dari file.
+ * Tabel `device` (d singular — bukan `devices`) hanya menyimpan state
+ * operasional: status up/down/warning, metrik latency, dan kolom-kolom yang
+ * lain. Baris yang tidak ada di devices.csv TIDAK ikut dihitung sebagai
+ * perangkat resmi; selisihnya dilaporkan lewat syncReport() supaya bisa
+ * ditelusuri, bukan diam-diam ikut terhitung.
+ *
+ * devices.csv = 1 baris header + 115 baris data (110 IP unik).
  */
 class DeviceCsvService
 {
     protected ?Collection $memo = null;
 
+    protected ?Collection $officialMemo = null;
+
+    protected ?string $pathOverride = null;
+
     protected static array $statuses = ['up', 'down', 'warning'];
+
+    /**
+     * Override path devices.csv (dipakai test / tooling, bukan oleh request normal).
+     */
+    public function usePath(?string $path): static
+    {
+        $this->memo = null;
+        $this->officialMemo = null;
+        $this->pathOverride = $path;
+
+        return $this;
+    }
 
     public function path(): string
     {
-        return base_path('devices.csv');
+        return $this->pathOverride ?: base_path('devices.csv');
     }
 
     public function exists(): bool
@@ -215,12 +237,14 @@ class DeviceCsvService
     }
 
     /**
-     * Seluruh perangkat dari tabel 'devices' yang sudah digabung dengan data
+     * Seluruh perangkat dari tabel `device` yang sudah digabung dengan data
      * koneksi jaringan. Memoized dalam seumur hidup instance.
      *
+     * Perhatikan: ini daftar LENGAP dari tabel (termasuk baris yang tidak ada
+     * di devices.csv). Untuk statistik resmi gunakan officialDevices().
+     *
      * Setiap baris tabel = satu perangkat. Status dibaca langsung dari kolom
-     * 'status' (diisi oleh seeder CSV / monitoring), sehingga seluruh halaman
-     * konsisten pada total yang sama dengan database (116 perangkat).
+     * 'status', sehingga status monitoring tetap berasal dari data nyata.
      */
     public function devices(): Collection
     {
@@ -313,7 +337,7 @@ class DeviceCsvService
     }
 
     /**
-     * Kolom tabel 'devices' yang akan diseleksi. Kolom metrik (polls, avg_delay,
+     * Kolom tabel device yang akan diseleksi. Kolom metrik (polls, avg_delay,
      * dsb.) hanya diambil bila benar-benar ada di skema, sehingga query selalu
      * aman terhadap skema yang belum memiliki kolom opsional.
      *
@@ -321,6 +345,8 @@ class DeviceCsvService
      */
     protected function deviceColumns(): array
     {
+        $table = (new Device)->getTable();
+
         $always = ['id', 'name', 'type', 'ip_address', 'status'];
         $optional = [
             'polls', 'responded_percentage', 'missed_percentage',
@@ -330,10 +356,260 @@ class DeviceCsvService
 
         $columns = array_merge($always, array_filter(
             $optional,
-            fn (string $column) => Schema::hasColumn('devices', $column)
+            fn (string $column) => Schema::hasColumn($table, $column)
         ));
 
         return array_values($columns);
+    }
+
+    /**
+     * Baris-baris devices.csv yang menjadi daftar resmi perangkat.
+     * Setiap elemen: name, ip, type, description, image, csv_status.
+     *
+     * @return Collection<int, array<string, string>>
+     */
+    public function officialRows(): Collection
+    {
+        return collect($this->readRows())->values();
+    }
+
+    /**
+     * Alamat IP resmi dari devices.csv (unik, urut kemunculan).
+     *
+     * @return array<int, string>
+     */
+    public function officialIps(): array
+    {
+        $ips = [];
+
+        foreach ($this->readRows() as $row) {
+            $ip = $row['ip'];
+
+            if ($ip !== '' && ! in_array($ip, $ips, true)) {
+                $ips[] = $ip;
+            }
+        }
+
+        return $ips;
+    }
+
+    /**
+     * Perangkat resmi sebagai model Eloquent, DIBATASI pada IP yang ada di
+     * devices.csv dan diurutkan mengikuti urutan baris file.
+     *
+     * Inilah koleksi yang dipakai seluruh halaman (Dashboard, Monitoring,
+     * DHCP Lease, Telegram) supaya jumlah device di semua tempat sama.
+     *
+     * @return Collection<int, Device>
+     */
+    public function officialDevices(): Collection
+    {
+        if ($this->officialMemo !== null) {
+            return $this->officialMemo;
+        }
+
+        $rows = $this->officialRows();
+
+        if ($rows->isEmpty()) {
+            // devices.csv tidak terbaca — jangan diam-diam jadi 0 device.
+            return $this->officialMemo = Device::query()->orderBy('id')->get();
+        }
+
+        $byIp = Device::query()
+            ->get()
+            ->groupBy(fn (Device $d) => strtolower(trim((string) $d->ip_address)));
+
+        $devices = [];
+
+        foreach ($rows as $row) {
+            $matches = $byIp->get($row['ip'], collect());
+
+            if ($matches->isEmpty()) {
+                continue;
+            }
+
+            // Satu IP bisa punya >1 baris di CSV (mis. 202.154.4.4). Baris
+            // resmi tetap dihitung sesuai jumlah baris CSV, dan setiap baris
+            // mengambil device yang namanya paling cocok.
+            $device = $matches->first(
+                fn (Device $d) => $this->normalizeName($d->name) === $this->normalizeName($row['name'])
+            ) ?? $matches->first();
+
+            if ($device === null) {
+                continue;
+            }
+
+            $devices[] = $device;
+        }
+
+        return $this->officialMemo = collect($devices);
+    }
+
+    /**
+     * Normalisasi nama device: buang non-breaking space, spasi ganda, tanda
+     * bintang, dan suffix " (ip)" — supaya "PJB*  (202.154.4.134)" di CSV
+     * cocok dengan "PJB" di database.
+     */
+    protected function normalizeName(string $name): string
+    {
+        $name = str_replace(["\xc2\xa0", "\xa0"], ' ', $name);
+        $name = preg_replace('/\*+/u', '', $name);
+        $name = preg_replace('/\(\s*[\d.:]+\s*\)\s*$/u', '', $name);
+
+        return preg_replace('/\s+/u', ' ', trim((string) $name));
+    }
+
+    /**
+     * Ringkasan statistik dari perangkat resmi (devices.csv).
+     *
+     * @return array{total:int, unique_total:int, up:int, down:int, warning:int, unknown:int, csv_rows:int, csv_unique_ips:int}
+     */
+    public function officialSummary(): array
+    {
+        $devices = $this->officialDevices();
+        $rows    = $this->officialRows();
+
+        // Cukup jumlah baris, jadi tidak perlu join device_connections.
+        $dbRows = Device::query()->count();
+        $dbIps  = Device::query()
+            ->whereNotNull('ip_address')
+            ->where('ip_address', '!=', '')
+            ->distinct()
+            ->count('ip_address');
+
+        return [
+            'total'          => $devices->count(),
+            'unique_total'   => $this->uniqueDevicesOf($devices)->count(),
+            'up'             => $devices->where('status', 'up')->count(),
+            'down'           => $devices->where('status', 'down')->count(),
+            'warning'        => $devices->where('status', 'warning')->count(),
+            'unknown'        => $devices->whereNotIn('status', self::$statuses)->count(),
+            'csv_rows'       => $rows->count(),
+            'csv_unique_ips' => count($this->officialIps()),
+            // Baris tabel di luar daftar resmi — sengaja tidak ikut 'total'.
+            'db_rows'        => $dbRows,
+            'db_unique_ips'  => $dbIps,
+            'db_extra_rows'  => max(0, $dbRows - $devices->count()),
+        ];
+    }
+
+    /**
+     * Laporan selisih antara devices.csv (daftar resmi) dan tabel device.
+     * Dipakai untuk audit dan isi popup "Sumber Data" — TIDAK mengubah data.
+     *
+     * @return array<string, mixed>
+     */
+    public function syncReport(): array
+    {
+        $rows  = $this->officialRows();
+        $ips   = $this->officialIps();
+        $known = Device::query()->get();
+
+        $dbByIp = $known->groupBy(fn (Device $d) => strtolower(trim((string) $d->ip_address)));
+
+        $missingInDb    = [];
+        $nameDrift      = [];
+        $protocolDrift  = [];
+        $extraInDb      = [];
+        $seen           = [];
+
+        foreach ($rows as $row) {
+            $matches = $dbByIp->get($row['ip'], collect());
+
+            if ($matches->isEmpty()) {
+                $missingInDb[] = ['ip' => $row['ip'], 'name' => $row['name']];
+
+                continue;
+            }
+
+            $seen[$row['ip']] = true;
+
+            $device = $matches->first(
+                fn (Device $d) => $this->normalizeName($d->name) === $this->normalizeName($row['name'])
+            ) ?? $matches->first();
+
+            if ($this->normalizeName($device->name) !== $this->normalizeName($row['name'])) {
+                $nameDrift[] = [
+                    'ip'   => $row['ip'],
+                    'csv'  => $row['name'],
+                    'db'   => $device->name,
+                    'id'   => (int) $device->id,
+                ];
+            }
+
+            // Kolom TYPE di devices.csv berisi PROTOCOL (selalu "ICMP"), bukan
+            // tipe perangkat. Tipe perangkat (Router/Server/Switch/...) sudah
+            // diturunkan dari nama saat import, jadi yang dibandingkan ke DB
+            // adalah kolom protocol — bukan kolom type.
+            $csvProtocol = mb_strtoupper($this->normalizeName($row['type']));
+            $dbProtocol  = mb_strtoupper($this->normalizeName((string) ($device->protocol ?? '')));
+
+            if ($csvProtocol !== '' && $csvProtocol !== $dbProtocol) {
+                $protocolDrift[] = [
+                    'ip'  => $row['ip'],
+                    'csv' => $row['type'],
+                    'db'  => $device->protocol,
+                    'id'  => (int) $device->id,
+                ];
+            }
+        }
+
+        foreach ($dbByIp as $ip => $group) {
+            if ($ip === '' || isset($seen[$ip])) {
+                continue;
+            }
+
+            foreach ($group as $device) {
+                $extraInDb[] = [
+                    'id'      => (int) $device->id,
+                    'name'    => $device->name,
+                    'ip'      => $ip,
+                    'type'    => $device->type,
+                    'created' => optional($device->created_at)->format('Y-m-d H:i:s'),
+                ];
+            }
+        }
+
+        return [
+            'path'            => $this->path(),
+            'exists'          => $this->exists(),
+            'file_lines'      => $this->countFileLines(),
+            'csv_rows'        => $rows->count(),
+            'csv_unique_ips'  => count($ips),
+            'db_rows'         => $known->count(),
+            'db_unique_ips'   => $dbByIp->filter(fn ($g) => (string) $g->first()->ip_address !== '')->count(),
+            'official_total'  => $this->officialDevices()->count(),
+            'missing_in_db'   => $missingInDb,
+            'extra_in_db'     => $extraInDb,
+            'name_drift'      => $nameDrift,
+            'protocol_drift'  => $protocolDrift,
+            'in_sync'         => $missingInDb === []
+                && $extraInDb === []
+                && $nameDrift === []
+                && $protocolDrift === [],
+        ];
+    }
+
+    /**
+     * Shelapply jawaban: baris devices.csv yang tidak punya device di tabel.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function driftRows(): array
+    {
+        $report = $this->syncReport();
+
+        $out = [];
+
+        foreach ($report['name_drift'] as $row) {
+            $out[] = $row + ['field' => 'name', 'csv' => $row['csv'], 'db' => $row['db']];
+        }
+
+        foreach ($report['protocol_drift'] as $row) {
+            $out[] = $row + ['field' => 'protocol', 'csv' => $row['csv'], 'db' => $row['db']];
+        }
+
+        return $out;
     }
 
     /**
@@ -342,11 +618,38 @@ class DeviceCsvService
      */
     public function uniqueDevices(): Collection
     {
+        return $this->uniqueDevicesOf($this->devices());
+    }
+
+    /**
+     * @param  Collection<int, mixed>  $devices
+     */
+    /**
+     * Perangkat resmi berdasarkan IP UNIK — satu model Device per IP.
+     *
+     * Dipakai untuk operasi yang memproses tiap perangkat sekali (ping/polling,
+     * notifikasi), supaya 5 IP yang punya dua baris di CSV tidak diproses dua
+     * kali. Untuk statistik per-baris gunakan officialDevices().
+     */
+    public function officialDevicesUnique(): Collection
+    {
+        return $this->uniqueDevicesOf($this->officialDevices());
+    }
+
+    protected function uniqueDevicesOf(Collection $devices): Collection
+    {
         $seen = [];
 
-        return $this->devices()
-            ->filter(function (array $device) use (&$seen) {
-                $key = $device['ip_address'] !== '' ? $device['ip_address'] : $device['name'];
+        return $devices
+            ->filter(function ($device) use (&$seen) {
+                $ip = is_array($device)
+                    ? (string) ($device['ip_address'] ?? '')
+                    : strtolower(trim((string) $device->ip_address));
+                $name = is_array($device)
+                    ? (string) ($device['name'] ?? '')
+                    : (string) $device->name;
+
+                $key = $ip !== '' ? $ip : $name;
 
                 if (isset($seen[$key])) {
                     return false;
@@ -370,7 +673,7 @@ class DeviceCsvService
         $warning = $devices->where('status', 'warning')->count();
 
         // Persentase ketersediaan & rata-rata respons dihitung dari SELURUH
-        // baris devices.csv (total 116 perangkat), bukan hanya IP unik.
+        // perangkat resmi, bukan hanya IP unik.
         $latencies = $devices->pluck('avg_delay')->filter(fn ($v) => is_numeric($v))->values();
         $responded = $devices->pluck('responded_percentage')->filter(fn ($v) => is_numeric($v))->values();
 
@@ -395,11 +698,11 @@ class DeviceCsvService
     }
 
     /**
-     * Ringkasan latensi real-time dari SELURUH perangkat devices.csv (total 116).
+     * Ringkasan latensi real-time dari perangkat resmi devices.csv.
      *
      * Titik data (labels/values) mencakup setiap perangkat valid, diurutkan dari
      * latensi terendah ke tertinggi, sehingga grafik mencerminkan kondisi
-     * seluruh 116 link — bukan hanya perangkat yang terukur.
+     * seluruh link resmi — bukan hanya perangkat yang terukur.
      *
      * - current : rata-rata latensi seluruh perangkat saat ini (setara summary.averageLatency).
      * - average : rata-rata latensi seluruh perangkat (termasuk yang belum terukur).

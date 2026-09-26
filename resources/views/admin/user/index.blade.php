@@ -34,32 +34,22 @@
 @section('content')
 
 {{-- ============================================================
-     HEADER
+     PAGE HEAD
 ============================================================ --}}
-<div class="nk-block-head">
-    <div class="nk-block-head-between flex-wrap gap g-2">
-        <div class="nk-block-head-content">
-            <nav>
-                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Kelola User
-                    </li>
-                </ol>
-            </nav>
-        </div>
-        <div class="nk-block-head-content">
-            <ul class="d-flex">
-                <li>
-                    <a href="{{ route('admin.kelola-user.create') }}"
-                       class="btn btn-primary d-none d-md-inline-flex">
-                        <em class="icon ni ni-plus"></em>
-                        <span>Tambah User</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+<x-admin.page-head
+    title="Kelola User"
+    subtitle="Kelola akun admin dan moderator yang mengakses NOC."
+    icon="users"
+    :crumbs="[['label' => 'Kelola User']]"
+>
+    <x-slot:actions>
+        <a href="{{ route('admin.kelola-user.create') }}" class="btn btn-primary d-none d-md-inline-flex">
+            <em class="icon ni ni-plus"></em>
+            <span>Tambah User</span>
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
+
 {{-- ============================================================
      ALERTS
 ============================================================ --}}

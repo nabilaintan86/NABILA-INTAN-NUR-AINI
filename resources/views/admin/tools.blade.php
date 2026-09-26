@@ -164,19 +164,16 @@
 
 @section('content')
 
-<div class="nk-block-head">
-    <div class="nk-block-head-between flex-wrap gap g-2">
-        <div class="nk-block-head-content">
-            <nav>
-                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Network Tools
-                    </li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-</div>
+{{-- ============================================================
+     PAGE HEAD
+============================================================ --}}
+<x-admin.page-head
+    title="Network Tools"
+    subtitle="Ping, traceroute, DNS lookup &amp; port scan terhadap IP / domain target."
+    icon="activity-round"
+    :crumbs="[['label' => 'Network Tools']]"
+/>
+
 {{-- FORM PANEL --}}
 <div class="nk-block">
     <form id="networkToolForm" autocomplete="off">
@@ -266,7 +263,7 @@
                         <span>Ping</span>
                     </button>
                     <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
-                        <em class="icon ni ni-route"></em>
+                        <em class="icon ni ni-map"></em>
                         <span>Trace</span>
                     </button>
                     <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
@@ -274,7 +271,7 @@
                         <span>Lookup</span>
                     </button>
                     <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
-                        <em class="icon ni ni-drag-alt"></em>
+                        <em class="icon ni ni-scan"></em>
                         <span>Scan</span>
                     </button>
                 </div>

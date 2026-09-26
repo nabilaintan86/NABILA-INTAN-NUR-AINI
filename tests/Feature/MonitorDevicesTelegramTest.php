@@ -9,10 +9,13 @@ use App\Models\TelegramSubscriber;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
 class MonitorDevicesTelegramTest extends TestCase
 {
+    use InteractsWithDeviceRegistry;
+
     private string $fakeBinDir;
 
     protected function setUp(): void
@@ -24,6 +27,9 @@ class MonitorDevicesTelegramTest extends TestCase
 
         $this->ensureTables();
         $this->installFakePing();
+
+        // Test ini menguji notifikasi, bukan sumber data: tabel device = daftar resmi.
+        $this->treatDeviceTableAsOfficialRegistry();
     }
 
     protected function tearDown(): void

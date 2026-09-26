@@ -20,30 +20,24 @@
 @section('content')
 
 {{-- ============================================================
-     HEADER
+     PAGE HEAD
 ============================================================ --}}
-<div class="nk-block-head">
-    <div class="nk-block-head-between flex-wrap gap g-2">
-        <div class="nk-block-head-content">
-            <nav>
-                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('admin.kelola-user') }}">Kelola User</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Tambah User
-                    </li>
-                </ol>
-            </nav>
-        </div>
-        <div class="nk-block-head-content">
-            <a href="{{ route('admin.kelola-user') }}" class="btn btn-outline-secondary">
-                <em class="icon ni ni-arrow-left"></em>
-                <span>Kembali</span>
-            </a>
-        </div>
-    </div>
-</div>
+<x-admin.page-head
+    title="Tambah User"
+    subtitle="Buat akun admin atau moderator baru."
+    icon="users"
+    :crumbs="[
+        ['label' => 'Kelola User', 'url' => route('admin.kelola-user')],
+        ['label' => 'Tambah User'],
+    ]"
+>
+    <x-slot:actions>
+        <a href="{{ route('admin.kelola-user') }}" class="btn btn-outline-secondary">
+            <em class="icon ni ni-arrow-left"></em>
+            <span>Kembali</span>
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
 {{-- ============================================================
      ALERTS
 ============================================================ --}}

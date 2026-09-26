@@ -4,39 +4,6 @@
 
 @push('styles')
 <style>
-    /* ── Badge ikon judul halaman ─────────────────────────────────
-       Gaya sama dengan header DHCP Lease & Telegram Users: kotak
-       46px, radius 14px, gradient, ikon putih di kiri judul. -- */
-    .note-report-title {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        min-width: 0;
-        margin-top: 12px;
-    }
-    .note-report-title-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        font-size: 21px;
-        color: #fff;
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .25);
-    }
-    @media (max-width: 575.98px) {
-        .note-report-title { gap: 12px; }
-        .note-report-title-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            font-size: 18px;
-        }
-    }
-
     .note-report-filter {
         background: #fff;
         border: 1px solid #e8ecf3;
@@ -122,39 +89,30 @@
 
 @section('content')
 
-<div class="nk-block-head">
-    <div class="nk-block-head-between flex-wrap gap g-2">
-        <div class="nk-block-head-content">
-            <nav>
-                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('admin.kelola-router') }}">Kelola Router</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Report Catatan</li>
-                </ol>
-            </nav>
-            <div class="note-report-title">
-                <div class="note-report-title-icon" aria-hidden="true">
-                    <em class="icon ni ni-note"></em>
-                </div>
-                <div>
-                    <h1 class="h4 mb-1">Report Catatan Perangkat</h1>
-                    <p class="text-muted small mb-0">Histori catatan operasional dari database.</p>
-                </div>
-            </div>
-        </div>
-        <div class="nk-block-head-content d-flex gap-2 flex-wrap">
-            @can('create', \App\Models\Note::class)
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reportNoteModal">
-                    <em class="icon ni ni-plus"></em> Tambah Catatan
-                </button>
-            @endcan
-            <a href="{{ route('admin.kelola-router') }}" class="btn btn-outline-primary">
-                <em class="icon ni ni-arrow-left"></em> Kembali ke Kelola Router
-            </a>
-        </div>
-    </div>
-</div>
+{{-- ============================================================
+     PAGE HEAD
+============================================================ --}}
+<x-admin.page-head
+    title="Report Catatan Perangkat"
+    subtitle="Histori catatan operasional dari database."
+    icon="reports"
+    :crumbs="[
+        ['label' => 'Kelola Router', 'url' => route('admin.kelola-router')],
+        ['label' => 'Report Catatan'],
+    ]"
+>
+    <x-slot:actions>
+        @can('create', \App\Models\Note::class)
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reportNoteModal">
+                <em class="icon ni ni-plus"></em> Tambah Catatan
+            </button>
+        @endcan
+        <a href="{{ route('admin.kelola-router') }}" class="btn btn-outline-primary">
+            <em class="icon ni ni-arrow-left"></em> Kembali ke Kelola Router
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
+
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <em class="icon ni ni-check-circle"></em> {{ session('success') }}
@@ -328,7 +286,7 @@
 
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            <em class="icon ni ni-note text-primary me-2"></em>
+                            <em class="icon ni ni-reports text-primary me-2"></em>
                             Tambah Catatan
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>

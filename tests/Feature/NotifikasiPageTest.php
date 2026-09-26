@@ -7,13 +7,19 @@ use App\Models\DeviceNotification;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
 class NotifikasiPageTest extends TestCase
 {
+    use InteractsWithDeviceRegistry;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Test ini menguji notifikasi, bukan sumber data: tabel device = daftar resmi.
+        $this->treatDeviceTableAsOfficialRegistry();
 
         if (! Schema::hasTable('device')) {
             Schema::create('device', function (Blueprint $table) {

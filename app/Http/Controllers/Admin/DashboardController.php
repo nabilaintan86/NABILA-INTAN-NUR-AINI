@@ -1,19 +1,17 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Device;
 use App\Models\MonitoringLog;
+use App\Services\DeviceCsvService;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(DeviceCsvService $devices)
     {
-        $devices = Device::all();
-
         return view('dashboard', [
-            'devices'        => $devices,
+            'devices'        => $devices->officialDevices(),
+            'deviceSource'   => $devices->officialSummary(),
             'latencyHistory' => $this->getLatencyHistory(),
             'lastCheckedAt'  => MonitoringLog::max('checked_at'),
         ]);
@@ -22,16 +20,16 @@ class DashboardController extends Controller
     /**
      * Endpoint JSON untuk auto-refresh dashboard tanpa reload halaman.
      */
-    public function data()
+    public function data(DeviceCsvService $source)
     {
-        $devices = Device::all();
+        $devices = $source->officialDevices();
 
         $total         = $devices->count();
         $upCount       = $devices->where('status', 'up')->count();
         $downCount     = $devices->where('status', 'down')->count();
         $warningCount  = $devices->where('status', 'warning')->count();
         $availability  = $total > 0
-            ? round($devices->sum('responded_percentage') / $total, 1)
+            ? round($devices->avg('responded_percentage') ?? 0, 1)
             : 0;
         $averageLatency = $total > 0
             ? round((float) $devices->avg('avg_delay'), 1)
@@ -40,6 +38,7 @@ class DashboardController extends Controller
         return response()->json([
             'latencyHistory' => $this->getLatencyHistory(),
             'lastCheckedAt'  => MonitoringLog::max('checked_at'),
+            'deviceSource'   => $source->officialSummary(),
             'summary'        => [
                 'total'          => $total,
                 'up'             => $upCount,

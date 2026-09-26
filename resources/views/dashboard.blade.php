@@ -33,7 +33,7 @@
         to { opacity: 1; transform: scale(1); }
     }
 
-    .noc-dashboard { animation: fadeInScale 0.4s ease-out; }
+    .noc-header { animation: fadeInScale 0.4s ease-out; }
 
     .noc-card {
         background: #fff;
@@ -62,10 +62,7 @@
     /* HEADER */
     .noc-header {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #1e1b4b 100%);
-        border-radius: 18px;
-        padding: 22px 26px;
         color: #fff;
-        margin-bottom: 20px;
         position: relative;
         overflow: hidden;
         box-shadow: 0 10px 30px -10px rgba(30, 41, 59, .4);
@@ -89,14 +86,20 @@
         animation: float 8s ease-in-out infinite reverse;
     }
     .noc-header > * { position: relative; z-index: 1; }
-    .noc-header h4 {
+    .noc-header-badge {
+        background: rgba(255, 255, 255, .1);
         color: #fff;
-        font-weight: 700;
-        letter-spacing: -0.3px;
-        margin-bottom: 4px;
-        font-size: 1.4rem;
+        border: 1px solid rgba(255, 255, 255, .15);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-weight: 500;
     }
-    .noc-header .subtitle { color: #94a3b8; font-size: 0.8rem; font-weight: 500; }
+    .noc-header-btn {
+        background: rgba(255, 255, 255, .1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, .15);
+        border-radius: 10px;
+    }
 
     .live-status {
         display: inline-flex;
@@ -402,43 +405,37 @@
 
 
 @section('content')
-<div class="noc-dashboard">
 
-    {{-- HEADER --}}
+    {{-- =========================================================
+         PAGE HEAD (boxed, satu container dengan halaman lain)
+    ========================================================== --}}
     <div class="noc-header">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div>
-                <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <h4 class="mb-0">
-                        <i class="fas fa-satellite-dish me-2" style="color:#60a5fa;"></i>
-                        RadneXt Network Monitoring
-                    </h4>
-                    <span class="live-status">
-                        <span class="live-dot"></span>
-                        Live Monitoring
-                    </span>
-                </div>
-                <div class="subtitle mt-2">
-                    Network Operations Center · Real-time status &amp; performance
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge" style="background: rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.15); padding: 8px 14px; border-radius: 10px; font-weight: 500;">
+        <x-admin.page-head
+            boxed
+            title="RadneXt Network Monitoring"
+            :subtitle="'Network Operations Center · Real-time status & performance'"
+        >
+            <x-slot:actions>
+                <span class="live-status">
+                    <span class="live-dot"></span>
+                    Live Monitoring
+                </span>
+                <span class="badge noc-header-badge">
                     <i class="far fa-clock me-1"></i>
                     <span id="dashboardClock">{{ now()->format('Y/m/d H:i:s') }}</span>
                 </span>
-                <button class="btn btn-sm" onclick="refreshDashboard()" style="background: rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius: 10px;">
+                <button class="btn btn-sm noc-header-btn" onclick="refreshDashboard()">
                     <i class="fas fa-sync-alt" id="refreshIcon"></i>
                 </button>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-admin.page-head>
     </div>
 
     {{-- KPI CARDS --}}
-    <div class="row g-3 mb-3" id="kpiContainer"></div>
+    <div class="row g-3" id="kpiContainer"></div>
 
     {{-- SUMMARY CARDS (CLICKABLE) --}}
-    <div class="row g-3 mb-3">
+    <div class="row g-3">
         <div class="col-md-4">
             <div class="summary-card-new" style="--accent:#3b82f6;" onclick="showSummary('total')">
                 <div class="summary-icon-new" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb;">
@@ -478,7 +475,7 @@
     </div>
 
     {{-- LATENCY CHART --}}
-    <div class="row g-3 mb-3">
+    <div class="row g-3">
         <div class="col-12">
             <div class="noc-card">
                 <div class="noc-card-header">
@@ -559,10 +556,9 @@
 </div>
 
     {{-- FOOTER --}}
-    <div class="mt-4 text-center text-muted small border-top pt-3">
+    <div class="text-center text-muted small border-top pt-3">
         Copyright PT Radnet Digital Indonesia &copy; {{ date('Y') }}. All Right Reserved.
     </div>
-</div>
 
 {{-- KPI DETAIL MODAL --}}
 <div class="modal fade" id="kpiDetailModal" tabindex="-1" aria-hidden="true">

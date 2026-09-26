@@ -83,7 +83,7 @@ class TelegramUpdateHandler
                 $isNew = $user->wasRecentlyCreated;
                 $response = $user->is_approved
                     ? "✅ Anda sudah terdaftar dan disetujui.\n\nGunakan /help untuk melihat perintah."
-                    : '✅ Registrasi berhasil. Menunggu persetujuan admin.';
+                    : "✅ Permintaan akses berhasil diterima.\n⏳ Menunggu persetujuan Super Admin.";
 
                 $this->telegram->sendToChat($chatId, $response);
                 $this->users->log($user, $chatId, $text, $response);
@@ -103,7 +103,7 @@ class TelegramUpdateHandler
                 ? 'Kirim /start untuk registrasi Telegram.'
                 : ($user->is_approved
                     ? 'Perintah tidak dikenal. Kirim /help untuk melihat perintah.'
-                    : '⏳ Akun Anda belum disetujui admin. Gunakan /start untuk registrasi.');
+                    : '⏳ Akun Anda masih menunggu persetujuan Super Admin.');
 
             $this->telegram->sendToChat($chatId, $response);
             $this->users->log($user, $chatId, $text, $response);
@@ -163,7 +163,7 @@ class TelegramUpdateHandler
         }
 
         if ($command === 'incident') {
-            return in_array($user->role, ['staff', 'admin', 'super_admin'], true);
+            return in_array($user->role, ['admin', 'super_admin'], true);
         }
 
         if ($command === 'lease') {
@@ -226,10 +226,12 @@ class TelegramUpdateHandler
             return "📊 Status RADNET\n\nData perangkat belum tersedia.";
         }
 
-        $total = Device::query()->count();
-        $up = Device::query()->where('status', 'up')->count();
-        $down = Device::query()->where('status', 'down')->count();
-        $warning = Device::query()->where('status', 'warning')->count();
+        $devices = app(DeviceCsvService::class)->officialDevices();
+
+        $total = $devices->count();
+        $up = $devices->where('status', 'up')->count();
+        $down = $devices->where('status', 'down')->count();
+        $warning = $devices->where('status', 'warning')->count();
 
         return "📊 Status RADNET\n\n"
             ."Total: {$total}\n"
@@ -244,13 +246,18 @@ class TelegramUpdateHandler
             return 'Data perangkat belum tersedia.';
         }
 
-        $query = Device::query()->orderBy('name');
+        $query = app(DeviceCsvService::class)->officialDevices();
 
         if ($argument !== '') {
-            $query->where('name', 'like', '%'.addcslashes($argument, '%_').'%');
+            $query = $query->filter(
+                fn (Device $d) => str_contains(
+                    mb_strtolower($d->name),
+                    mb_strtolower($argument)
+                )
+            )->values();
         }
 
-        $devices = $query->limit(10)->get();
+        $devices = $query->take(10)->values();
 
         if ($devices->isEmpty()) {
             return 'Perangkat tidak ditemukan.';
@@ -372,7 +379,7 @@ class TelegramUpdateHandler
 
         $telegramUser->update([
             'is_approved' => true,
-            'role' => $telegramUser->role === 'pending' ? 'staff' : $telegramUser->role,
+            'role' => $telegramUser->role === 'pending' ? 'admin' : $telegramUser->role,
         ]);
 
         return "✅ User {$telegramUser->chat_id} berhasil disetujui.";
@@ -406,8 +413,8 @@ class TelegramUpdateHandler
         $chatId = $parts[0] ?? '';
         $role = strtolower($parts[1] ?? '');
 
-        if ($chatId === '' || ! in_array($role, ['super_admin', 'admin', 'staff', 'pending'], true)) {
-            return 'Gunakan format: /setrole {chat_id} {super_admin|admin|staff|pending}';
+        if ($chatId === '' || ! in_array($role, ['super_admin', 'admin', 'pending'], true)) {
+            return 'Gunakan format: /setrole {chat_id} {super_admin|admin|pending}';
         }
 
         $telegramUser = TelegramUser::query()->where('chat_id', $chatId)->first();

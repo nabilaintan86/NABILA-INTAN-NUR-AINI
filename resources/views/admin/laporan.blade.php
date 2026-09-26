@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Laporan Monitoring · RADNEXT NOC')
+@section('title', 'Laporan & Grafik · RADNEXT NOC')
 
 @php
     use Illuminate\Support\Arr;
@@ -28,23 +28,19 @@
         ->implode(', ');
     $affectedNames = $affectedNames === '' ? null : $affectedNames;
 
-    // ── Chart: @json($chartData) + fallback dummy saat kosong ──
-    $dummyAvail = [
-        'labels' => ['00:00', '06:00', '12:00', '18:00', '23:59'],
-        'availability' => [99.87, 99.92, 100, 99.98, 99.90],
-    ];
-    $dummyResp = [
-        'labels' => ['00:00', '06:00', '12:00', '18:00', '23:59'],
-        'avg' => [42, 45, 41, 44, 43],
-        'min' => [12, 11, 13, 12, 11],
-        'max' => [175, 180, 170, 178, 181],
-    ];
+    // ── Chart: seluruhnya data nyata dari log monitoring. Tidak ada angka
+    //    dummy; bucket tanpa data dibiarkan null agar chart jujur. ──
     $chartData = [
         'availability' => (array) ($availability ?? []),
         'response'     => (array) ($response ?? []),
-        'dummy'        => ['availability' => $dummyAvail, 'response' => $dummyResp],
         'modal'        => (array) ($modalData ?? []),
     ];
+
+    // Deteksi bucket yang benar-benar punya data, untuk empty state chart.
+    $hasAvailPoints = collect($chartData['availability']['availability'] ?? [])
+        ->contains(fn ($v) => $v !== null);
+    $hasRespPoints  = collect($chartData['response']['avg'] ?? [])
+        ->contains(fn ($v) => $v !== null);
 @endphp
 
 @push('styles')
@@ -64,20 +60,6 @@
         box-shadow: 0 14px 30px -12px rgba(79, 70, 229, .35);
         border-color: #cdd6ef;
     }
-
-    /* ── Header halaman ──────────────────────────────────────── */
-    .lp-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .lp-title-group { display: flex; align-items: center; gap: 14px; }
-    .lp-title-icon {
-        width: 46px; height: 46px; border-radius: 14px;
-        background: linear-gradient(135deg, #4F46E5, #7c3aed);
-        color: #fff; font-size: 1.2rem;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .28);
-        flex-shrink: 0;
-    }
-    .lp-title h1 { font-size: 1.25rem; font-weight: 800; color: #1c2b4a; margin: 0; }
-    .lp-title p { margin: 2px 0 0; font-size: .8rem; color: #6b7a99; }
 
     .btn-export {
         display: inline-flex; align-items: center; gap: 6px;
@@ -107,6 +89,14 @@
         transition: background .2s ease, box-shadow .2s ease;
     }
     .btn-apply:hover { background: #4338ca; color: #fff; box-shadow: 0 8px 18px -8px rgba(79, 70, 229, .6); }
+    .btn-apply:disabled,
+    .btn-apply[disabled] {
+        background: #c7cfe0; color: #7b88a3; cursor: not-allowed;
+        box-shadow: none; transform: none;
+    }
+    .f-field-grow { flex: 1 1 320px; }
+    .f-field-grow .form-select { min-width: 260px; max-width: 520px; width: 100%; }
+    .export-hint { font-size: .72rem; color: #6b7a99; line-height: 1.5; max-width: 420px; }
 
     /* ── Stat cards ──────────────────────────────────────────── */
     .stat-card { padding: 18px; height: 100%; display: flex; flex-direction: column; gap: 12px; }
@@ -152,6 +142,21 @@
     .panel-title .hint { font-size: .72rem; font-weight: 700; color: #9aa6bd; }
 
     .chart-container { position: relative; height: 280px; flex: 1; }
+    /* Empty state chart: jujur saat periode tidak punya telemetry. */
+    .chart-empty {
+        position: absolute; inset: 0; display: none;
+        flex-direction: column; align-items: center; justify-content: center;
+        gap: 6px; text-align: center; color: #6b7a99;
+    }
+    .chart-empty.show { display: flex; }
+    .chart-empty .chart-empty-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: rgba(107, 122, 153, .12); color: #6b7a99;
+        display: inline-flex; align-items: center; justify-content: center; font-size: 1.05rem;
+    }
+    .chart-empty .chart-empty-title { font-size: .8rem; font-weight: 700; color: #4a5878; }
+    .chart-empty .chart-empty-sub { font-size: .72rem; max-width: 260px; }
+    .chart-container > canvas.is-empty { visibility: hidden; }
 
     /* Penyebab (otomatis + manual) */
     .cause-main { min-width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
@@ -344,48 +349,19 @@
 
 @section('content')
 
-{{-- Loading overlay --}}
-<div class="laporan-loading" id="laporanLoading">
-    <div class="spinner-box"><span class="spinner-border spinner-border-sm"></span> Memuat laporan…</div>
-</div>
-{{-- Modal detail stat card --}}
-<div class="modal fade modal-custom" id="statModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header modal-head head-green" id="statModalHead">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="modal-head-icon"><em class="icon ni ni-check-circle"></em></span>
-                    <h5 class="modal-title mb-0" id="statModalTitle">Detail</h5>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="modal-scroll" id="statModalBody"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-export" data-bs-dismiss="modal" id="statModalClose">Tutup</button>
-                <a href="{{ $pdfUrl }}" class="btn-export" id="statModalPdf"><em class="icon ni ni-download"></em> Export PDF</a>
-            </div>
-        </div>
-    </div>
-</div>
 {{-- ── HEADER + Export PDF ───────────────────────────── --}}
-<div class="lp-header fade-in-up">
-    <div class="lp-title-group">
-        <div class="lp-title-icon"><em class="icon ni ni-chart-pie"></em></div>
-        <div class="lp-title">
-            <h1>Laporan Monitoring</h1>
-            <p>
-                Dashboard Laporan Monitoring <strong>RADNEXT NOC</strong>
-                &middot; Periode: <span class="fw-semibold text-dark">{{ $period['label'] }}</span>
-                &middot; <span id="updatedAt">{{ $generatedAt }}</span>
-            </p>
-        </div>
-    </div>
-    <a href="{{ $pdfUrl }}" class="btn-export" id="btnExport">
-        <em class="icon ni ni-download"></em> Export PDF
-    </a>
-</div>
+<x-admin.page-head
+    title="Laporan & Grafik"
+    subtitle="Rekap monitoring & grafik jaringan RADNEXT NOC · Periode: {{ $period['label'] }} · {{ $generatedAt }}"
+    icon="pie"
+    :crumbs="[['label' => 'Laporan & Grafik']]"
+>
+    <x-slot:actions>
+        <a href="{{ $pdfUrl }}" class="btn-export" id="btnExport">
+            <em class="icon ni ni-download"></em> Export PDF Keseluruhan
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
 {{-- ── FILTER BAR (SATU) ─────────────────────────────── --}}
 <form method="GET" action="{{ route('admin.laporan') }}" class="lp-card lp-filter fade-in-up" id="laporanForm" style="--d:.05s">
     <div class="filter-row">
@@ -416,6 +392,29 @@
         <button type="submit" class="btn-apply"><em class="icon ni ni-filter"></em> Terapkan</button>
     </div>
 </form>
+
+{{-- ── EXPORT PDF PER PERANGKAT ───────────────────────── --}}
+<div class="lp-card lp-filter fade-in-up" style="--d:.10s">
+    <div class="filter-row">
+        <div class="f-field f-field-grow">
+            <label for="perangkatSelect">Laporan Per Perangkat</label>
+            <select id="perangkatSelect" class="form-select"
+                    data-url-template="{{ route('admin.laporan.perangkat.pdf', ['device' => '__DEVICE__']) }}">
+                <option value="">— Pilih perangkat —</option>
+                @foreach($perangkatOptions as $opt)
+                    <option value="{{ $opt['id'] }}">{{ $opt['name'] }}{{ $opt['ip'] ? ' ('.$opt['ip'].')' : '' }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="button" class="btn-apply" id="btnExportPerangkat" disabled>
+            <em class="icon ni ni-download"></em> Export PDF Perangkat
+        </button>
+        <span class="export-hint" id="perangkatExportHint">
+            Pilih satu perangkat untuk mengunduh laporan individual
+            (identitas, availability, downtime, response time, alert, riwayat status).
+        </span>
+    </div>
+</div>
 @if(! $hasData)
     <div class="lp-card empty-state fade-in-up" style="--d:.10s">
         <span class="empty-icon"><em class="icon ni ni-inbox"></em></span>
@@ -484,7 +483,7 @@
     <div class="col-6 col-lg-3 fade-in-up" style="--d:.20s">
         <div class="lp-card stat-card" data-card="response">
             <div class="stat-top">
-                <div class="icon-box icon-violet"><em class="icon ni ni-bolt-alt"></em></div>
+                <div class="icon-box icon-violet"><em class="icon ni ni-speed"></em></div>
                 <div>
                     <div class="stat-value">
                         {{ $avgRespVal !== null ? number_format($avgRespVal, 0) : '—' }}@if($avgRespVal !== null)<span class="stat-unit"> ms</span>@endif
@@ -510,6 +509,11 @@
             </div>
             <div class="chart-container">
                 <canvas id="availabilityChart"></canvas>
+                <div class="chart-empty" id="availabilityEmpty" role="status">
+                    <span class="chart-empty-icon"><em class="icon ni ni-line-chart"></em></span>
+                    <span class="chart-empty-title">Belum ada data availability</span>
+                    <span class="chart-empty-sub">Tidak ada hasil pengecekan pada periode {{ $period['label'] }}.</span>
+                </div>
             </div>
         </div>
     </div>
@@ -520,6 +524,11 @@
             </div>
             <div class="chart-container">
                 <canvas id="responseChart"></canvas>
+                <div class="chart-empty" id="responseEmpty" role="status">
+                    <span class="chart-empty-icon"><em class="icon ni ni-speed"></em></span>
+                    <span class="chart-empty-title">Belum ada data response time</span>
+                    <span class="chart-empty-sub">Perangkat belum tercatat merespons pada periode {{ $period['label'] }}.</span>
+                </div>
             </div>
         </div>
     </div>
@@ -707,9 +716,89 @@
     @endif
 </div>
 @endif
+
+{{-- Overlay & modal: diletakkan di akhir agar page-head tetap menjadi anak
+     pertama .admin-page (spacing header konsisten dengan halaman lain). --}}
+<div class="laporan-loading" id="laporanLoading">
+    <div class="spinner-box"><span class="spinner-border spinner-border-sm"></span> Memuat laporan…</div>
+</div>
+<div class="modal fade modal-custom" id="statModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header modal-head head-green" id="statModalHead">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="modal-head-icon"><em class="icon ni ni-check-circle"></em></span>
+                    <h5 class="modal-title mb-0" id="statModalTitle">Detail</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="modal-scroll" id="statModalBody"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-export" data-bs-dismiss="modal" id="statModalClose">Tutup</button>
+                <a href="{{ $pdfUrl }}" class="btn-export" id="statModalPdf"><em class="icon ni ni-download"></em> Export PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
+<script>
+/* Export PDF per perangkat — mengikuti periode/filter yang sedang aktif. */
+(function () {
+    function wire() {
+        var select  = document.getElementById('perangkatSelect');
+        var button  = document.getElementById('btnExportPerangkat');
+        var hint    = document.getElementById('perangkatExportHint');
+
+        if (!select || !button) { return; }
+
+        // Hanya parameter periode/filter yang ikut; param lain (page, device
+        // untuk tabel incident) tidak relevan untuk PDF per perangkat.
+        var current = new URLSearchParams(window.location.search);
+        var params  = new URLSearchParams();
+
+        ['period', 'date', 'start_date', 'end_date', 'month'].forEach(function (key) {
+            var value = current.get(key);
+            if (value) { params.set(key, value); }
+        });
+
+        function sync() {
+            var id = select.value;
+            button.disabled = !id;
+
+            if (hint) {
+                hint.textContent = id
+                    ? 'Laporan periode ' + (params.get('period') || 'daily') + ' akan diunduh untuk perangkat terpilih.'
+                    : 'Pilih satu perangkat untuk mengunduh laporan individual '
+                      + '(identitas, availability, downtime, response time, alert, riwayat status).';
+            }
+        }
+
+        select.addEventListener('change', sync);
+
+        button.addEventListener('click', function () {
+            var id = select.value;
+            if (!id) { return; }
+
+            var url = select.getAttribute('data-url-template').replace('__DEVICE__', encodeURIComponent(id));
+            var qs  = params.toString();
+
+            window.location.href = qs ? url + (url.indexOf('?') === -1 ? '?' : '&') + qs : url;
+        });
+
+        sync();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wire);
+    } else {
+        wire();
+    }
+})();
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof Chart === 'undefined') {
@@ -735,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    /* ── Data chart via @json($chartData), fallback dummy ─────── */
+    /* ── Data chart via @json($chartData) (data nyata, tanpa dummy) ── */
     var chartData = @json($chartData);
     var availability = chartData.availability || {};
     var response    = chartData.response || {};
@@ -743,21 +832,26 @@ document.addEventListener('DOMContentLoaded', function () {
     var availRaw     = Array.isArray(availability.availability) ? availability.availability : [];
     var availLabels  = Array.isArray(availability.labels) ? availability.labels : [];
     var hasAvailData = availRaw.some(function (v) { return v !== null && v !== undefined; });
-    if (!availLabels.length || !hasAvailData) {
-        availLabels = chartData.dummy.availability.labels;
-        availRaw    = chartData.dummy.availability.availability;
-    }
 
     var respRaw  = Array.isArray(response.avg) ? response.avg : [];
     var respMin  = Array.isArray(response.min) ? response.min : [];
     var respMax  = Array.isArray(response.max) ? response.max : [];
     var respLbl  = Array.isArray(response.labels) ? response.labels : [];
     var hasRespData = respRaw.some(function (v) { return v !== null && v !== undefined; });
-    if (!respLbl.length || !hasRespData) {
-        respLbl  = chartData.dummy.response.labels;
-        respRaw  = chartData.dummy.response.avg;
-        respMin  = chartData.dummy.response.min;
-        respMax  = chartData.dummy.response.max;
+
+    /* Tampilkan empty state & jangan render chart bila tidak ada data nyata. */
+    function showChartEmpty(canvasId, emptyId) {
+        var canvas  = document.getElementById(canvasId);
+        var empty   = document.getElementById(emptyId);
+        if (canvas) { canvas.classList.add('is-empty'); }
+        if (empty)  { empty.classList.add('show'); }
+    }
+
+    if (!hasAvailData) {
+        showChartEmpty('availabilityChart', 'availabilityEmpty');
+    }
+    if (!hasRespData) {
+        showChartEmpty('responseChart', 'responseEmpty');
     }
 
     /* ── Network Availability (hijau #198754, y 90–100%) ──────── */
@@ -765,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var availMin = nonNullAvail.length ? Math.min.apply(null, nonNullAvail) : 99;
     var availSuggestedMin = Math.max(0, Math.floor(availMin - 2));
 
-    new Chart(
+    if (hasAvailData) new Chart(
         document.getElementById('availabilityChart').getContext('2d'),
         {
             type: 'line',
@@ -817,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
     /* ── Response Time (Avg merah #e8534f) ─────────────────────── */
-    new Chart(
+    if (hasRespData) new Chart(
         document.getElementById('responseChart').getContext('2d'),
         {
             type: 'line',
@@ -926,7 +1020,16 @@ document.addEventListener('DOMContentLoaded', function () {
         s.addEventListener('change', showLoading);
     });
     var exportBtn = document.getElementById('btnExport');
-    if (exportBtn) exportBtn.addEventListener('click', showLoading);
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function (e) {
+            var href = (this.getAttribute && this.getAttribute('href')) || '';
+            if (/laporan\/pdf/.test(href)) {
+                // PDF download: don't show page-loading overlay (download keeps page).
+                return;
+            }
+            showLoading(e);
+        });
+    }
     document.querySelectorAll('.pagination-laporan a').forEach(function (a) {
         a.addEventListener('click', showLoading);
     });
@@ -1108,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         uptime:    { head: 'head-green',  icon: 'ni ni-check-circle', title: 'Detail Uptime' },
         down:      { head: 'head-red',    icon: 'ni ni-cross-circle', title: 'Detail Total DOWN' },
         incidents: { head: 'head-amber',  icon: 'ni ni-alert-circle', title: 'Detail Total Incident' },
-        response:  { head: 'head-violet', icon: 'ni ni-bolt-alt',     title: 'Detail Avg Response' }
+        response:  { head: 'head-violet', icon: 'ni ni-speed',     title: 'Detail Avg Response' }
     };
     var renderers = {
         uptime: renderUptimeModal,
@@ -1141,7 +1244,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     var modalPdf = document.getElementById('statModalPdf');
-    if (modalPdf) modalPdf.addEventListener('click', showLoading);
+    if (modalPdf) {
+        modalPdf.addEventListener('click', function (e) {
+            var href = (this.getAttribute && this.getAttribute('href')) || '';
+            if (/laporan\/pdf/.test(href)) return;
+            showLoading(e);
+        });
+    }
 
 });
 </script>

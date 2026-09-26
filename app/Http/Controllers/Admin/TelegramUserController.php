@@ -7,6 +7,8 @@ use App\Models\TelegramLog;
 use App\Models\TelegramSubscriber;
 use App\Models\TelegramUser;
 use App\Services\TelegramService;
+use App\Services\TelegramUserService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
@@ -87,22 +89,51 @@ class TelegramUserController extends Controller
         ]);
     }
 
-    public function approve(Request $request, TelegramUser $telegramUser)
+    public function approve(Request $request, TelegramUser $telegramUser, TelegramService $telegram, TelegramUserService $users)
     {
         $telegramUser->update([
             'is_approved' => true,
-            'role' => $telegramUser->role === 'pending' ? 'staff' : $telegramUser->role,
+            'role' => $telegramUser->role === 'pending' ? 'admin' : $telegramUser->role,
         ]);
+
+        $message = "🎉 Akses Telegram RADNET Anda telah disetujui!\n\n".
+            "Anda sekarang dapat menggunakan bot monitoring.\n\n".
+            "Gunakan /help untuk melihat daftar perintah yang tersedia.";
+
+        $chatId = (string) $telegramUser->chat_id;
+        $sent = false;
+
+        try {
+            $sent = $telegram->sendToChat($chatId, $message);
+
+            if ($sent) {
+                $users->log($telegramUser, $chatId, 'Approval notification sent', $message);
+            } else {
+                $users->log($telegramUser, $chatId, 'Approval notification failed', null);
+                Log::warning('Gagal mengirim notifikasi Telegram saat approval', ['chat_id' => $chatId]);
+            }
+        } catch (\Throwable $e) {
+            $users->log($telegramUser, $chatId, 'Approval notification error', $e->getMessage());
+            Log::warning('Exception mengirim notifikasi Telegram saat approval: '.$e->getMessage(), ['chat_id' => $chatId]);
+            $sent = false;
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'User Telegram berhasil disetujui.',
+                'notification_sent' => (bool) $sent,
             ]);
         }
 
-        return redirect()->route('admin.telegram-users')
+        $redirect = redirect()->route('admin.telegram-users')
             ->with('success', 'User Telegram berhasil disetujui.');
+
+        if (! $sent) {
+            $redirect = $redirect->with('error', 'Approval berhasil, tetapi notifikasi Telegram gagal dikirim.');
+        }
+
+        return $redirect;
     }
 
     public function reject(Request $request, TelegramUser $telegramUser)
@@ -135,7 +166,7 @@ class TelegramUserController extends Controller
     public function setRole(Request $request, TelegramUser $telegramUser)
     {
         $validated = $request->validate([
-            'role' => ['required', 'string', 'in:super_admin,admin,staff,pending'],
+            'role' => ['required', 'string', 'in:super_admin,admin,pending'],
         ]);
 
         $role = $validated['role'];

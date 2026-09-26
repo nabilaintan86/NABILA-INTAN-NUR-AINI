@@ -5,17 +5,12 @@
 @push('styles')
 <style>
     body, .nk-main { background: #f4f6fb; }
-    .telegram-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-    .telegram-title { display: flex; align-items: center; gap: 14px; }
-    .telegram-title-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #229ed9, #0877b9); font-size: 21px; box-shadow: 0 8px 20px rgba(34, 158, 217, .25); }
-    .telegram-title h1 { margin: 0; font-size: 20px; font-weight: 800; color: #1c2b4a; }
-    .telegram-title p { margin: 3px 0 0; color: #6b7a99; font-size: 12.5px; }
-    .telegram-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+    .telegram-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
     .telegram-stat { background: #fff; border: 1px solid #e8ecf3; border-radius: 14px; padding: 18px 20px; }
     .telegram-stat-label { color: #6b7a99; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
     .telegram-stat-value { color: #1c2b4a; font-size: 27px; font-weight: 800; margin-top: 4px; }
     .telegram-stat-icon { float: right; width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-    .telegram-card { background: #fff; border: 1px solid #e8ecf3; border-radius: 14px; margin-bottom: 18px; }
+    .telegram-card { background: #fff; border: 1px solid #e8ecf3; }
     .telegram-card-body { padding: 20px; }
     .telegram-filter { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .telegram-filter .form-control, .telegram-filter .form-select { min-width: 160px; border-color: #dfe5ef; font-size: 12.5px; }
@@ -44,19 +39,24 @@
 
 @section('content')
 
-<div class="telegram-header">
-    <div class="telegram-title">
-        <div class="telegram-title-icon"><em class="icon ni ni-telegram"></em></div>
-        <div>
-            <h1>Telegram Users</h1>
-            <p>Kelola registrasi, approval, role, dan broadcast bot RADNET.</p>
-        </div>
-    </div>
-    <a href="{{ route('admin.telegram-users') }}" class="btn btn-outline-primary">
-        <em class="icon ni ni-refresh"></em>
-        <span>Refresh</span>
-    </a>
-</div>
+{{-- ============================================================
+     PAGE HEAD
+============================================================ --}}
+<x-admin.page-head
+    title="Telegram Users"
+    subtitle="Kelola registrasi, approval, role, dan broadcast bot RADNET."
+    icon="telegram"
+    icon-class="is-telegram"
+    :crumbs="[['label' => 'Telegram Users']]"
+>
+    <x-slot:actions>
+        <a href="{{ route('admin.telegram-users') }}" class="btn btn-outline-primary">
+            <em class="icon ni ni-reload"></em>
+            <span>Refresh</span>
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
+
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <em class="icon ni ni-check-circle"></em> {{ session('success') }}
@@ -113,11 +113,10 @@
                 <option value="pending" @selected($status === 'pending')>Menunggu</option>
                 <option value="approved" @selected($status === 'approved')>Disetujui</option>
             </select>
-            <select name="role" class="form-select">
+                <select name="role" class="form-select">
                 <option value="all" @selected($role === 'all')>Semua role</option>
                 <option value="super_admin" @selected($role === 'super_admin')>Super Admin</option>
                 <option value="admin" @selected($role === 'admin')>Admin</option>
-                <option value="staff" @selected($role === 'staff')>Staff</option>
                 <option value="pending" @selected($role === 'pending')>Pending</option>
             </select>
             <button class="btn btn-primary" type="submit"><em class="icon ni ni-search"></em> Filter</button>
@@ -163,10 +162,10 @@
                                             <button class="btn btn-sm btn-success" type="submit"><em class="icon ni ni-check"></em> Setujui</button>
                                         </form>
                                     @endif
-                                    <form class="telegram-role-form" method="POST" action="{{ route('admin.telegram-users.set-role', $telegramUser) }}">
+                                        <form class="telegram-role-form" method="POST" action="{{ route('admin.telegram-users.set-role', $telegramUser) }}">
                                         @csrf
                                         <select name="role" class="form-select form-select-sm" aria-label="Role user">
-                                            @foreach(['super_admin', 'admin', 'staff', 'pending'] as $roleOption)
+                                            @foreach(['super_admin', 'admin', 'pending'] as $roleOption)
                                                 <option value="{{ $roleOption }}" @selected($telegramUser->role === $roleOption)>{{ str_replace('_', ' ', ucfirst($roleOption)) }}</option>
                                             @endforeach
                                         </select>

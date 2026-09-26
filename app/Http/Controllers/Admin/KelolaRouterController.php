@@ -32,6 +32,7 @@ class KelolaRouterController extends Controller
             'type' => ['required', 'string', Rule::in(DeviceType::types())],
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
             'ip_address' => 'required|ip|unique:device,ip_address',
+            'router_version' => 'nullable|string|max:255',
         ]);
 
         $validated['icon_type'] = DeviceType::iconKey($validated['type']);
@@ -53,6 +54,7 @@ class KelolaRouterController extends Controller
             'type' => ['required', 'string', Rule::in(DeviceType::types())],
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
             'ip_address' => 'required|ip|unique:device,ip_address,'.$device->id,
+            'router_version' => 'nullable|string|max:255',
         ]);
 
         $validated['icon_type'] = DeviceType::iconKey($validated['type']);

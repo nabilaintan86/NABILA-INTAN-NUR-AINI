@@ -20,38 +20,27 @@
 @endpush
 
 @section('content')
-<div class="nk-block">
+{{-- =========================================================
+     PAGE HEAD
+========================================================== --}}
+<x-admin.page-head
+    title="Log History"
+    subtitle="Riwayat ping perangkat real-time dan arsip."
+    icon="list"
+    :crumbs="[['label' => 'Log History']]"
+>
+    <x-slot:actions>
+        <span class="badge rounded-pill text-bg-primary-soft">
+            <em class="icon ni ni-clock me-1"></em>
+            {{ number_format($statusCounts['total']) }} total entri log
+        </span>
+    </x-slot:actions>
+</x-admin.page-head>
 
-    {{-- =========================================================
-         HEADER
-    ========================================================== --}}
-    <div class="nk-block-head">
-        <div class="nk-block-head-between flex-wrap gap g-2">
-            <div class="nk-block-head-content">
-                <nav>
-                    <ol class="breadcrumb breadcrumb-arrow mb-0">
-                        <li class="breadcrumb-item active" aria-current="page">
-                            Log History
-                        </li>
-                    </ol>
-                </nav>
-            </div>
-
-            <div class="nk-block-head-content">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge rounded-pill text-bg-primary-soft">
-                        <em class="icon ni ni-clock me-1"></em>
-                        {{ number_format($statusCounts['total']) }} total entri log
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- =========================================================
-         KPI SUMMARY (TOTAL / UP / DOWN / WARNING)
-    ========================================================== --}}
-    <div class="row g-gs">
+{{-- =========================================================
+     KPI SUMMARY (TOTAL / UP / DOWN / WARNING)
+========================================================== --}}
+<div class="row g-gs">
         <div class="col-sm-6 col-xl-3">
             <div class="card card-bordered">
                 <div class="card-body">
@@ -120,7 +109,7 @@
     {{-- =========================================================
          TAB: REAL-TIME  /  ARSIP
     ========================================================== --}}
-    <ul class="nav nav-tabs mt-4" id="logTabs" role="tablist">
+    <ul class="nav nav-tabs" id="logTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="realtime-tab" data-bs-toggle="tab"
                     data-bs-target="#realtime-pane" type="button" role="tab"
@@ -137,7 +126,7 @@
         </li>
     </ul>
 
-    <div class="tab-content mt-3">
+    <div class="tab-content">
         {{-- =========================================================
              PANEL REAL-TIME
         ========================================================== --}}
@@ -198,8 +187,6 @@
             </div>
         </div>
     </div>
-
-</div>
 
 {{-- =========================================================
      MODAL DETAIL LOG / DEVICE

@@ -162,7 +162,7 @@
                                 class="nk-menu-link"
                             >
                                 <span class="nk-menu-icon">
-                                    <em class="icon ni ni-note"></em>
+                                    <em class="icon ni ni-reports"></em>
                                 </span>
 
                                 <span class="nk-menu-text">

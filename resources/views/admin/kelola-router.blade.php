@@ -105,42 +105,33 @@
 @section('content')
 
 {{-- ============================================================
-     HEADER
+     PAGE HEAD
 ============================================================ --}}
-<div class="nk-block-head">
-    <div class="nk-block-head-between flex-wrap gap g-2">
-        <div class="nk-block-head-content">
-            <nav>
-                <ol class="breadcrumb breadcrumb-arrow mb-0">
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Kelola Router
-                    </li>
-                </ol>
-            </nav>
-        </div>
-        <div class="nk-block-head-content">
-            <ul class="d-flex flex-wrap gap-2">
-                @auth
-                    <li>
-                        <a href="{{ route('admin.device.notes.report') }}" class="btn btn-outline-primary d-none d-md-inline-flex">
-                            <em class="icon ni ni-note"></em>
-                            <span>Report Catatan</span>
-                        </a>
-                    </li>
-                @endauth
-                <li>
-                    <button
-                        class="btn btn-primary d-none d-md-inline-flex"
-                        data-bs-toggle="modal"
-                        data-bs-target="#addDeviceModal">
-                        <em class="icon ni ni-plus"></em>
-                        <span>Tambah Perangkat</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+<x-admin.page-head
+    title="Kelola Router"
+    subtitle="Kelola daftar router dan perangkat jaringan RADNET."
+    icon="wifi"
+    :crumbs="[['label' => 'Kelola Router']]"
+>
+    <x-slot:actions>
+        @auth
+            <a href="{{ route('admin.device.notes.report') }}" class="btn btn-outline-primary d-none d-md-inline-flex">
+                <em class="icon ni ni-reports"></em>
+                <span>Report Catatan</span>
+            </a>
+        @endauth
+        @if(auth()->check() && auth()->user()->role === 'super_admin')
+            <button
+                class="btn btn-primary d-none d-md-inline-flex"
+                data-bs-toggle="modal"
+                data-bs-target="#addDeviceModal">
+                <em class="icon ni ni-plus"></em>
+                <span>Tambah Perangkat</span>
+            </button>
+        @endif
+    </x-slot:actions>
+</x-admin.page-head>
+
 {{-- ============================================================
      SUCCESS ALERT
 ============================================================ --}}
@@ -258,6 +249,7 @@
                                                              <span>Detail</span>
                                                          </a>
                                                      </li>
+                                                    @if(auth()->check() && auth()->user()->role === 'super_admin')
                                                      <li>
                                                          <a href="#"
                                                             class="btn-edit-device"
@@ -266,7 +258,8 @@
                                                             data-type="{{ $device->display_type }}"
                                                             data-protocol="{{ $device->display_protocol }}"
                                                             data-icon="{{ $device->icon_url }}"
-                                                            data-ip="{{ $device->ip_address }}">
+                                                            data-ip="{{ $device->ip_address }}"
+                                                            data-router-version="{{ $device->router_version }}">
                                                              <em class="icon ni ni-edit"></em>
                                                              <span>Edit</span>
                                                          </a>
@@ -285,6 +278,7 @@
                                                             </button>
                                                         </form>
                                                     </li>
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </div>
@@ -357,6 +351,13 @@
                             <input type="text" name="ip_address" id="add_ip_address" class="form-control"
                                    placeholder="Contoh: 202.154.4.254" required>
                         </div>
+                        @if(auth()->check() && auth()->user()->role === 'super_admin')
+                        <div class="col-12 mt-2">
+                            <label for="add_router_version" class="form-label">Router Version</label>
+                            <input type="text" name="router_version" id="add_router_version" class="form-control"
+                                   placeholder="Contoh: IOS-XE 17.3.1" value="">
+                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -414,6 +415,12 @@
                             <label for="edit_ip_address" class="form-label">IP Address <span class="text-danger">*</span></label>
                             <input type="text" name="ip_address" id="edit_ip_address" class="form-control" required>
                         </div>
+                        @if(auth()->check() && auth()->user()->role === 'super_admin')
+                        <div class="col-12 mt-2">
+                            <label for="edit_router_version" class="form-label">Router Version</label>
+                            <input type="text" name="router_version" id="edit_router_version" class="form-control" value="">
+                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -456,6 +463,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit_protocol').value   = protocol;
             document.getElementById('edit_ip_address').value = ip;
             document.getElementById('edit_type_preview').src = icon;
+            var editRouterVersion = document.getElementById('edit_router_version');
+            if (editRouterVersion) {
+                editRouterVersion.value = this.dataset.routerVersion || '';
+            }
 
             new bootstrap.Modal(
                 document.getElementById('editDeviceModal')

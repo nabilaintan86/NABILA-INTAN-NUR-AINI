@@ -7,10 +7,13 @@ use App\Services\TelegramService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
 class TelegramBroadcastTest extends TestCase
 {
+    use InteractsWithDeviceRegistry;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,6 +33,9 @@ class TelegramBroadcastTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        // Test ini menguji broadcast, bukan sumber data: tabel device = daftar resmi.
+        $this->treatDeviceTableAsOfficialRegistry();
     }
 
     public function test_broadcast_device_down_sends_to_all_active_subscribers_and_default_chat(): void

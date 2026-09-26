@@ -4,15 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Device;
+use App\Services\DeviceCsvService;
+use App\Services\Laporan\LaporanPerangkatService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LaporanController extends Controller
 {
     public const PER_PAGE = 15;
+
+    public function __construct(
+        protected LaporanPerangkatService $perangkatService,
+        protected DeviceCsvService $deviceCsv,
+    ) {}
 
     /**
      * Halaman dashboard reporting /laporan.
@@ -20,6 +29,9 @@ class LaporanController extends Controller
     public function index(Request $request)
     {
         $data = $this->report($request);
+
+        // Dipakai halaman untuk dropdown "Export PDF per perangkat".
+        $data['perangkatOptions'] = $this->perangkatService->options();
 
         return view('admin.laporan', $data);
     }
@@ -31,9 +43,38 @@ class LaporanController extends Controller
     {
         $data = $this->report($request, true);
 
+        // Ringkasan jumlah perangkat resmi (devices.csv) untuk PDF keseluruhan.
+        $data['deviceSummary'] = $this->deviceCsv->officialSummary();
+
         $pdf = Pdf::loadView('admin.laporan-pdf', $data);
 
         $filename = 'laporan-monitoring-'
+            .$data['period']['type'].'-'
+            .now()->format('Y-m-d_His').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export PDF laporan satu perangkat (identitas, availability, downtime,
+     * response time, alert, dan riwayat status) pada periode aktif.
+     */
+    public function perangkatPdf(Request $request, int $device)
+    {
+        $row = Device::query()->find($device);
+
+        if (! $row) {
+            abort(404, 'Perangkat tidak ditemukan.');
+        }
+
+        $data = $this->perangkatService->report($row, $this->resolvePeriod($request));
+
+        $pdf = Pdf::loadView('admin.laporan-pdf-perangkat', $data);
+
+        $slug = Str::slug((string) $row->name) ?: 'perangkat';
+        $slug = substr($slug, 0, 40);
+
+        $filename = 'laporan-perangkat-'.$slug.'-'
             .$data['period']['type'].'-'
             .now()->format('Y-m-d_His').'.pdf';
 

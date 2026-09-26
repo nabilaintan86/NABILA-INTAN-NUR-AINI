@@ -6,28 +6,6 @@
 <style>
     body, .nk-main { background: #f4f6fb; }
 
-    .dd-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-bottom: 18px;
-    }
-    .dd-title-group { display: flex; align-items: center; gap: 14px; }
-    .dd-title-icon {
-        width: 46px; height: 46px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #4F46E5, #7c3aed);
-        color: #fff;
-        font-size: 1.2rem;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .28);
-        flex-shrink: 0;
-    }
-    .dd-title h1 { font-size: 1.25rem; font-weight: 800; color: #1c2b4a; margin: 0; }
-    .dd-title p { margin: 2px 0 0; font-size: .8rem; color: #6b7a99; }
-
     .status-badge-dd {
         display: inline-flex; align-items: center; gap: 6px;
         font-size: .72rem; font-weight: 700;
@@ -78,26 +56,10 @@
     }
     .meta-table td:last-child { color: #1c2b4a; font-weight: 600; word-break: break-word; }
 
-    .back-chip {
-        display: inline-flex; align-items: center; gap: 7px;
-        font-size: .78rem; font-weight: 700; color: #4F46E5;
-        text-decoration: none; transition: all .15s;
-    }
-    .back-chip:hover { color: #4338ca; text-decoration: underline; }
-
     @media (max-width: 575.98px) {
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
-    .dd-device-icon {
-        width: 48px;
-        height: 48px;
-        object-fit: contain;
-        border-radius: 14px;
-        background: #fff;
-        padding: 5px;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .18);
-    }
     .note-timeline { position: relative; margin: 0; padding: 0; list-style: none; }
     .note-timeline::before {
         content: "";
@@ -152,48 +114,50 @@
 
 @section('content')
 
-<nav>
-    @php
-        $backFrom = (string) request()->headers->get('referer');
-        $backUrl  = ($backFrom !== '' && str_contains($backFrom, '/admin/'))
-            ? $backFrom
-            : route('admin.dashboard');
-        $fromDhcp    = str_contains($backFrom, '/admin/dhcp-lease');
-        $fromLaporan = !$fromDhcp && str_contains($backFrom, '/admin/laporan');
-        $crumbLabel  = $fromDhcp ? 'DHCP Lease' : ($fromLaporan ? 'Laporan &amp; Grafik' : 'Detail Device');
-        $crumbUrl    = $fromDhcp ? route('admin.dhcp-lease')
-            : ($fromLaporan ? route('admin.laporan') : null);
-    @endphp
-    <ol class="breadcrumb breadcrumb-arrow mb-2">
-        @if($crumbUrl)
-            <li class="breadcrumb-item"><a href="{{ $crumbUrl }}">{!! $crumbLabel !!}</a></li>
-        @endif
-        <li class="breadcrumb-item active" aria-current="page">Detail Device</li>
-    </ol>
-</nav>
-<a href="{{ $backUrl }}" class="back-chip">
-    <em class="icon ni ni-arrow-left"></em>
-    @if($fromDhcp) Kembali ke DHCP Lease
-    @elseif($fromLaporan) Kembali ke Laporan
-    @else Kembali @endif
-</a>
-<div class="dd-header">
-    <div class="dd-title-group">
-        <img src="{{ $device->icon_url }}" alt="{{ $device->display_type }}" class="dd-device-icon">
-        <div class="dd-title">
-            <h1>{{ $device->name }}</h1>
-            <p>{{ $device->ip_address ?: 'IP tidak tercatat' }} &middot; {{ $device->display_type }} &middot; {{ $device->display_protocol }}</p>
-        </div>
-    </div>
-    @php
-        $status = strtolower((string) $device->status);
-        $statusLabel = $status === 'up' ? 'UP' : ($status === 'down' ? 'DOWN' : 'UNKNOWN');
-        $statusClass = $status === 'up' ? 'up' : ($status === 'down' ? 'down' : 'unknown');
-    @endphp
-    <span class="status-badge-dd status-dd-{{ $statusClass }}">
-        <span class="dd-dot dd-dot-{{ $statusClass }}"></span> {{ $statusLabel }}
-    </span>
-</div>
+@php
+    $backFrom = (string) request()->headers->get('referer');
+    $backUrl  = ($backFrom !== '' && str_contains($backFrom, '/admin/'))
+        ? $backFrom
+        : route('admin.dashboard');
+    $fromDhcp    = str_contains($backFrom, '/admin/dhcp-lease');
+    $fromLaporan = !$fromDhcp && str_contains($backFrom, '/admin/laporan');
+    $parentLabel = $fromDhcp ? 'DHCP Lease' : ($fromLaporan ? 'Laporan & Grafik' : null);
+    $parentUrl   = $fromDhcp ? route('admin.dhcp-lease')
+        : ($fromLaporan ? route('admin.laporan') : null);
+    $crumbs = [];
+    if ($parentLabel !== null) {
+        $crumbs[] = ['label' => $parentLabel, 'url' => $parentUrl];
+    }
+    $crumbs[] = ['label' => 'Detail Device'];
+@endphp
+
+{{-- =========================================================
+     PAGE HEAD
+========================================================== --}}
+<x-admin.page-head
+    :title="$device->name"
+    :subtitle="($device->ip_address ?: 'IP tidak tercatat') . ' · ' . ($device->display_type ?: '—') . ' · ' . ($device->display_protocol ?: '—')"
+    :icon-url="$device->icon_url"
+    :crumbs="$crumbs"
+>
+    <x-slot:actions>
+        @php
+            $status = strtolower((string) $device->status);
+            $statusLabel = $status === 'up' ? 'UP' : ($status === 'down' ? 'DOWN' : 'UNKNOWN');
+            $statusClass = $status === 'up' ? 'up' : ($status === 'down' ? 'down' : 'unknown');
+        @endphp
+        <span class="status-badge-dd status-dd-{{ $statusClass }}">
+            <span class="dd-dot dd-dot-{{ $statusClass }}"></span> {{ $statusLabel }}
+        </span>
+        <a href="{{ $backUrl }}" class="btn btn-outline-primary">
+            <em class="icon ni ni-arrow-left"></em>
+            @if($fromDhcp) DHCP Lease
+            @elseif($fromLaporan) Laporan
+            @else Kembali @endif
+        </a>
+    </x-slot:actions>
+</x-admin.page-head>
+
 <div class="row g-3">
     <div class="col-lg-7">
         <div class="panel h-100">
@@ -215,6 +179,10 @@
                             —
                         @endif
                     </td>
+                </tr>
+                <tr>
+                    <td>Router Version</td>
+                    <td>{{ $device->router_version ?: '—' }}</td>
                 </tr>
             </table>
         </div>

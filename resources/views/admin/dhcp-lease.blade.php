@@ -19,71 +19,6 @@
         background: var(--dhcp-background);
     }
 
-    .dhcp-breadcrumb {
-        margin-bottom: 18px;
-    }
-
-    .dhcp-breadcrumb .breadcrumb {
-        margin-bottom: 0;
-    }
-
-    .dhcp-page {
-        min-width: 0;
-    }
-
-    .dhcp-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        flex-wrap: wrap;
-        margin-bottom: 22px;
-    }
-
-    .dhcp-title-group {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        min-width: 0;
-    }
-
-    .dhcp-title-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, var(--dhcp-accent), #7c3aed);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        font-size: 20px;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .28);
-    }
-
-    .dhcp-title h1 {
-        margin: 0;
-        color: var(--dhcp-text);
-        font-size: 20px;
-        font-weight: 800;
-        letter-spacing: .2px;
-    }
-
-    .dhcp-title p {
-        margin: 3px 0 0;
-        color: var(--dhcp-muted);
-        font-size: 12.5px;
-        line-height: 1.5;
-    }
-
-    .dhcp-header-actions {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
     .dhcp-meta-chip {
         min-height: 34px;
         display: inline-flex;
@@ -101,6 +36,66 @@
 
     .dhcp-meta-chip strong {
         color: var(--dhcp-text);
+    }
+
+    /* Meta chip yang bisa diklik (button) — reset agar tetap terlihat chip */
+    button.dhcp-meta-chip {
+        cursor: pointer;
+        font-family: inherit;
+        line-height: 1.2;
+        text-align: left;
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+    button.dhcp-meta-chip:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 4px 12px rgba(28, 43, 74, .1);
+        transform: translateY(-1px);
+    }
+
+    button.dhcp-meta-chip:focus-visible,
+    .stat-card:focus-visible {
+        outline: 2px solid var(--dhcp-accent);
+        outline-offset: 2px;
+    }
+
+    /* KPI card yang bisa diklik */
+    .stat-card.is-action {
+        cursor: pointer;
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+    .stat-card.is-action:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 8px 22px rgba(28, 43, 74, .1);
+        transform: translateY(-2px);
+    }
+
+    .stat-card.is-action:active {
+        transform: translateY(0);
+    }
+
+    .stat-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+        color: var(--dhcp-accent);
+        font-size: 10.5px;
+        font-weight: 800;
+        opacity: 0;
+        transition: opacity .16s ease;
+    }
+
+    .stat-card.is-action:hover .stat-hint,
+    .stat-card.is-action:focus-visible .stat-hint {
+        opacity: 1;
+    }
+
+    @media (hover: none) {
+        .stat-hint {
+            opacity: 1;
+        }
     }
 
     .btn-dhcp-primary,
@@ -171,9 +166,9 @@
         font-size: 15px;
     }
 
-    .btn-dhcp-primary.loading .ni-refresh,
-    .btn-dhcp-outline.loading .ni-refresh,
-    .btn-dhcp-icon.loading .ni-refresh {
+    .btn-dhcp-primary.loading .ni-reload,
+    .btn-dhcp-outline.loading .ni-reload,
+    .btn-dhcp-icon.loading .ni-reload {
         animation: dhcp-spin .8s linear infinite;
     }
 
@@ -883,6 +878,138 @@
         margin-right: auto;
     }
 
+    /* =========================================================
+       POPUP RINGKASAN (KPI + audit sumber data)
+       Animasi hanya opacity/transform supaya ringan di perangkat NOC.
+    ========================================================== */
+    .modal-box-dhcp.modal-info {
+        max-width: 520px;
+    }
+
+    .modal-backdrop-dhcp.is-closing {
+        animation: dhcp-fade-out 140ms ease both;
+    }
+
+    .modal-box-dhcp.modal-info.is-closing {
+        animation: dhcp-slide-down 140ms ease both;
+    }
+
+    @keyframes dhcp-fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
+    @keyframes dhcp-slide-down {
+        from { opacity: 1; transform: translateY(0) scale(1); }
+        to { opacity: 0; transform: translateY(12px) scale(.98); }
+    }
+
+    .modal-head-dhcp.head-tone-info { background: #4f46e5; }
+    .modal-head-dhcp.head-tone-total { background: #4f46e5; }
+    .modal-head-dhcp.head-tone-aktif { background: #16a34a; }
+    .modal-head-dhcp.head-tone-expired { background: #dc2626; }
+    .modal-head-dhcp.head-tone-unknown { background: #d97706; }
+    .modal-head-dhcp.head-tone-slate { background: #475569; }
+
+    .info-lead {
+        margin: 0 0 14px;
+        color: var(--dhcp-muted);
+        font-size: 12.5px;
+        line-height: 1.6;
+    }
+
+    .info-list {
+        display: flex;
+        margin: 0;
+        padding: 0;
+        flex-direction: column;
+        gap: 8px;
+        list-style: none;
+    }
+
+    .info-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid #eef1f8;
+        border-radius: 11px;
+        background: #f8fafc;
+        font-size: 12.5px;
+    }
+
+    .info-list li.is-flag {
+        border-color: #fde68a;
+        background: #fffbeb;
+    }
+
+    .info-list .info-name {
+        min-width: 0;
+        color: var(--dhcp-text);
+        font-weight: 700;
+        word-break: break-word;
+    }
+
+    .info-list .info-name small {
+        display: block;
+        margin-top: 2px;
+        color: var(--dhcp-muted);
+        font-family: 'Consolas', 'Menlo', monospace;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .info-list .info-value {
+        margin-left: auto;
+        color: var(--dhcp-accent);
+        font-size: 14px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .info-bar {
+        position: relative;
+        height: 7px;
+        margin: 4px 0 12px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eef1f8;
+    }
+
+    .info-bar span {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-radius: 999px;
+        animation: dhcp-bar-in .45s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .info-bar .bar-up { left: 0; background: #16a34a; }
+    .info-bar .bar-warning { background: #f59e0b; }
+    .info-bar .bar-down { right: 0; background: #dc2626; }
+
+    @keyframes dhcp-bar-in {
+        from { transform: scaleX(0); transform-origin: left; }
+        to { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .info-note {
+        margin: 14px 0 0;
+        padding: 11px 12px;
+        border-left: 3px solid var(--dhcp-accent);
+        border-radius: 0 10px 10px 0;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 11.5px;
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .info-note code {
+        font-family: 'Consolas', 'Menlo', monospace;
+        font-size: 11px;
+    }
+
     .toast-stack {
         position: fixed;
         top: 18px;
@@ -893,7 +1020,6 @@
         flex-direction: column;
         gap: 10px;
     }
-
     .toast-item {
         display: flex;
         align-items: flex-start;
@@ -928,15 +1054,6 @@
     }
 
     @media (max-width: 767.98px) {
-        .dhcp-header {
-            align-items: flex-start;
-        }
-
-        .dhcp-header-actions {
-            width: 100%;
-            justify-content: flex-start;
-        }
-
         .dhcp-panel {
             padding: 14px;
         }
@@ -987,6 +1104,10 @@
         .bootstrap-pagination .pagination {
             justify-content: flex-start;
         }
+
+        .info-list .info-value {
+            font-size: 13px;
+        }
     }
 
     @media (max-width: 575.98px) {
@@ -999,27 +1120,8 @@
             padding: 14px;
         }
 
-        .dhcp-title-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            font-size: 17px;
-        }
-
-        .dhcp-title h1 {
-            font-size: 18px;
-        }
-
-        .dhcp-title p {
-            font-size: 11.5px;
-        }
-
         .filter-field {
             flex-basis: 100%;
-        }
-
-        .dhcp-header-actions {
-            gap: 6px;
         }
 
         .dhcp-meta-chip {
@@ -1055,6 +1157,24 @@
         .modal-foot-dhcp .btn-dhcp-outline {
             width: 100%;
         }
+
+        .modal-box-dhcp.modal-info {
+            max-width: 100%;
+        }
+
+        .info-list li {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-list .info-value {
+            margin-left: 0;
+        }
+
+        button.dhcp-meta-chip {
+            font-size: 10px;
+        }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1064,7 +1184,12 @@
         .dhcp-table tbody tr.lease-row,
         .toast-item,
         .modal-backdrop-dhcp,
-        .modal-box-dhcp {
+        .modal-box-dhcp,
+        .modal-backdrop-dhcp.is-closing,
+        .modal-box-dhcp.is-closing,
+        .info-bar span,
+        .stat-card.is-action,
+        button.dhcp-meta-chip {
             animation: none;
             transition: none;
         }
@@ -1073,75 +1198,85 @@
 @endpush
 
 @section('content')
-<div class="nk-block dhcp-page">
-    <div class="dhcp-breadcrumb">
-        <nav aria-label="Breadcrumb">
-            <ol class="breadcrumb breadcrumb-arrow mb-0">
-                <li class="breadcrumb-item active" aria-current="page">DHCP Lease</li>
-            </ol>
-        </nav>
-    </div>
+@php
+    // Dipakai oleh KPI card maupun popup, jadi dihitung satu kali di sini.
+    $shareAktif   = $kpi['total'] > 0 ? round($kpi['aktif'] / $kpi['total'] * 100) : 0;
+    $shareExpired = $kpi['total'] > 0 ? round($kpi['expired'] / $kpi['total'] * 100) : 0;
+    $shareUnknown = $kpi['total'] > 0 ? round($kpi['unknown'] / $kpi['total'] * 100) : 0;
+@endphp
+{{-- =========================================================
+     PAGE HEAD
+========================================================== --}}
+<x-admin.page-head
+    title="DHCP Lease"
+    subtitle="Daftar perangkat yang mendapat alamat IP dari DHCP, diidentifikasi terhadap database device resmi RADNET."
+    icon="wifi"
+    :crumbs="[['label' => 'DHCP Lease']]"
+>
+    <x-slot:actions>
+        <button type="button" class="btn-dhcp-outline btn-sm" data-reload>
+            <em class="icon ni ni-reload"></em>
+            <span>Muat Ulang</span>
+        </button>
+        <button type="button" class="btn-dhcp-icon" data-reload aria-label="Refresh">
+            <em class="icon ni ni-reload"></em>
+        </button>
+        <button type="button" class="dhcp-meta-chip" data-info="registry" aria-haspopup="dialog">
+            <em class="icon ni ni-hard-drive"></em>
+            <strong>{{ number_format($knownDeviceCount) }}</strong> Known Device
+        </button>
+        <button type="button" class="dhcp-meta-chip" data-info="updated" aria-haspopup="dialog">
+            <em class="icon ni ni-clock"></em>
+            Diperbarui {{ $lastUpdatedAt }}
+        </button>
+    </x-slot:actions>
+</x-admin.page-head>
 
-    <div class="dhcp-header">
-        <div class="dhcp-title-group">
-            <div class="dhcp-title-icon" aria-hidden="true"><em class="icon ni ni-wifi"></em></div>
-            <div class="dhcp-title">
-                <h1>DHCP LEASE</h1>
-                <p>Daftar perangkat yang mendapat alamat IP dari DHCP, diidentifikasi terhadap database device resmi RADNET.</p>
-            </div>
-        </div>
-        <div class="dhcp-header-actions">
-            <button type="button" class="btn-dhcp-outline btn-sm" data-reload>
-                <em class="icon ni ni-refresh"></em>
-                <span>Muat Ulang</span>
-            </button>
-            <button type="button" class="btn-dhcp-icon" data-reload aria-label="Refresh">
-                <em class="icon ni ni-refresh"></em>
-            </button>
-            <span class="dhcp-meta-chip">
-                <em class="icon ni ni-database"></em>
-                <strong>{{ number_format($knownDeviceCount) }}</strong> Known Device
-            </span>
-            <span class="dhcp-meta-chip">
-                <em class="icon ni ni-clock"></em>
-                Diperbarui {{ $lastUpdatedAt }}
-            </span>
-        </div>
-    </div>
-
-    @if($hasData)
+@if($hasData)
         <div class="kpi-grid">
-            @php
-                $shareAktif = $kpi['total'] > 0 ? round($kpi['aktif'] / $kpi['total'] * 100) : 0;
-                $shareExpired = $kpi['total'] > 0 ? round($kpi['expired'] / $kpi['total'] * 100) : 0;
-                $shareUnknown = $kpi['total'] > 0 ? round($kpi['unknown'] / $kpi['total'] * 100) : 0;
-            @endphp
-            <div class="stat-card stat-total">
+            <div class="stat-card stat-total is-action" role="button" tabindex="0"
+                 data-info="kpi-total" aria-haspopup="dialog">
                 <div class="stat-icon"><em class="icon ni ni-list"></em></div>
                 <div class="stat-label">Total Lease</div>
                 <div class="stat-value">{{ number_format($kpi['total']) }}</div>
                 <div class="stat-sub">
                     <span>Semua lease terpantau</span>
                     <span class="trend-chip">{{ number_format($kpi['aktif'] + $kpi['expired']) }} dikenali</span>
+                    <span class="stat-hint">Rincian</span>
                 </div>
             </div>
-            <div class="stat-card stat-aktif">
+            <div class="stat-card stat-aktif is-action" role="button" tabindex="0"
+                 data-info="kpi-aktif" aria-haspopup="dialog">
                 <div class="stat-icon"><em class="icon ni ni-check-circle"></em></div>
                 <div class="stat-label">Aktif</div>
                 <div class="stat-value">{{ number_format($kpi['aktif']) }}</div>
-                <div class="stat-sub"><span>Lease masih berlaku</span><span class="trend-chip trend-green">{{ $shareAktif }}%</span></div>
+                <div class="stat-sub">
+                    <span>Lease masih berlaku</span>
+                    <span class="trend-chip trend-green">{{ $shareAktif }}%</span>
+                    <span class="stat-hint">Rincian</span>
+                </div>
             </div>
-            <div class="stat-card stat-expired">
+            <div class="stat-card stat-expired is-action" role="button" tabindex="0"
+                 data-info="kpi-expired" aria-haspopup="dialog">
                 <div class="stat-icon"><em class="icon ni ni-alert-circle"></em></div>
                 <div class="stat-label">Expired</div>
                 <div class="stat-value">{{ number_format($kpi['expired']) }}</div>
-                <div class="stat-sub"><span>Melewati masa berlaku</span><span class="trend-chip trend-red">{{ $shareExpired }}%</span></div>
+                <div class="stat-sub">
+                    <span>Melewati masa berlaku</span>
+                    <span class="trend-chip trend-red">{{ $shareExpired }}%</span>
+                    <span class="stat-hint">Rincian</span>
+                </div>
             </div>
-            <div class="stat-card stat-unknown">
+            <div class="stat-card stat-unknown is-action" role="button" tabindex="0"
+                 data-info="kpi-unknown" aria-haspopup="dialog">
                 <div class="stat-icon"><em class="icon ni ni-question"></em></div>
                 <div class="stat-label">Unknown</div>
                 <div class="stat-value">{{ number_format($kpi['unknown']) }}</div>
-                <div class="stat-sub"><span>Perangkat tidak dikenali</span><span class="trend-chip trend-amber">{{ $shareUnknown }}%</span></div>
+                <div class="stat-sub">
+                    <span>Perangkat tidak dikenali</span>
+                    <span class="trend-chip trend-amber">{{ $shareUnknown }}%</span>
+                    <span class="stat-hint">Rincian</span>
+                </div>
             </div>
         </div>
     @endif
@@ -1196,7 +1331,7 @@
                         Terapkan
                     </button>
                     <a href="{{ route('admin.dhcp-lease') }}" class="filter-reset">
-                        <em class="icon ni ni-refresh"></em>
+                        <em class="icon ni ni-reload"></em>
                         Reset Filter
                     </a>
                 </div>
@@ -1355,7 +1490,6 @@
             </div>
         </div>
     @endif
-</div>
 
 <div class="modal-backdrop-dhcp hidden" id="leaseModal" aria-hidden="true">
     <div class="modal-box-dhcp" role="dialog" aria-modal="true" aria-labelledby="leaseModalTitle">
@@ -1372,15 +1506,15 @@
         <div class="modal-body-dhcp">
             <div class="detail-grid">
                 <div class="detail-item full">
-                    <div class="di-label"><em class="icon ni ni-desktop"></em> Hostname</div>
+                    <div class="di-label"><em class="icon ni ni-monitor"></em> Hostname</div>
                     <div class="di-value mono" id="leaseModalHostname">—</div>
                 </div>
                 <div class="detail-item">
-                    <div class="di-label"><em class="icon ni ni-key"></em> Client ID</div>
+                    <div class="di-label"><em class="icon ni ni-tag"></em> Client ID</div>
                     <div class="di-value mono" id="leaseModalClientId">—</div>
                 </div>
                 <div class="detail-item">
-                    <div class="di-label"><em class="icon ni ni-tag"></em> MAC Address</div>
+                    <div class="di-label"><em class="icon ni ni-qr"></em> MAC Address</div>
                     <div class="di-value mono" id="leaseModalMacValue">—</div>
                 </div>
                 <div class="detail-item">
@@ -1412,7 +1546,7 @@
                     <div class="di-value mono" id="leaseModalFirst">—</div>
                 </div>
                 <div class="detail-item">
-                    <div class="di-label"><em class="icon ni ni-refresh"></em> Last Seen</div>
+                    <div class="di-label"><em class="icon ni ni-reload"></em> Last Seen</div>
                     <div class="di-value mono" id="leaseModalLast">—</div>
                 </div>
                 <div class="detail-item">
@@ -1442,6 +1576,133 @@
         </div>
     </div>
 </div>
+
+{{-- =========================================================
+     POPUP RINGKASAN — dipicu oleh Known Device, Diperbarui, dan 4 KPI
+========================================================== --}}
+<div class="modal-backdrop-dhcp hidden" id="infoModal" aria-hidden="true">
+    <div class="modal-box-dhcp modal-info" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <div class="modal-head-dhcp head-tone-info" id="infoModalHead">
+            <div class="mh-icon"><em class="icon ni ni-info" id="infoModalIcon"></em></div>
+            <div class="mh-title">
+                <strong id="infoModalTitle">Ringkasan</strong>
+                <span id="infoModalSubtitle">—</span>
+            </div>
+            <button type="button" class="modal-close-dhcp" data-close-info aria-label="Tutup">
+                <em class="icon ni ni-cross"></em>
+            </button>
+        </div>
+        <div class="modal-body-dhcp">
+            <p class="info-lead" id="infoModalLead">—</p>
+            <div class="info-bar" id="infoModalBar" hidden>
+                <span class="bar-up"></span>
+                <span class="bar-warning"></span>
+                <span class="bar-down"></span>
+            </div>
+            <ul class="info-list" id="infoModalList"></ul>
+            <p class="info-note" id="infoModalNote" hidden></p>
+        </div>
+        <div class="modal-foot-dhcp">
+            <button type="button" class="btn-dhcp-outline btn-sm" data-close-info>Tutup</button>
+        </div>
+    </div>
+</div>
+
+@php
+    $infoPayload = [
+        'registry' => [
+            'title'    => 'Sumber Data Perangkat',
+            'subtitle' => 'devices.csv (daftar resmi)',
+            'icon'     => 'ni-hard-drive',
+            'tone'     => 'info',
+            'lead'     => 'Known Device dihitung dari daftar resmi devices.csv, bukan dari seluruh isi tabel device. Baris DB yang tidak ada di CSV tidak ikut dihitung sebagai perangkat resmi.',
+            'bar'      => null,
+            'items'    => [
+                ['name' => 'Baris data devices.csv', 'sub' => 'header tidak dihitung', 'value' => number_format($deviceSource['csv_rows'] ?? 0)],
+                ['name' => 'IP unik di devices.csv', 'sub' => 'dasar angka Known Device', 'value' => number_format($deviceSource['csv_unique_ips'] ?? 0)],
+                ['name' => 'Total baris tabel device', 'sub' => 'termasuk di luar daftar resmi', 'value' => number_format($deviceSource['db_rows'] ?? 0)],
+                ['name' => 'Di luar devices.csv', 'sub' => 'tidak dihitung sebagai resmi', 'value' => number_format($deviceSource['db_extra_rows'] ?? 0), 'flag' => true],
+                ['name' => 'Status resmi UP', 'sub' => 'dari tabel device', 'value' => number_format($deviceSource['up'] ?? 0)],
+                ['name' => 'Status resmi DOWN', 'sub' => 'dari tabel device', 'value' => number_format($deviceSource['down'] ?? 0)],
+                ['name' => 'Status resmi WARNING', 'sub' => 'dari tabel device', 'value' => number_format($deviceSource['warning'] ?? 0)],
+            ],
+            'note'    => 'Selisih jumlah dapat diaudit ulang dengan <code>php artisan devices:sync</code> (dry-run, tidak mengubah data).',
+        ],
+        'updated' => [
+            'title'    => 'Status Sinkronisasi',
+            'subtitle' => $lastUpdatedAt,
+            'icon'     => 'ni-clock',
+            'tone'     => 'slate',
+            'lead'     => 'Lease DHCP diimpor dari file ekspor DHCP, lalu dicocokkan dengan daftar resmi devices.csv untuk menentukan klasifikasi Known / New / Unknown.',
+            'bar'      => null,
+            'items'    => [
+                ['name' => 'Terakhir terlihat', 'sub' => 'last_seen lease', 'value' => $lastUpdatedAt],
+                ['name' => 'Known Device', 'sub' => 'IP unik dari devices.csv', 'value' => number_format($knownDeviceCount)],
+                ['name' => 'Total Lease', 'sub' => 'baris dhcp_lease', 'value' => number_format($kpi['total'])],
+            ],
+            'note'    => 'Tombol <strong>Muat Ulang</strong> mengambil ulang data terbaru dari server.',
+        ],
+        'kpi-total' => [
+            'title'    => 'Rincian Total Lease',
+            'subtitle' => number_format($kpi['total']).' baris dhcp_lease',
+            'icon'     => 'ni-list',
+            'tone'     => 'total',
+            'lead'     => 'Seluruh lease yang tercatat, dibedakan berdasarkan status masa berlaku dan klasifikasi pengenalannya.',
+            'bar'      => ['up' => $kpi['aktif'], 'warning' => $kpi['expired'], 'down' => $kpi['unknown']],
+            'items'    => [
+                ['name' => 'Aktif', 'sub' => 'lease_end >= sekarang', 'value' => number_format($kpi['aktif'])],
+                ['name' => 'Expired', 'sub' => 'lease_end < sekarang', 'value' => number_format($kpi['expired'])],
+                ['name' => 'Unknown', 'sub' => 'tidak ada di daftar resmi', 'value' => number_format($kpi['unknown'])],
+                ['name' => 'Dikenali', 'sub' => 'aktif + expired', 'value' => number_format($kpi['aktif'] + $kpi['expired'])],
+            ],
+            'note'    => 'Masing-masing status bisa difilter lewat dropdown <strong>Status</strong> di panel filter.',
+        ],
+        'kpi-aktif' => [
+            'title'    => 'Rincian Lease Aktif',
+            'subtitle' => $shareAktif.'% dari total lease',
+            'icon'     => 'ni-check-circle',
+            'tone'     => 'aktif',
+            'lead'     => 'Lease yang IP-nya masih dikenali sebagai perangkat resmi dan masa berlakunya belum habis.',
+            'bar'      => ['up' => $kpi['aktif'], 'warning' => 0, 'down' => 0],
+            'items'    => [
+                ['name' => 'Jumlah aktif', 'sub' => 'dari total lease', 'value' => number_format($kpi['aktif'])],
+                ['name' => 'Porsi dari total', 'sub' => 'aktif ÷ total', 'value' => $shareAktif.'%'],
+                ['name' => 'Known Device', 'sub' => 'IP unik resmi', 'value' => number_format($knownDeviceCount)],
+            ],
+            'note'    => 'Gunakan filter <strong>Status: Aktif</strong> untuk melihat hanya lease ini.',
+        ],
+        'kpi-expired' => [
+            'title'    => 'Rincian Lease Expired',
+            'subtitle' => $shareExpired.'% dari total lease',
+            'icon'     => 'ni-alert-circle',
+            'tone'     => 'expired',
+            'lead'     => 'Lease perangkat yang sudah melewati masa berlaku sehingga perlu diperiksa atau diperpanjang.',
+            'bar'      => ['up' => 0, 'warning' => $kpi['expired'], 'down' => 0],
+            'items'    => [
+                ['name' => 'Jumlah expired', 'sub' => 'dari total lease', 'value' => number_format($kpi['expired'])],
+                ['name' => 'Porsi dari total', 'sub' => 'expired ÷ total', 'value' => $shareExpired.'%'],
+                ['name' => 'Dikenali', 'sub' => 'tidak masuk unknown', 'value' => number_format($kpi['expired'])],
+            ],
+            'note'    => 'Gunakan filter <strong>Status: Expired</strong> untuk melihat hanya lease ini.',
+        ],
+        'kpi-unknown' => [
+            'title'    => 'Rincian Lease Unknown',
+            'subtitle' => $shareUnknown.'% dari total lease',
+            'icon'     => 'ni-question',
+            'tone'     => 'unknown',
+            'lead'     => 'Lease yang IP-nya tidak ada di daftar resmi devices.csv, sehingga tidak dihitung sebagai Known Device.',
+            'bar'      => ['up' => 0, 'warning' => 0, 'down' => $kpi['unknown']],
+            'items'    => [
+                ['name' => 'Jumlah unknown', 'sub' => 'tidak ada di devices.csv', 'value' => number_format($kpi['unknown'])],
+                ['name' => 'Porsi dari total', 'sub' => 'unknown ÷ total', 'value' => $shareUnknown.'%'],
+                ['name' => 'Known Device', 'sub' => 'IP unik resmi', 'value' => number_format($knownDeviceCount)],
+            ],
+            'note'    => 'Tambahkan perangkat ke <code>devices.csv</code> bila IP ini memang perangkat resmi, lalu jalankan sinkronisasi.',
+        ],
+    ];
+@endphp
+
+<script type="application/json" id="infoPayload">{!! json_encode($infoPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 @endsection
 
 @push('scripts')
@@ -1591,6 +1852,163 @@
             }).catch(function () {
                 showToast('Gagal menyalin MAC.', 'error');
             });
+        });
+
+        /* =====================================================
+           POPUP RINGKASAN (KPI + audit sumber data devices.csv)
+           Payload di-parse sekali saat pertama dibuka.
+        ====================================================== */
+        var infoModal = document.getElementById('infoModal');
+        var infoHead = document.getElementById('infoModalHead');
+        var infoIcon = document.getElementById('infoModalIcon');
+        var infoTitle = document.getElementById('infoModalTitle');
+        var infoSubtitle = document.getElementById('infoModalSubtitle');
+        var infoLead = document.getElementById('infoModalLead');
+        var infoBar = document.getElementById('infoModalBar');
+        var infoList = document.getElementById('infoModalList');
+        var infoNote = document.getElementById('infoModalNote');
+        var infoPayload = null;
+        var infoCloseTimer = null;
+
+        function loadInfoPayload() {
+            if (infoPayload) return infoPayload;
+            var node = document.getElementById('infoPayload');
+            try {
+                infoPayload = node ? JSON.parse(node.textContent) : {};
+            } catch (error) {
+                infoPayload = {};
+            }
+            return infoPayload;
+        }
+
+        function buildInfoList(items) {
+            var fragment = document.createDocumentFragment();
+
+            (items || []).forEach(function (item) {
+                var row = document.createElement('li');
+                if (item.flag) row.className = 'is-flag';
+
+                var name = document.createElement('span');
+                name.className = 'info-name';
+                name.appendChild(document.createTextNode(item.name || '—'));
+
+                if (item.sub) {
+                    var sub = document.createElement('small');
+                    sub.textContent = item.sub;
+                    name.appendChild(sub);
+                }
+
+                var value = document.createElement('span');
+                value.className = 'info-value';
+                value.textContent = item.value != null ? String(item.value) : '—';
+
+                row.appendChild(name);
+                row.appendChild(value);
+                fragment.appendChild(row);
+            });
+
+            return fragment;
+        }
+
+        function applyInfoBar(bar) {
+            if (!bar) {
+                infoBar.hidden = true;
+                return;
+            }
+
+            var up = Math.max(0, Number(bar.up) || 0);
+            var warning = Math.max(0, Number(bar.warning) || 0);
+            var down = Math.max(0, Number(bar.down) || 0);
+            var total = up + warning + down;
+
+            if (total === 0) {
+                infoBar.hidden = true;
+                return;
+            }
+
+            infoBar.hidden = false;
+            infoBar.querySelector('.bar-up').style.width = (up / total * 100) + '%';
+            infoBar.querySelector('.bar-warning').style.width = (warning / total * 100) + '%';
+            infoBar.querySelector('.bar-down').style.width = (down / total * 100) + '%';
+        }
+
+        function openInfo(trigger) {
+            var key = trigger.getAttribute('data-info');
+            var data = loadInfoPayload()[key];
+
+            if (!data) return;
+
+            if (infoCloseTimer) {
+                window.clearTimeout(infoCloseTimer);
+                infoCloseTimer = null;
+            }
+
+            infoTitle.textContent = data.title || 'Ringkasan';
+            infoSubtitle.textContent = data.subtitle || '—';
+            infoLead.textContent = data.lead || '';
+            infoIcon.className = 'icon ni ' + (data.icon || 'ni-info');
+            infoHead.className = 'modal-head-dhcp head-tone-' + (data.tone || 'info');
+
+            infoList.textContent = '';
+            infoList.appendChild(buildInfoList(data.items));
+
+            if (data.note) {
+                infoNote.hidden = false;
+                infoNote.innerHTML = data.note;
+            } else {
+                infoNote.hidden = true;
+                infoNote.textContent = '';
+            }
+
+            applyInfoBar(data.bar);
+
+            infoModal.classList.remove('hidden', 'is-closing');
+            infoModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+
+            var closeButton = infoModal.querySelector('[data-close-info]');
+            if (closeButton) closeButton.focus();
+        }
+
+        function closeInfo() {
+            if (infoModal.classList.contains('hidden')) return;
+            infoModal.classList.add('is-closing');
+            var finish = function () {
+                infoModal.classList.add('hidden');
+                infoModal.classList.remove('is-closing');
+                document.body.style.overflow = '';
+            };
+            var reduced = window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            infoCloseTimer = window.setTimeout(finish, reduced ? 0 : 140);
+        }
+
+        document.querySelectorAll('[data-info]').forEach(function (trigger) {
+            trigger.addEventListener('click', function () { openInfo(trigger); });
+            trigger.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openInfo(trigger);
+                }
+            });
+        });
+
+        infoModal.querySelectorAll('[data-close-info]').forEach(function (button) {
+            button.addEventListener('click', closeInfo);
+        });
+
+        infoModal.addEventListener('click', function (event) {
+            if (event.target === infoModal) closeInfo();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                if (!infoModal.classList.contains('hidden')) {
+                    closeInfo();
+                    return;
+                }
+                if (!modal.classList.contains('hidden')) closeModal();
+            }
         });
     })();
 </script>

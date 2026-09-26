@@ -808,12 +808,15 @@
 @endpush
 
 @section('content')
-{{-- HEADER --}}
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-        <p class="text-soft small mb-0">Pantau perubahan status dan gangguan perangkat jaringan RADNET.</p>
-    </div>
-</div>
+{{-- =========================================================
+     PAGE HEAD
+========================================================== --}}
+<x-admin.page-head
+    title="Notifikasi"
+    subtitle="Pantau perubahan status dan gangguan perangkat jaringan RADNET."
+    icon="bell"
+    :crumbs="[['label' => 'Notifikasi']]"
+/>
 
 {{-- FILTER --}}
 <div class="d-flex flex-wrap gap-2 notif-filters" id="notifFilters">
@@ -947,7 +950,7 @@
                     </div>
                     <div class="status-guide-modal__item status-guide-modal__item--transition">
                         <div class="status-guide-modal__item-icon">
-                            <em class="icon ni ni-refresh" aria-hidden="true"></em>
+                            <em class="icon ni ni-reload" aria-hidden="true"></em>
                         </div>
                         <div class="status-guide-modal__item-content">
                             <h3 class="status-guide-modal__item-title">TRANSISI / RECOVERED</h3>

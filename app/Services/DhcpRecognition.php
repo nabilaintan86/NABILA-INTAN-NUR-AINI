@@ -8,12 +8,16 @@ use Illuminate\Support\Carbon;
 /**
  * Mesin pengenal perangkat (Device Recognition) untuk halaman DHCP Lease.
  *
- * Basis data yang dipakai adalah tabel `device` (hasil import devices.csv),
- * sehingga "Known Device" benar-benar berasal dari data nyata di sistem,
- * bukan daftar hardcoded.
+ * Basis data yang dipakai adalah daftar perangkat resmi devices.csv yang
+ * diteruskan lewat DeviceCsvService::officialDevices() (state up/down tetap
+ * dari tabel `device`), sehingga "Known Device" benar-benar berasal dari data
+ * devices.csv — bukan daftar hardcoded dan bukan sekadar semua isi tabel.
+ *
+ * Karena 5 IP punya dua baris di devices.csv, "Known Device" dihitung dari
+ * IP unik resmi (110), bukan jumlah baris (115).
  *
  * Klasifikasi tiap lease:
- *   known   - IP lease cocok dengan IP perangkat resmi di tabel device.
+ *   known   - IP lease cocok dengan IP perangkat resmi di devices.csv.
  *   new     - IP tidak dikenal tetapi punya identitas (hostname/vendor)
  *             atau baru terlihat dalam 72 jam terakhir.
  *   unknown - tidak dikenal dan tanpa identitas sama sekali.
@@ -24,22 +28,22 @@ class DhcpRecognition
 
     protected array $locations = [];
 
-    public function __construct()
+    public function __construct(?DeviceCsvService $devices = null)
     {
-        $this->loadKnownDevices();
+        $this->loadKnownDevices($devices ?? app(DeviceCsvService::class));
     }
 
     /**
-     * Muat registry perangkat dikenal dari tabel `device` (data devices.csv).
+     * Muat registry perangkat dikenal dari daftar resmi devices.csv.
      */
-    public function loadKnownDevices(): void
+    public function loadKnownDevices(DeviceCsvService $source): void
     {
         $this->knownByIp = [];
         $this->locations = [];
 
-        Device::all(['id', 'name', 'ip_address', 'pop_name'])->each(function (Device $device) {
+        $source->officialDevices()->each(function (Device $device): void {
             $ip = strtolower(trim((string) $device->ip_address));
-            if ($ip === '') {
+            if ($ip === '' || isset($this->knownByIp[$ip])) {
                 return;
             }
 

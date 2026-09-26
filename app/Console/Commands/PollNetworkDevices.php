@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ActivityLog;
 use App\Models\Device;
+use App\Services\DeviceCsvService;
 use App\Models\DeviceNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
@@ -16,12 +17,13 @@ class PollNetworkDevices extends Command
 
     protected $description = 'Poll all network devices via ICMP ping and update status';
 
-    public function handle(): int
+    public function handle(DeviceCsvService $source): int
     {
-        $devices = Device::all();
+        // Hanya perangkat resmi (devices.csv) yang dipoll, satu kali per IP.
+        $devices = $source->officialDevicesUnique();
 
         if ($devices->isEmpty()) {
-            $this->warn('Tidak ada device yang terdaftar di database.');
+            $this->warn('Tidak ada perangkat resmi yang terdaftar di devices.csv.');
 
             return self::SUCCESS;
         }

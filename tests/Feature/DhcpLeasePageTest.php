@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Models\DhcpLease;
+use App\Services\DeviceCsvService;
 use App\Services\DhcpImporter;
 use Illuminate\Support\Facades\Config;
 use Tests\Feature\Concerns\CreatesDhcpTables;
@@ -68,9 +69,10 @@ class DhcpLeasePageTest extends TestCase
         $response->assertStatus(200);
         $html = $response->getContent();
 
-        // Judul halaman & header atas (bukan lagi "Dashboard")
+        // Judul halaman & header atas (bukan lagi "Dashboard"),
+        // memakai page head global yang sama dengan halaman lain
         $this->assertStringContainsString('DHCP Lease', $html);
-        $this->assertStringContainsString('DHCP LEASE', $html);
+        $this->assertStringContainsString('admin-page-head-title', $html);
 
         // KPI + filter + pagination
         $this->assertStringContainsString('Total Lease', $html);
@@ -150,6 +152,12 @@ class DhcpLeasePageTest extends TestCase
             'pop_name' => 'Surabaya',
         ]);
 
+        // Hanya 192.168.1.1 yang ada di daftar resmi devices.csv, jadi hanya
+        // lease itu yang diklasifikasikan Known.
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
+
         $csv = [
             'mac_address,ip_address,hostname,vendor,router,location,first_seen,last_seen',
             'AA:BB:CC:00:00:31,192.168.1.1,pop-sby,MikroTik,Router A,,2026-09-20 08:00:00,2026-09-25 08:00:00',
@@ -174,6 +182,7 @@ class DhcpLeasePageTest extends TestCase
             $this->assertSame(2, DhcpLease::count());
         } finally {
             $restore();
+            $restoreRegistry();
         }
     }
 
@@ -211,6 +220,10 @@ class DhcpLeasePageTest extends TestCase
             'pop_name' => 'Surabaya',
         ]);
 
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
+
         $csv = [
             'mac_address,ip_address,hostname,vendor,router,location',
             'AA:BB:CC:00:00:41,192.168.1.1,pop-sby,MikroTik,Router A,Surabaya',
@@ -230,12 +243,34 @@ class DhcpLeasePageTest extends TestCase
             $this->assertStringContainsString('dikenali', $html);
             $this->assertStringNotContainsString('Belum Ada Data Lease DHCP', $html);
 
-            // Data berasal dari klasifikasi known (terhubung ke device resmi).
+            // Data berasal dari klasifikasi known (terhubung ke devices.csv).
             $lease = DhcpLease::first();
             $this->assertSame('known', $lease->classification);
+
+            // Known Device mengikuti devices.csv (IP unik), bukan semua isi tabel.
+            $response->assertSee('Known Device', false);
         } finally {
             $restore();
+            $restoreRegistry();
         }
+    }
+
+    /**
+     * Arahkan DeviceCsvService ke devices.csv sementara berisi daftar resmi
+     * yang dipakai test, lalu kembalikan closure untuk memulihkan.
+     */
+    protected function useRegistryCsv(string $content): \Closure
+    {
+        $path = tempnam(sys_get_temp_dir(), 'registry-').'.csv';
+        file_put_contents($path, $content);
+
+        $this->app->singleton(DeviceCsvService::class, fn () => new DeviceCsvService()->usePath($path));
+
+        return function () use ($path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        };
     }
 
     protected function installDefaultCsv(string $content): \Closure
