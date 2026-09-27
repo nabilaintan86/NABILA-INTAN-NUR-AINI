@@ -39,8 +39,6 @@
 <x-admin.page-head
     title="Kelola User"
     subtitle="Kelola akun admin dan moderator yang mengakses NOC."
-    icon="users"
-    :crumbs="[['label' => 'Kelola User']]"
 >
     <x-slot:actions>
         <a href="{{ route('admin.kelola-user.create') }}" class="btn btn-primary d-none d-md-inline-flex">

@@ -25,11 +25,6 @@
 <x-admin.page-head
     title="Tambah User"
     subtitle="Buat akun admin atau moderator baru."
-    icon="users"
-    :crumbs="[
-        ['label' => 'Kelola User', 'url' => route('admin.kelola-user')],
-        ['label' => 'Tambah User'],
-    ]"
 >
     <x-slot:actions>
         <a href="{{ route('admin.kelola-user') }}" class="btn btn-outline-secondary">

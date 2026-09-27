@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Device;
+use App\Models\Note;
 use App\Models\User;
 use DOMDocument;
 use DOMElement;
@@ -16,8 +17,11 @@ use Tests\TestCase;
  *
  * Semua halaman admin harus:
  *  - memakai SATU container global (.admin-content) tanpa wrapper container tambahan,
- *  - memakai komponen page head yang sama (.admin-page-head),
- *  - tidak memuat breadcrumb "Home",
+ *  - memakai komponen intro halaman yang sama (.admin-page-head),
+ *  - TIDAK memuat breadcrumb sama sekali (nama halaman aktif sudah tampil
+ *    satu kali di header atas melalui App\Helpers\AdminPageTitle),
+ *  - TIDAK memuat hardcode brand "RadneXt NOC" di halaman,
+ *  - menampilkan nama halaman aktif tepat satu kali di header atas,
  *  - menghasilkan HTML yang well-formed (tag seIMbang).
  */
 class AdminLayoutConsistencyTest extends TestCase
@@ -32,7 +36,7 @@ class AdminLayoutConsistencyTest extends TestCase
         'admin.device.notes.report' => ['Report Catatan Perangkat', 'Report Catatan'],
         'admin.dhcp-lease'         => ['DHCP Lease', 'DHCP Lease'],
         'admin.laporan'            => ['Laporan &amp; Grafik', 'Laporan & Grafik'],
-        'admin.tools'              => ['Network Tools', 'Tools'],
+        'admin.tools'              => ['Network Tools', 'Network Tools'],
         'admin.kelola-user'        => ['Kelola User', 'Kelola User'],
         'admin.kelola-user.create' => ['Tambah User', 'Tambah User'],
         'admin.telegram-users'     => ['Telegram Users', 'Telegram Users'],
@@ -111,20 +115,44 @@ class AdminLayoutConsistencyTest extends TestCase
 
             $this->assertStringContainsString($pageTitle, $html, $route.': judul halaman tidak tampil');
 
-            // 6. Breadcrumb "Home" tidak boleh ada di halaman internal.
+            // 6. Tidak ada breadcrumb sama sekali di halaman internal.
+            //    Nama halaman aktif sudah tampil satu kali di header atas.
             $this->assertSame(
                 0,
-                $xpath->query('//ol[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]/li[normalize-space(text()) = "Home" or normalize-space(text()) = "Beranda"]')->length,
-                $route.': breadcrumb "Home" harus dihapus'
+                $xpath->query('//ol[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]')->length,
+                $route.': breadcrumb harus dihapus, judul hanya tampil di header atas'
             );
 
-            // 7. Breadcrumb (bila ada) memakai container yang sama.
-            foreach ($xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " admin-page ")]//ol[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]') as $crumb) {
-                $this->assertTrue(
-                    $this->closestInsidePage($crumb, $xpath),
-                    $route.': breadcrumb berada di luar .admin-page'
-                );
-            }
+            // 7. Tidak ada hardcode "RadneXt NOC" pada layout/header halaman.
+            $this->assertStringNotContainsString(
+                'RadneXt NOC',
+                $html,
+                $route.': brand "RadneXt NOC" tidak boleh muncul di halaman'
+            );
+
+            // 7b. Intro konten tidak boleh memakai icon, supaya teksnya mulai
+            //     tepat di garis kiri area konten dan sejajar dengan header atas.
+            $this->assertSame(
+                0,
+                $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " admin-page-head ")]//*[contains(concat(" ", normalize-space(@class), " "), " admin-page-head-icon ")]')->length,
+                $route.': icon harus dihapus dari intro konten'
+            );
+
+            // 7c. Kolom ikon tidak boleh menggeser teks intro dari garis kiri.
+            $introTitle = $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " admin-page-head-title ")]');
+            $this->assertSame(
+                0,
+                $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " admin-page-head ")]//img')->length,
+                $route.': intro konten tidak boleh memuat gambar ikon'
+            );
+
+            // 8. Nama halaman aktif hanya boleh muncul di header atas satu kali
+            //    sebagai judul, bukan ganda di header dan breadcrumb.
+            $this->assertSame(
+                1,
+                substr_count($html, '<h5 class="mb-0">'.e($headerTitle).'</h5>'),
+                $route.': nama halaman aktif harus tampil tepat satu kali di header atas'
+            );
         }
     }
 
@@ -147,6 +175,77 @@ class AdminLayoutConsistencyTest extends TestCase
         $this->assertStringNotContainsString('reportNoteModal', $html);
     }
 
+    /**
+     * Icon search di header dihapus, tetapi kolom Pencarian di halaman Report
+     * Catatan Perangkat harus tetap utuh dan tetap memfilter data.
+     */
+    public function test_header_search_icon_is_removed_without_breaking_report_search(): void
+    {
+        $user = $this->superAdmin();
+        $device = Device::create([
+            'name' => 'OLT-Search',
+            'ip_address' => '10.0.0.20',
+            'type' => 'OLT',
+            'status' => 'up',
+        ]);
+
+        Note::create([
+            'device_id' => $device->id,
+            'user_id' => $user->id,
+            'tanggal' => '2026-09-20',
+            'catatan' => 'Fiber drop tidak stabil.',
+            'priority' => 'Urgent',
+        ]);
+        Note::create([
+            'device_id' => $device->id,
+            'user_id' => $user->id,
+            'tanggal' => '2026-09-21',
+            'catatan' => 'Routine check selesai.',
+            'priority' => 'Normal',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.device.notes.report', ['q' => 'Fiber']))
+            ->assertOk()
+            ->assertSee('Fiber drop tidak stabil.')
+            ->assertDontSee('Routine check selesai.');
+
+        $this->actingAs($user)
+            ->get(route('admin.device.notes.report', ['q' => 'OLT-Search']))
+            ->assertOk()
+            ->assertSee('Fiber drop tidak stabil.');
+
+        $this->actingAs($user)
+            ->get(route('admin.device.notes.report', ['q' => 'Routine']))
+            ->assertOk()
+            ->assertSee('Routine check selesai.')
+            ->assertDontSee('Fiber drop tidak stabil.');
+
+        $html = $this->actingAs($user)
+            ->get(route('admin.device.notes.report'))
+            ->assertOk()
+            ->getContent();
+
+        // Search header sudah tidak ada.
+        $this->assertStringNotContainsString('search-inline', $html);
+        $this->assertStringNotContainsString('ni ni-search', $html);
+        $this->assertStringNotContainsString('Type Query', $html);
+
+        // Pencarian di halaman report tetap ada.
+        $this->assertStringContainsString('name="q"', $html);
+        $this->assertStringContainsString('Pencarian', $html);
+
+        // Lonceng + avatar tetap rapi di kanan header (tidak ada li search
+        // yang membuat geser / tidak seimbang).
+        $dom = $this->parse($html, 'admin.device.notes.report');
+        $xpath = new DOMXPath($dom);
+        $this->assertSame(
+            2,
+            $xpath->query('//ul[contains(concat(" ", normalize-space(@class), " "), " nk-quick-nav ")]/li')->length,
+            'nk-quick-nav harus berisi tepat 2 item (lonceng + avatar)'
+        );
+    }
+
     public function test_global_layout_stylesheet_is_the_only_source_of_container(): void
     {
         $layout = view('layouts.admin')->with('pageTitle', 'Dashboard')->render();
@@ -154,6 +253,97 @@ class AdminLayoutConsistencyTest extends TestCase
         $this->assertStringContainsString('.admin-content {', $layout);
         $this->assertStringContainsString('max-width: var(--admin-max);', $layout);
         $this->assertStringContainsString('nk-content-body admin-page', $layout);
+    }
+
+    /**
+     * Judul header atas dan judul intro konten harus mulai pada X yang sama.
+     *
+     * Keduanya hidup di dalam .nk-wrap, tapi sebelumnya memakai acuan berbeda:
+     * .container-fluid (full width ke viewport, padding 12px + margin ms-*)
+     * vs .admin-content (max-width + margin auto + gutter). Yang membuat
+     * ".nk-header-wrap" dan ".admin-content" memakai geometri horizontal
+     * yang identik, sehingga tidak perlu negative margin.
+     */
+    public function test_header_title_and_content_title_share_one_left_reference(): void
+    {
+        $layout = view('layouts.admin')->with('pageTitle', 'Dashboard')->render();
+
+        $content = $this->ruleBody($layout, '.admin-content');
+        $header  = $this->ruleBody($layout, '.nk-header-wrap');
+
+        // Keduanya harus datang dari SATU rule yang sama.
+        $this->assertStringContainsString('.nk-header-wrap,', $layout);
+        $this->assertStringContainsString('.admin-content {', $layout);
+
+        // Kontrak geometri horizontal yang harus sama persis.
+        $this->assertStringContainsString('max-width: var(--admin-max);', $header);
+        $this->assertStringContainsString('padding-inline: var(--admin-gutter);', $header);
+        $this->assertStringContainsString('max-width: var(--admin-max);', $content);
+        $this->assertStringContainsString('padding-inline: var(--admin-gutter);', $content);
+
+        // Rail harus di-anchor KIRI, bukan center: "margin-inline: auto"
+        // membuat tepi kiri ikut melompat begitu viewport melewati
+        // --admin-max, sehingga garis judul bergerak mengikuti roda mouse.
+        $this->assertStringContainsString('margin-inline: 0 auto;', $header);
+        $this->assertStringContainsString('margin-inline: 0 auto;', $content);
+        $this->assertStringNotContainsString('margin-inline: auto;', $header);
+
+        // Padding bawaan .container-fluid harus dinolkan, kalau tidak ia
+        // menambah offset sendiri di kiri judul header.
+        $fluid = $this->ruleBody($layout, '.nk-header .container-fluid', null);
+        $this->assertStringContainsString('padding-inline: 0;', $fluid);
+        $this->assertStringContainsString('max-width: none;', $fluid);
+
+        // Judul header atas tidak boleh memakai margin-left sendiri.
+        $headerPartial = view('layouts.partials.header')
+            ->with('pageTitle', 'Dashboard')
+            ->with('unreadCount', 0)
+            ->render();
+        $this->assertStringContainsString('nk-header-title', $headerPartial);
+        $this->assertDoesNotMatchRegularExpression(
+            '/nk-header-title[^"]*"\s*class="[^"]*\bms-/',
+            $headerPartial,
+            'judul header atas tidak boleh memakai margin-left (ms-*)'
+        );
+    }
+
+    /**
+     * Ambil isi deklarasi rule CSS yang MELETAKKAN selector tersebut pada
+     * rule bersama (yaitu rule yang juga mendeklarasikan max-width).
+     *
+     * Selector boleh digabung dalam satu blok
+     * (mis. ".nk-header-wrap, .admin-content"), dan boleh muncul
+     * di lebih dari satu rule selama hanya satu yang menentukan
+     * geometri horizontal.
+     */
+    private function ruleBody(string $css, string $selector, ?string $marker = 'max-width: var(--admin-max);'): string
+    {
+        // Buang komentar CSS dulu; isi komentar mengandung teks selector
+        // dan kurung kurawal yang akan mengacaukan parser di bawah.
+        $css = preg_replace('#/\*.*?\*/#s', '', $css);
+
+        preg_match_all('/([^{}]+)\{([^}]*)\}/', $css, $rules, PREG_SET_ORDER);
+
+        $bodies = [];
+        foreach ($rules as $rule) {
+            $selectors = array_filter(array_map('trim', explode(',', $rule[1])));
+            if (! in_array($selector, $selectors, true)) {
+                continue;
+            }
+            if ($marker !== null && ! str_contains($rule[2], $marker)) {
+                continue;
+            }
+            $bodies[] = $rule[2];
+        }
+
+        $this->assertCount(
+            1,
+            $bodies,
+            'hanya boleh ada SATU rule untuk selector "'.$selector.'"'
+                .($marker !== null ? ' yang mendeklarasikan '.$marker : '')
+        );
+
+        return $bodies[0];
     }
 
     private function closestInsidePage(DOMElement $node, DOMXPath $xpath): bool

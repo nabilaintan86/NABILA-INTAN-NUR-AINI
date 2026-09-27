@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Log History · RADNeXt NOC')
+@section('title', 'Log History')
 
 @push('styles')
 <style>
@@ -26,8 +26,6 @@
 <x-admin.page-head
     title="Log History"
     subtitle="Riwayat ping perangkat real-time dan arsip."
-    icon="list"
-    :crumbs="[['label' => 'Log History']]"
 >
     <x-slot:actions>
         <span class="badge rounded-pill text-bg-primary-soft">

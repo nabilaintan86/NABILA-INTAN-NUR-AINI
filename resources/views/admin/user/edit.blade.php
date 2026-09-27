@@ -25,11 +25,6 @@
 <x-admin.page-head
     title="Edit User"
     :subtitle="$user->name"
-    icon="users"
-    :crumbs="[
-        ['label' => 'Kelola User', 'url' => route('admin.kelola-user')],
-        ['label' => 'Edit User'],
-    ]"
 >
     <x-slot:actions>
         <a href="{{ route('admin.kelola-user') }}" class="btn btn-outline-secondary">

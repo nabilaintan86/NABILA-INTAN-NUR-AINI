@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Device;
+use App\Models\MonitoringLog;
+use App\Services\DeviceCsvService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Process\Exceptions\ProcessTimedOutException;
@@ -10,9 +13,27 @@ use Illuminate\Support\Facades\Process;
 
 class ToolsController extends Controller
 {
-    public function index()
+    public function index(DeviceCsvService $csv)
     {
-        return view('admin.tools');
+        $devices = $csv->devices()
+            ->map(fn (array $device) => (object) [
+                'id'                => $device['id'],
+                'name'              => $device['name'],
+                'type'              => $device['type'],
+                'ip_address'        => $device['ip_address'],
+                'status'            => $device['status'],
+                'avg_delay'         => $device['avg_delay'],
+                'missed_percentage' => $device['missed_percentage'],
+            ])
+            ->sortBy(fn ($device) => match ($device->status) {
+                'down'    => 0,
+                'warning' => 1,
+                'up'      => 2,
+                default   => 3,
+            }, SORT_REGULAR)
+            ->values();
+
+        return view('admin.tools', ['devices' => $devices]);
     }
 
     /**
@@ -34,7 +55,15 @@ class ToolsController extends Controller
         $command = 'ping -4 -c '.$count.' -W 3 '.escapeshellarg($target);
         $timeout = max(30, $count * 4 + 5);
 
-        return $this->runCommand('Ping', $target, $command, $timeout);
+        $response = $this->runCommand('Ping', $target, $command, $timeout);
+
+        // Lampirkan status asli perangkat dari database (bila target adalah
+        // perangkat terdaftar), agar Terminal Output sinkron dengan status
+        // sebenarnya alih-alih hanya menebak dari packet loss uji manual.
+        $payload = $response->getData(true);
+        $payload['device'] = $this->deviceInfo($request->input('device_id'), $target);
+
+        return response()->json($payload);
     }
 
     public function trace(Request $request)
@@ -191,6 +220,57 @@ PHP;
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    /**
+     * Status perangkat dari database (dipakai Terminal Output agar ringkasan
+     * status sinkron dengan data monitoring, bukan sekadar tebakan dari hasil
+     * uji ping manual).
+     *
+     * - device_id dipakai bila dikirim (target berasal dari daftar perangkat).
+     * - Fallback: cari berdasarkan IP/hostname target (cek tunjuk ke perangkat
+     *   terdaftar walau dites lewat Target Kustom).
+     * - device_id yang tidak konsisten dengan target diabaikan.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function deviceInfo(mixed $deviceId, string $target): ?array
+    {
+        $device = null;
+
+        if (is_numeric($deviceId)) {
+            $device = Device::find((int) $deviceId);
+            if ($device && (string) $device->ip_address !== $target) {
+                $device = null; // target berbeda dari perangkat terpilih
+            }
+        }
+
+        if (! $device) {
+            $device = Device::where('ip_address', $target)->first();
+        }
+
+        if (! $device) {
+            return null;
+        }
+
+        $lastLog = MonitoringLog::query()
+            ->where('device_id', $device->id)
+            ->orderByDesc('checked_at')
+            ->orderByDesc('id')
+            ->first();
+
+        return [
+            'id'           => (int) $device->id,
+            'name'         => (string) $device->name,
+            'ip_address'   => (string) $device->ip_address,
+            'status'       => in_array($device->status, ['up', 'down', 'warning'], true)
+                ? (string) $device->status
+                : 'unknown',
+            'avg_delay'    => $lastLog?->response_time !== null
+                ? (float) $lastLog->response_time
+                : null,
+            'last_checked' => $lastLog?->checked_at?->format('d/m/y H:i:s'),
+        ];
     }
 
     /**

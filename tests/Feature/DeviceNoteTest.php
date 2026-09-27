@@ -224,7 +224,6 @@ class DeviceNoteTest extends TestCase
             ->get(route('admin.device.notes.report'))
             ->assertOk()
             ->assertSee('Tambah Catatan')
-            ->assertSee('ni-note', false)
             ->assertSee('reportNoteModal', false)
             ->assertSee('Catatan milik staff.')
             ->assertSee('Catatan milik staff lain.')
@@ -384,7 +383,10 @@ class DeviceNoteTest extends TestCase
 
     public function test_device_type_and_protocol_are_stored_separately(): void
     {
-        $this->post(route('admin.kelola-router.store'), [
+        // Mutasi perangkat hanya boleh oleh super admin.
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+
+        $this->actingAs($superAdmin)->post(route('admin.kelola-router.store'), [
             'name' => 'OLT Baru',
             'type' => 'OLT',
             'protocol' => 'SNMP',

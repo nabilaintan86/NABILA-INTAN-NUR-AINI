@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Migrasi ini duplikat dari 2026_09_10_122528_create_device_table.
+        // Kalau tabel sudah dibuat lebih dulu, jangan buat ulang supaya
+        // skema resmi (protocol, hostname, icon_type, ...) tidak tertimpa.
+        if (Schema::hasTable('device')) {
+            return;
+        }
+
         Schema::create('device', function (Blueprint $table) {
             $table->id();
             $table->string('name');

@@ -814,8 +814,6 @@
 <x-admin.page-head
     title="Notifikasi"
     subtitle="Pantau perubahan status dan gangguan perangkat jaringan RADNET."
-    icon="bell"
-    :crumbs="[['label' => 'Notifikasi']]"
 />
 
 {{-- FILTER --}}
@@ -1215,6 +1213,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json'
+                }
+            })
+            .then(function (response) {
+                /* Badge lonceng ikut turun sesuai hitungan unread terbaru. */
+                if (response.ok && window.AdminNotificationBadge) {
+                    return response.json().then(function (data) {
+                        window.AdminNotificationBadge.set(data.unread);
+                    });
+                }
+            })
+            .catch(function () {
+                if (window.AdminNotificationBadge) {
+                    window.AdminNotificationBadge.refresh();
                 }
             });
         }

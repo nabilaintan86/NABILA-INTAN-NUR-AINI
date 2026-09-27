@@ -250,13 +250,17 @@
                                         <div class="note-meta">
                                             <strong>{{ $note->tanggal?->format('d M Y, H:i') }}</strong>
                                             <span>•</span>
+                                            <span class="text-muted">Dicatat oleh</span>
                                             @if($note->user)
                                                 <span class="note-user">
                                                     <span class="note-user-avatar" aria-hidden="true">{{ strtoupper(substr(trim($note->user->name), 0, 2)) }}</span>
                                                     <span>{{ $note->user->name }}</span>
+                                                    <span class="text-muted smaller">({{ $note->user->role_label }})</span>
                                                 </span>
                                             @else
+                                                {{-- Catatan lama tanpa info pembuat: jangan mengarang nama. --}}
                                                 <span class="text-muted">User tidak ditemukan</span>
+                                                <span class="text-muted smaller">(Catatan lama)</span>
                                             @endif
                                             <span class="priority-badge {{ $note->priority_class }}">{{ $note->priority_label }}</span>
                                         </div>
@@ -315,8 +319,8 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="note_user" class="form-label">Dicatat oleh</label>
-                                <input type="text" id="note_user" value="{{ $editNote->user?->name ?? 'User tidak ditemukan' }}" readonly class="form-control bg-light" style="cursor: not-allowed;">
-                                <small class="form-text text-muted">Otomatis menggunakan akun yang sedang login.</small>
+                                <input type="text" id="note_user" value="{{ $editNote->user?->name ?? 'User tidak ditemukan (Catatan lama)' }}" readonly class="form-control bg-light" style="cursor: not-allowed;">
+                                <small class="form-text text-muted">Pembuat asli tidak diubah saat catatan diedit. Otomatis menggunakan akun yang sedang login.</small>
                             </div>
                             <div class="mb-3">
                                  <label for="note_date" class="form-label">Tanggal &amp; Waktu <span class="text-danger">*</span></label>

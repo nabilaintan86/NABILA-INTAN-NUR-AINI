@@ -3,30 +3,35 @@
 namespace App\Console\Commands;
 
 use App\Models\Device;
-use App\Models\DeviceNotification;
 use App\Models\MonitoringLog;
 use App\Services\DeviceCsvService;
+use App\Services\DeviceStatusNotifier;
+use App\Services\SnmpInspectionService;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class MonitorDevices extends Command
 {
-    protected $signature = 'monitor:ping';
+    protected $signature = 'monitor:ping {--no-snmp : Lewati pemeriksaan SNMP (data tambahan, tidak memengaruhi status ICMP)}';
 
     protected $description = 'Ping semua device dan update status ke database';
 
-    public function handle(DeviceCsvService $source)
+    public function handle(DeviceCsvService $source, SnmpInspectionService $snmp)
     {
         // Hanya perangkat resmi (devices.csv) yang diping, satu kali per IP.
         $devices = $source->officialDevicesUnique();
 
         if ($devices->isEmpty()) {
             $this->warn('Tidak ada device resmi yang terdaftar di devices.csv.');
+
             return self::SUCCESS;
         }
 
         $this->info("Memulai monitoring untuk {$devices->count()} devices...");
+
+        $inspectSnmp = ! $this->option('no-snmp');
+        $snmp->beginCycle();
 
         $bar = $this->output->createProgressBar($devices->count());
         $bar->start();
@@ -36,7 +41,7 @@ class MonitorDevices extends Command
 
         foreach ($devices as $device) {
             try {
-                $isUp = $this->pingDevice($device);
+                $isUp = $this->pingDevice($device, $inspectSnmp ? $snmp : null);
 
                 if ($isUp) {
                     $upCount++;
@@ -60,15 +65,24 @@ class MonitorDevices extends Command
 
         $this->newLine(2);
 
-        $this->info("Monitoring selesai!");
+        $this->info('Monitoring selesai!');
         $this->line("UP   : {$upCount}");
         $this->line("DOWN : {$downCount}");
         $this->line("TOTAL: {$devices->count()}");
 
+        if ($inspectSnmp) {
+            $this->line(sprintf(
+                'SNMP : diperiksa %d, dilewati %d (mode: %s)',
+                $snmp->probedCount(),
+                $snmp->skippedCount(),
+                $snmp->mode()
+            ));
+        }
+
         return self::SUCCESS;
     }
 
-    protected function pingDevice(Device $device): bool
+    protected function pingDevice(Device $device, ?SnmpInspectionService $snmp = null): bool
     {
         $ip = trim($device->ip_address);
 
@@ -128,12 +142,12 @@ class MonitorDevices extends Command
             $latency = max(0, $latency);
 
             MonitoringLog::create([
-                'device_id'     => $device->id,
-                'device_name'   => $device->name,
-                'ip_address'    => $device->ip_address,
-                'status'        => 'up',
+                'device_id' => $device->id,
+                'device_name' => $device->name,
+                'ip_address' => $device->ip_address,
+                'status' => 'up',
                 'response_time' => $latency,
-                'checked_at'    => $now,
+                'checked_at' => $now,
             ]);
 
             $this->updateDeviceStatistics(
@@ -151,6 +165,12 @@ class MonitorDevices extends Command
                 $now
             );
 
+            /*
+             * SNMP purely informatif: hanya dicatat di log aplikasi & console,
+             * tidak menyentuh tabel monitoring_logs maupun notifikasi.
+             */
+            $this->collectSnmpInsight($device, 'up', $snmp);
+
             return true;
         }
 
@@ -160,14 +180,14 @@ class MonitorDevices extends Command
         |--------------------------------------------------------------------------
         */
 
-MonitoringLog::create([
-                'device_id'     => $device->id,
-                'device_name'   => $device->name,
-                'ip_address'    => $device->ip_address,
-                'status'        => 'down',
-                'response_time' => null,
-                'checked_at'    => $now,
-            ]);
+        MonitoringLog::create([
+            'device_id' => $device->id,
+            'device_name' => $device->name,
+            'ip_address' => $device->ip_address,
+            'status' => 'down',
+            'response_time' => null,
+            'checked_at' => $now,
+        ]);
 
         $this->updateDeviceStatistics(
             $device,
@@ -184,7 +204,46 @@ MonitoringLog::create([
             $now
         );
 
+        $this->collectSnmpInsight($device, 'down', $snmp);
+
         return false;
+    }
+
+    /**
+     * Kumpulkan informasi SNMP sebagai pelengkap status ICMP.
+     *
+     * Tidak pernah melempar exception dan tidak pernah mengubah status device,
+     * sehingga monitoring tetap berjalan meski SNMP gagal/tidak tersedia.
+     */
+    private function collectSnmpInsight(Device $device, string $icmpStatus, ?SnmpInspectionService $snmp): void
+    {
+        if ($snmp === null) {
+            return;
+        }
+
+        try {
+            $inspection = $snmp->inspectIfEligible($device, $icmpStatus);
+        } catch (\Throwable $e) {
+            Log::warning('SNMP enrichment gagal diproses', [
+                'device' => $device->name,
+                'ip' => $device->ip_address,
+                'error' => $e->getMessage(),
+            ]);
+
+            return;
+        }
+
+        if (empty($inspection['summary'])) {
+            return;
+        }
+
+        Log::info('SNMP monitoring insight', [
+            'device' => $device->name,
+            'ip' => $device->ip_address,
+            'icmp_status' => $icmpStatus,
+            'snmp' => $inspection['summary'],
+            'reachable' => (bool) ($inspection['result']['reachable'] ?? false),
+        ]);
     }
 
     private function updateDeviceStatistics(
@@ -229,14 +288,14 @@ MonitoringLog::create([
         */
 
         $updateData = [
-            'status'               => $status,
-            'polls'                => $total,
+            'status' => $status,
+            'polls' => $total,
             'responded_percentage' => $respondedPercentage,
-            'missed_percentage'    => $missedPercentage,
-            'avg_delay'            => (int) round($statistics->average_latency ?? 0),
-            'min_delay'            => (int) ($statistics->minimum_latency ?? 0),
-            'max_delay'            => (int) ($statistics->maximum_latency ?? 0),
-            'period'               => $now->format('H:i'),
+            'missed_percentage' => $missedPercentage,
+            'avg_delay' => (int) round($statistics->average_latency ?? 0),
+            'min_delay' => (int) ($statistics->minimum_latency ?? 0),
+            'max_delay' => (int) ($statistics->maximum_latency ?? 0),
+            'period' => $now->format('H:i'),
         ];
 
         /*
@@ -291,11 +350,11 @@ MonitoringLog::create([
             return;
         }
 
-        if (!in_array($previousStatus, ['up', 'down'], true)) {
+        if (! in_array($previousStatus, ['up', 'down'], true)) {
             return;
         }
 
-        if (!in_array($newStatus, ['up', 'down'], true)) {
+        if (! in_array($newStatus, ['up', 'down'], true)) {
             return;
         }
 
@@ -313,43 +372,38 @@ MonitoringLog::create([
 
         $waktu = $now->format('Y-m-d H:i:s');
 
-        $this->recordWebNotification($device, $previousStatus, $latency, $waktu);
+        $this->recordWebNotification($device, $previousStatus, $newStatus, $latency);
         $this->sendTelegramNotification($device, $previousStatus, $newStatus, $waktu);
     }
 
     private function recordWebNotification(
         Device $device,
         string $previousStatus,
-        ?int $latency,
-        string $waktu
+        string $newStatus,
+        ?int $latency
     ): void {
-        try {
-            DeviceNotification::create([
-                'device_id'   => $device->id,
-                'device_name' => $device->name,
-                'ip_address'  => $device->ip_address,
-                'event_type'  => $previousStatus === 'up' ? 'down' : 'recovered',
-                'event'       => $previousStatus === 'up' ? 'DOWN' : 'BACK ONLINE',
-                'status'      => $previousStatus === 'up' ? 'down' : 'online',
-                'message'     => $previousStatus === 'up'
-                    ? 'Device tidak merespons ping. Host unreachable.'
-                    : ($latency !== null
-                        ? "Device kembali aktif, respons {$latency} ms."
-                        : 'Device kembali aktif dan merespons ping.'),
-                'latency'     => $latency,
-                'is_read'     => false,
-                'checked_at'  => $waktu,
-            ]);
+        $notifier = app(DeviceStatusNotifier::class);
+        $isRecovery = $newStatus === 'up';
 
-            $this->info(
-                "Notifikasi web: {$device->name} -> "
-                .($previousStatus === 'up' ? 'DOWN' : 'BACK ONLINE')
-            );
-        } catch (\Throwable $e) {
-            $this->error(
-                "Gagal menyimpan notifikasi web untuk {$device->name}: {$e->getMessage()}"
-            );
+        $notification = $notifier->record(
+            $device,
+            $previousStatus,
+            $newStatus,
+            $isRecovery ? $latency : null,
+            'Host unreachable',
+            $isRecovery
+                ? ($latency !== null
+                    ? "Device kembali aktif, respons {$latency} ms."
+                    : 'Device kembali aktif dan merespons ping.')
+                : 'Device tidak merespons ping. Host unreachable.'
+        );
+
+        // Transisi yang sama sudah tercatat: tidak perlu notifikasi kedua.
+        if ($notification === null) {
+            return;
         }
+
+        $this->info("Notifikasi web: {$device->name} -> {$notification->event}");
     }
 
     private function sendTelegramNotification(
@@ -363,33 +417,33 @@ MonitoringLog::create([
 
             $data = [
                 'device' => $device->name,
-                'ip'     => $device->ip_address,
-                'type'   => $device->display_protocol,
-                'time'   => $waktu,
+                'ip' => $device->ip_address,
+                'type' => $device->display_protocol,
+                'time' => $waktu,
             ];
 
             if ($previousStatus === 'up' && $newStatus === 'down') {
-                if (!$telegram->broadcastDeviceDown($data)) {
+                if (! $telegram->broadcastDeviceDown($data)) {
                     Log::warning('Telegram broadcast DOWN gagal terkirim ke semua penerima', [
                         'device' => $device->name,
-                        'ip'     => $device->ip_address,
-                        'time'   => $waktu,
+                        'ip' => $device->ip_address,
+                        'time' => $waktu,
                     ]);
                 }
             } elseif ($previousStatus === 'down' && $newStatus === 'up') {
-                if (!$telegram->broadcastDeviceRecovered($data)) {
+                if (! $telegram->broadcastDeviceRecovered($data)) {
                     Log::warning('Telegram broadcast RECOVERED gagal terkirim ke semua penerima', [
                         'device' => $device->name,
-                        'ip'     => $device->ip_address,
-                        'time'   => $waktu,
+                        'ip' => $device->ip_address,
+                        'time' => $waktu,
                     ]);
                 }
             }
         } catch (\Throwable $e) {
             Log::error('Telegram notification error untuk device', [
                 'device' => $device->name,
-                'ip'     => $device->ip_address,
-                'error'  => $e->getMessage(),
+                'ip' => $device->ip_address,
+                'error' => $e->getMessage(),
             ]);
 
             $this->error(
@@ -416,8 +470,6 @@ MonitoringLog::create([
         ) {
             return (int) round((float) $matches[1]);
         }
-
-      
 
         if (
             preg_match(

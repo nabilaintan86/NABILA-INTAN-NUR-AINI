@@ -96,8 +96,6 @@
 <x-admin.page-head
     title="Monitoring Jaringan"
     subtitle="Peta topologi dan status real-time perangkat RADNET."
-    icon="signal"
-    :crumbs="[['label' => 'Monitoring Jaringan']]"
 />
 
 {{-- RINGKASAN STATUS --}}

@@ -202,9 +202,15 @@ class DeviceNoteController extends Controller
             }
         }
 
+        // Eager loading user (pembuat) & device: tidak ada N+1 di tabel report.
+        $userColumns = ['id', 'name', 'email', 'role'];
+        if (Schema::hasColumn('users', 'avatar')) {
+            $userColumns[] = 'avatar';
+        }
+
         $query = Note::query()->with([
             'device:'.implode(',', $deviceColumns),
-            'user:id,name,email',
+            'user:'.implode(',', $userColumns),
         ]);
 
         if ($filters['device_id']) {

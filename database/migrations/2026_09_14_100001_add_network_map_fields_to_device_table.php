@@ -8,9 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('device', function (Blueprint $table) {
-            $table->string('icon_type')->nullable()->after('status');
-            $table->string('pop_name')->nullable()->after('icon_type');
+        // Kolom ini sudah ikut dibuat oleh 2026_09_10_122528_create_device_table,
+        // jadi dilewati bila sudah ada (pola yang dipakai migration lain).
+        $missing = array_values(array_filter(
+            ['icon_type', 'pop_name'],
+            fn (string $column): bool => ! Schema::hasColumn('device', $column)
+        ));
+
+        if ($missing === []) {
+            return;
+        }
+
+        Schema::table('device', function (Blueprint $table) use ($missing) {
+            foreach ($missing as $column) {
+                $table->string($column)->nullable();
+            }
         });
     }
 

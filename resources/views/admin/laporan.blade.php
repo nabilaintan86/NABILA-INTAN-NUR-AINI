@@ -354,7 +354,6 @@
     title="Laporan & Grafik"
     subtitle="Rekap monitoring & grafik jaringan RADNEXT NOC · Periode: {{ $period['label'] }} · {{ $generatedAt }}"
     icon="pie"
-    :crumbs="[['label' => 'Laporan & Grafik']]"
 >
     <x-slot:actions>
         <a href="{{ $pdfUrl }}" class="btn-export" id="btnExport">

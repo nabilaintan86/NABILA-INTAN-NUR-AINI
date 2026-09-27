@@ -5,19 +5,21 @@ namespace App\Console\Commands;
 use App\Models\ActivityLog;
 use App\Models\Device;
 use App\Services\DeviceCsvService;
-use App\Models\DeviceNotification;
+use App\Services\DeviceStatusNotifier;
+use App\Services\SnmpInspectionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 class PollNetworkDevices extends Command
 {
     private const WARNING_LATENCY_THRESHOLD_MS = 150;
 
-    protected $signature = 'network:poll {--no-log : Jangan simpan riwayat log aktivitas}';
+    protected $signature = 'network:poll {--no-log : Jangan simpan riwayat log aktivitas} {--no-snmp : Lewati pemeriksaan SNMP (data tambahan, tidak memengaruhi status ICMP)}';
 
     protected $description = 'Poll all network devices via ICMP ping and update status';
 
-    public function handle(DeviceCsvService $source): int
+    public function handle(DeviceCsvService $source, SnmpInspectionService $snmp, DeviceStatusNotifier $notifier): int
     {
         // Hanya perangkat resmi (devices.csv) yang dipoll, satu kali per IP.
         $devices = $source->officialDevicesUnique();
@@ -30,6 +32,8 @@ class PollNetworkDevices extends Command
 
         $this->info("Memulai polling untuk {$devices->count()} device...");
         $log = ! $this->option('no-log');
+        $inspectSnmp = ! $this->option('no-snmp');
+        $snmp->beginCycle();
 
         foreach ($devices as $device) {
             $ip = trim((string) $device->ip_address);
@@ -64,6 +68,12 @@ class PollNetworkDevices extends Command
                     : 'up';
                 $reason = $status === 'warning' ? 'High Latency' : 'Normal';
 
+                // SNMP hanya data tambahan: status di atas tetap hasil ICMP.
+                $snmpInspection = $inspectSnmp
+                    ? $snmp->inspectIfEligible($device, $status)
+                    : $this->emptySnmpInspection();
+                $logReason = Str::limit($snmp->decorateReason($reason, $snmpInspection), 255, '');
+
                 if ($previousStatus !== $status) {
                     $device->increment('alerts_count');
                 }
@@ -84,10 +94,11 @@ class PollNetworkDevices extends Command
                 ]);
 
                 if ($log) {
-                    $this->writeLog($device, $status, $reason, $latency);
+                    $this->writeLog($device, $status, $logReason, $latency);
                 }
 
                 $this->recordStatusNotification(
+                    $notifier,
                     $device,
                     $previousStatus,
                     $status,
@@ -98,6 +109,8 @@ class PollNetworkDevices extends Command
                 $outputTag = $status === 'warning' ? 'comment' : 'info';
                 $detail = $latency !== null ? $latency.' ms' : 'merespons';
                 $this->line("    <{$outputTag}>{$status}</{$outputTag}> — {$detail}");
+
+                $this->reportSnmpInspection($snmpInspection);
             } else {
                 $reason = $processError !== null
                     ? 'Probe Error'
@@ -124,6 +137,7 @@ class PollNetworkDevices extends Command
                 }
 
                 $this->recordStatusNotification(
+                    $notifier,
                     $device,
                     $previousStatus,
                     $status,
@@ -138,63 +152,80 @@ class PollNetworkDevices extends Command
 
         $this->info('Polling selesai.');
 
+        if ($inspectSnmp) {
+            $this->line(sprintf(
+                'SNMP: %d perangkat diperiksa, %d dilewati (mode: %s).',
+                $snmp->probedCount(),
+                $snmp->skippedCount(),
+                $snmp->mode()
+            ));
+        }
+
         return self::SUCCESS;
     }
 
+    /**
+     * @return array{inspected: bool, skipped_reason: ?string, summary: ?string, result: array<string, mixed>}
+     */
+    private function emptySnmpInspection(): array
+    {
+        return [
+            'inspected' => false,
+            'skipped_reason' => 'nonaktif (--no-snmp)',
+            'summary' => null,
+            'result' => [],
+        ];
+    }
+
+    /**
+     * Cetak satu baris informasi SNMP. Status ICMP tidak pernah diubah di sini.
+     *
+     * @param  array{inspected: bool, skipped_reason: ?string, summary: ?string, result: array<string, mixed>}  $inspection
+     */
+    private function reportSnmpInspection(array $inspection): void
+    {
+        if (empty($inspection['summary'])) {
+            return;
+        }
+
+        $reachable = (bool) ($inspection['result']['reachable'] ?? false);
+        $tag = $reachable ? 'info' : 'comment';
+
+        $this->line("    <{$tag}>SNMP</{$tag}> — ".$inspection['summary']);
+    }
+
+    /**
+     * Catat notifikasi HANYA ketika status benar-benar berubah.
+     *
+     * Keputusan transisi diambil DeviceStatusNotifier supaya tidak ada notifikasi
+     * berulang untuk device yang statusnya tetap (DOWN -> DOWN / UP -> UP), dan
+     * tetap ada satu notifikasi setiap siklus DOWN -> UP -> DOWN.
+     */
     private function recordStatusNotification(
+        DeviceStatusNotifier $notifier,
         Device $device,
         string $previousStatus,
         string $status,
         ?int $latency,
         string $reason
     ): void {
-        $shouldRecord = $previousStatus !== '' && $previousStatus !== $status;
+        $notification = $notifier->record(
+            $device,
+            $previousStatus,
+            $status,
+            $latency,
+            $reason
+        );
 
-        if (! $shouldRecord && $status === 'warning') {
-            $shouldRecord = ! DeviceNotification::query()
-                ->where('device_id', $device->id)
-                ->where('status', 'warning')
-                ->exists();
-        }
-
-        if (! $shouldRecord) {
+        if ($notification === null) {
             return;
         }
 
-        [$eventType, $event, $message] = match ($status) {
-            'warning' => [
-                'warning',
-                'WARNING',
-                $latency !== null
-                    ? "Ping berhasil, tetapi latency {$latency} ms melebihi threshold 150 ms."
-                    : "Paket ping terakhir tidak dijawab ({$reason}).",
-            ],
-            'down' => [
-                'down',
-                'DOWN',
-                "Tidak merespons ping: {$reason}.",
-            ],
-            default => [
-                'recovered',
-                'BACK ONLINE',
-                $latency !== null
-                    ? "Device kembali merespons ping dengan latency {$latency} ms."
-                    : 'Device kembali merespons ping.',
-            ],
-        };
-
-        DeviceNotification::create([
-            'device_id' => $device->id,
-            'device_name' => $device->name,
-            'ip_address' => $device->ip_address,
-            'event_type' => $eventType,
-            'event' => $event,
-            'status' => $status === 'up' ? 'online' : $status,
-            'message' => $message,
-            'latency' => $latency,
-            'is_read' => false,
-            'checked_at' => now(),
-        ]);
+        $this->line(sprintf(
+            '    <comment>Notifikasi</comment> — %s (%s)',
+            $notification->event,
+            $notification->status
+        ));
     }
 
     protected function extractLatency(string $raw): ?int

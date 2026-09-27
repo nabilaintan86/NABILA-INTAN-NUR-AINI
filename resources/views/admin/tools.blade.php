@@ -4,6 +4,7 @@
 
 @push('styles')
 <style>
+    /* ── Panel dasar (terang / clean) ─────────────────── */
     .tools-panel {
         border: 1px solid #e2e8f0;
         border-radius: 16px;
@@ -13,28 +14,151 @@
     }
     .tools-panel-head {
         background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 60%, #60a5fa 100%);
-        padding: 22px 28px;
+        padding: 18px 22px;
         color: #fff;
     }
     .tools-panel-head .tools-title {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 800;
         margin: 0;
         display: flex;
         align-items: center;
         gap: 10px;
     }
+    .tools-panel-head .tools-title .icon { font-size: 17px; }
     .tools-panel-head .tools-subtitle {
         color: #dbeafe;
-        font-size: 12.5px;
-        margin: 4px 0 0 34px;
+        font-size: 12px;
+        margin: 4px 0 0 27px;
     }
-    .tools-panel-body {
-        padding: 26px 28px;
+    .tools-panel-body { padding: 18px 20px; }
+
+    /* ── Kolom kiri: daftar perangkat ─────────────────── */
+    .tools-list-panel .tools-panel-head {
+        background: linear-gradient(135deg, #0f766e 0%, #14b8a6 60%, #2dd4bf 100%);
+    }
+    .device-search {
+        position: relative;
+    }
+    .device-search .icon {
+        position: absolute; left: 12px; top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8; font-size: 14px;
+    }
+    .device-search .form-control {
+        padding-left: 34px;
+        border-color: #e2e8f0;
+        box-shadow: none;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+    .device-search .form-control:focus {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
+    }
+    .device-count-hint {
+        font-size: 11.5px; color: #64748b; font-weight: 600;
+    }
+
+    .device-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 460px;
+        min-height: 260px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .device-list::-webkit-scrollbar { width: 8px; }
+    .device-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+    .device-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+    .device-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .device-item {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        border: 1px solid #eef2f7;
+        border-radius: 12px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+    }
+    .device-item:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .device-item.active {
+        border-color: #0d9488;
+        background: #f0fdfa;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
+    }
+    .device-ic {
+        width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #0e7490, #0891b2);
+        color: #cffafe; font-size: 15px;
+    }
+    .device-item:nth-child(odd) .device-ic {
+        background: linear-gradient(135deg, #0d9488, #14b8a6);
+    }
+    .device-item-txt { min-width: 0; flex: 1 1 auto; }
+    .device-name {
+        display: block; font-weight: 700; font-size: 13px; color: #0f172a;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .device-ip {
+        display: block; font-family: 'Consolas', 'Menlo', monospace;
+        font-size: 11.5px; color: #64748b; margin-top: 1px;
+    }
+    .status-badge {
+        flex-shrink: 0;
+        font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
+        padding: 3px 8px; border-radius: 999px;
+    }
+    .status-up      { background: #dcfce7; color: #15803d; }
+    .status-down    { background: #fee2e2; color: #dc2626; }
+    .status-warning { background: #fef9c3; color: #a16207; }
+
+    .device-empty {
+        text-align: center; color: #64748b; padding: 28px 10px; font-size: 13px;
+    }
+
+    /* ── Kolom kanan: target aktif + form param ───────── */
+    .target-active {
+        display: flex; align-items: center; gap: 12px;
+        background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+        border: 1px solid #99f6e4;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 20px;
+    }
+    .target-active .ta-ic {
+        width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #0f766e, #0d9488);
+        color: #ccfbf1; font-size: 17px;
+    }
+    .target-active .ta-txt { min-width: 0; flex: 1 1 auto; }
+    .ta-label {
+        font-size: 10px; font-weight: 800; letter-spacing: .6px;
+        color: #0f766e; text-transform: uppercase;
+    }
+    .ta-name {
+        font-weight: 800; font-size: 15px; color: #0f172a;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ta-ip {
+        font-family: 'Consolas', 'Menlo', monospace;
+        font-size: 12px; color: #475569;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     .tools-field .tools-label {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         color: #334155;
         text-transform: uppercase;
@@ -44,10 +168,9 @@
     }
     .tools-field .form-control,
     .tools-field .form-select {
-        font-size: 13.5px;
+        font-size: 13px;
         border-color: #e2e8f0;
         box-shadow: none;
-        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     }
     .tools-field .form-control:focus,
     .tools-field .form-select:focus {
@@ -63,15 +186,15 @@
 
     .tools-actions {
         border-top: 1px dashed #e2e8f0;
-        padding-top: 18px;
-        margin-top: 22px;
+        padding-top: 16px;
+        margin-top: 20px;
         display: flex;
         justify-content: flex-end;
         gap: 10px;
         flex-wrap: wrap;
     }
     .tools-actions .btn {
-        min-width: 88px;
+        min-width: 86px;
         font-weight: 700;
         border-radius: 8px;
     }
@@ -84,237 +207,551 @@
     .btn-tool-scan   { background: #dc2626; border-color: #dc2626; }
     .btn-tool-scan:hover, .btn-tool-scan:focus { background: #b91c1c; border-color: #b91c1c; }
 
+    /* ── Terminal output (terang / clean) ─────────────── */
     .console-box {
-        background: #0f172a;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, .10);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
     }
     .console-head {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 14px 20px;
-        border-bottom: 1px solid #1e293b;
+        padding: 12px 18px;
+        background: #f1f5f9;
+        border-bottom: 1px solid #e2e8f0;
     }
     .console-dot {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
+        width: 11px; height: 11px; border-radius: 50%;
         display: inline-block;
+        border: 2px solid rgba(255,255,255,.6);
     }
     .console-dot-red    { background: #f87171; }
     .console-dot-yellow { background: #fbbf24; }
     .console-dot-green  { background: #34d399; }
     .console-title {
-        color: #e2e8f0;
-        font-size: 14px;
-        font-weight: 700;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 800;
         margin-left: 8px;
+        display: flex; align-items: center; gap: 7px;
+        margin-bottom: 0;
     }
-    .console-actions {
-        margin-left: auto;
-        display: flex;
-        gap: 6px;
-    }
+    .console-actions { margin-left: auto; display: flex; gap: 6px; }
     .console-actions .btn {
         font-size: 11px;
         font-weight: 700;
-        border-radius: 6px;
+        border-radius: 7px;
         padding: 4px 10px;
     }
     .console-output {
         font-family: 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
         font-size: 12.5px;
-        line-height: 1.6;
-        color: #cbd5e1;
-        padding: 18px 22px;
-        min-height: 320px;
-        max-height: 520px;
+        line-height: 1.65;
+        color: #1e293b;
+        padding: 16px 20px;
+        min-height: 280px;
+        max-height: 440px;
         overflow-y: auto;
         white-space: pre-wrap;
         word-break: break-word;
+        background: #fff;
     }
     .console-output .cmd-line {
-        color: #60a5fa;
-        font-weight: 600;
+        color: #1d4ed8;
+        font-weight: 700;
         margin-bottom: 8px;
     }
-    .console-output .ok-line  { color: #94a3b8; }
-    .console-output .err-line { color: #f87171; }
-    .console-output .ns-line  { color: #4ade80; font-weight: 700; }
+    .console-output .ok-line   { color: #334155; }
+    .console-output .err-line  { color: #dc2626; }
+    .console-output .ns-line   { color: #0f766e; font-weight: 700; }
+    .console-output .warn-line { color: #b45309; }
     .console-hint {
-        color: #475569;
+        color: #64748b;
         font-family: 'Consolas', 'Menlo', monospace;
         font-size: 12.5px;
         text-align: center;
-        padding-top: 26px;
+        padding-top: 22px;
     }
     .console-cursor {
         display: inline-block;
-        width: 8px;
-        height: 15px;
-        background: #4ade80;
+        width: 8px; height: 15px;
+        background: #0d9488;
         vertical-align: middle;
         animation: blink 1s steps(2, start) infinite;
     }
     @keyframes blink { to { visibility: hidden; } }
+
+    /* ── Filter status daftar perangkat ──────────────── */
+    .status-filter {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .status-filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        line-height: 1;
+        transition: border-color .15s, background .15s, box-shadow .15s, color .15s;
+    }
+    .status-filter-btn:hover {
+        border-color: #94a3b8;
+    }
+    .status-filter-btn.active {
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
+        border-color: currentColor;
+    }
+    .status-filter-all.active   { background: #e0f2fe; color: #0369a1; }
+    .status-filter-up.active    { background: #dcfce7; color: #15803d; }
+    .status-filter-warning.active { background: #fef9c3; color: #a16207; }
+    .status-filter-down.active  { background: #fee2e2; color: #dc2626; }
+    .status-dot {
+        width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .dot-up      { background: #22c55e; }
+    .dot-warning { background: #eab308; }
+    .dot-down    { background: #ef4444; }
+
+    /* ── Target kustom (IP / hostname bebas) ─────────── */
+    .custom-target {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 14px 16px;
+    }
+    .custom-target .tools-field {
+        margin-bottom: 10px;
+    }
+    .custom-target-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .custom-target-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-right: 4px;
+    }
+    .custom-target-actions .btn {
+        font-weight: 700;
+        border-radius: 8px;
+    }
+
+    /* ── Ringkasan status hasil ping ──────────────────── */
+    .ping-verdict {
+        font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin: 4px 0 10px;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #94a3b8;
+    }
+    .ping-verdict-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 800;
+    }
+    .ping-verdict-dot {
+        width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+        background: #94a3b8;
+    }
+    .ping-verdict-up      { background: #ecfdf5; border-left-color: #10b981; }
+    .ping-verdict-up .ping-verdict-head { color: #047857; }
+    .ping-verdict-up .ping-verdict-dot { background: #10b981; }
+    .ping-verdict-warning { background: #fffbeb; border-left-color: #f59e0b; }
+    .ping-verdict-warning .ping-verdict-head { color: #b45309; }
+    .ping-verdict-warning .ping-verdict-dot { background: #f59e0b; }
+    .ping-verdict-down    { background: #fef2f2; border-left-color: #ef4444; }
+    .ping-verdict-down .ping-verdict-head { color: #b91c1c; }
+    .ping-verdict-down .ping-verdict-dot { background: #ef4444; }
+    .ping-verdict-meta {
+        font-size: 12px;
+        color: #475569;
+        margin-top: 3px;
+        font-family: 'Consolas', 'Menlo', monospace;
+    }
+    .ping-verdict-text {
+        font-size: 12.5px;
+        color: #334155;
+        margin-top: 4px;
+    }
+    .ping-verdict-source {
+        font-size: 11px;
+        font-weight: 600;
+        color: #475569;
+        margin-top: 7px;
+        letter-spacing: .03em;
+    }
+    .ping-verdict-legend {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 7px;
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 6px;
+    }
+
+    /* ── Responsif: kolom menyusut rapi di layar kecil ── */
+    @media (max-width: 991px) {
+        .device-list { max-height: 320px; }
+    }
 </style>
 @endpush
 
 @section('content')
+    {{-- HEADER: memakai page head global, sama dengan halaman admin lain --}}
+    <x-admin.page-head
+        title="Network Tools"
+        subtitle="Diagnosa cepat perangkat, router, dan perintah jaringan dari satu tempat." />
 
-{{-- ============================================================
-     PAGE HEAD
-============================================================ --}}
-<x-admin.page-head
-    title="Network Tools"
-    subtitle="Ping, traceroute, DNS lookup &amp; port scan terhadap IP / domain target."
-    icon="activity-round"
-    :crumbs="[['label' => 'Network Tools']]"
-/>
+    {{-- SPLIT LAYOUT: kiri daftar perangkat · kanan diagnostik --}}
+    <div class="nk-block">
+        <div class="row g-4">
 
-{{-- FORM PANEL --}}
-<div class="nk-block">
-    <form id="networkToolForm" autocomplete="off">
-        <div class="tools-panel">
-            <div class="tools-panel-head">
-                <h5 class="tools-title">
-                    <em class="icon ni ni-activity-round"></em>
-                    Command Center — Diagnosa Jaringan
-                </h5>
-                <p class="tools-subtitle">
-                    Ping, traceroute, DNS lookup &amp; port scan terhadap IP / domain target.
-                </p>
-            </div>
-            <div class="tools-panel-body">
-                {{-- TARGET --}}
-                <div class="tools-field mb-4">
-                    <label class="tools-label" for="toolTarget">Name / Address</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><em class="icon ni ni-globe"></em></span>
-                        <input type="text" class="form-control" id="toolTarget" name="target"
-                               placeholder="Contoh: 202.154.4.254 atau google.com"
-                               required>
+            {{-- ═══════════ KOLOM KIRI · DAFTAR PERANGKAT ═══════════ --}}
+            <div class="col-12 col-lg-5 col-xxl-4">
+                <div class="tools-panel tools-list-panel">
+                    <div class="tools-panel-head">
+                        <h5 class="tools-title">
+                            <em class="icon ni ni-list-round"></em>
+                            Perangkat / Router
+                        </h5>
+                        <p class="tools-subtitle">
+                            Klik salah satu perangkat untuk menjadikannya target diagnosa.
+                        </p>
                     </div>
-                </div>
-                <div class="row g-4">
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolCount">Ping count</label>
-                            <input type="number" class="form-control" id="toolCount" name="count"
-                                   value="5" min="1" max="100">
+                    <div class="tools-panel-body">
+                        <div class="device-search mb-2">
+                            <em class="icon ni ni-search"></em>
+                            <input type="text" class="form-control" id="deviceSearch"
+                                   placeholder="Cari nama atau alamat IP…" autocomplete="off">
                         </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolHops">Trace max hops</label>
-                            <input type="number" class="form-control" id="toolHops" name="hops"
-                                   value="32" min="1" max="64">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="device-count-hint" id="deviceCountHint">
+                                {{ $devices->count().' perangkat terdaftar' }}
+                            </span>
+                            <div class="status-filter" id="statusFilter" role="group" aria-label="Filter status perangkat">
+                                <button type="button" class="status-filter-btn status-filter-all active"
+                                        data-status="all" title="Tampilkan semua status"><span class="status-dot" style="background:#94a3b8;"></span>Semua</button>
+                                <button type="button" class="status-filter-btn status-filter-up"
+                                        data-status="up" title="Hanya perangkat UP"><span class="status-dot dot-up"></span>UP</button>
+                                <button type="button" class="status-filter-btn status-filter-warning"
+                                        data-status="warning" title="Hanya perangkat WARNING"><span class="status-dot dot-warning"></span>WRN</button>
+                                <button type="button" class="status-filter-btn status-filter-down"
+                                        data-status="down" title="Hanya perangkat DOWN"><span class="status-dot dot-down"></span>DOWN</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolLookupType">Lookup type</label>
-                            <select class="form-select" id="toolLookupType" name="lookup_type">
-                                <option value="A" selected>A</option>
-                                <option value="AAAA">AAAA</option>
-                                <option value="CNAME">CNAME</option>
-                                <option value="MX">MX</option>
-                                <option value="NS">NS</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolLookupServer">Lookup server</label>
-                            <input type="text" class="form-control" id="toolLookupServer"
-                                   name="lookup_server"
-                                   placeholder="8.8.8.8 (kosong = default)">
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolFirstPort">Scan first port</label>
-                            <input type="number" class="form-control" id="toolFirstPort"
-                                   name="first_port" value="1" min="1" max="65535">
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolLastPort">Scan last port</label>
-                            <input type="number" class="form-control" id="toolLastPort"
-                                   name="last_port" value="512" min="1" max="65535">
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="tools-field">
-                            <label class="tools-label" for="toolScanTimeout">Scan timeout (ms 100-2000)</label>
-                            <input type="number" class="form-control" id="toolScanTimeout"
-                                   name="scan_timeout" value="300" min="100" max="2000">
+
+                        <div class="device-list" id="deviceList">
+                            @forelse($devices as $device)
+                                @php
+                                    $status = in_array($device->status, ['down', 'warning', 'up'], true)
+                                        ? $device->status
+                                        : 'up';
+                                @endphp
+                                <button type="button" class="device-item @if($loop->first) active @endif"
+                                        data-id="{{ $device->id }}"
+                                        data-name="{{ $device->name }}"
+                                        data-ip="{{ $device->ip_address }}"
+                                        data-status="{{ $status }}">
+                                    <span class="device-ic"><em class="icon ni ni-wifi"></em></span>
+                                    <span class="device-item-txt">
+                                        <span class="device-name">{{ $device->name }}</span>
+                                        <span class="device-ip">{{ $device->ip_address }}</span>
+                                    </span>
+                                    <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
+                                </button>
+                            @empty
+                                <div class="device-empty">
+                                    <em class="icon ni ni-wifi-off" style="font-size:30px;opacity:.4;"></em><br>
+                                    Belum ada perangkat terdaftar.<br>
+                                    Tambahkan perangkat melalui menu «Kelola Perangkat».
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
-                {{-- ACTIONS --}}
-                <div class="tools-actions">
-                    <input type="hidden" name="action" id="toolAction" value="ping">
-                    <button type="button" class="btn btn-primary btn-tool-ping" data-action="ping">
-                        <em class="icon ni ni-send"></em>
-                        <span>Ping</span>
-                    </button>
-                    <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
-                        <em class="icon ni ni-map"></em>
-                        <span>Trace</span>
-                    </button>
-                    <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
-                        <em class="icon ni ni-search"></em>
-                        <span>Lookup</span>
-                    </button>
-                    <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
-                        <em class="icon ni ni-scan"></em>
-                        <span>Scan</span>
-                    </button>
+            </div>
+
+            {{-- ═══════════ KOLOM KANAN · DIAGNOSTIK & OUTPUT ═══════════ --}}
+            <div class="col-12 col-lg-7 col-xxl-8">
+                <form id="networkToolForm" autocomplete="off">
+
+                    <div class="tools-panel">
+                        <div class="tools-panel-head">
+                            <h5 class="tools-title">
+                                <em class="icon ni ni-activity-round"></em>
+                                Command Center — Diagnosa Jaringan
+                            </h5>
+                            <p class="tools-subtitle">
+                                Ping, traceroute, DNS lookup &amp; port scan terhadap target terpilih.
+                            </p>
+                        </div>
+
+                        <div class="tools-panel-body">
+
+                            {{-- TARGET AKTIF (terisi otomatis dari daftar kiri) --}}
+                            <div class="target-active" id="targetActive">
+                                <span class="ta-ic"><em class="icon ni ni-globe"></em></span>
+                                <div class="ta-txt">
+                                    <div class="ta-label">Target Aktif</div>
+                                    <div class="ta-name" id="targetActiveName">— pilih perangkat —</div>
+                                    <div class="ta-ip" id="targetActiveIp">Menunggu pilihan dari daftar di samping</div>
+                                </div>
+                                <span id="targetActiveStatus" class="status-badge status-up">UP</span>
+                            </div>
+                            <input type="hidden" name="target" id="toolTarget">
+                            <input type="hidden" name="device_id" id="toolDeviceId">
+
+                            {{-- TARGET KUSTOM — IP / hostname bebas di luar 116 perangkat database --}}
+                            <div class="custom-target mt-3" id="customTargetBox">
+                                <div class="tools-field">
+                                    <label class="tools-label" for="customTarget">Target Kustom (IP / hostname bebas)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><em class="icon ni ni-globe"></em></span>
+                                        <input type="text" class="form-control" id="customTarget" name="custom_target"
+                                               placeholder="mis. 8.8.8.8 · 10.10.0.1 · google.com — di luar 116 perangkat DB…"
+                                               autocomplete="off" spellcheck="false">
+                                    </div>
+                                </div>
+                                <div class="custom-target-actions">
+                                    <span class="custom-target-label">Eksekusi pada target kustom:</span>
+                                    <button type="button" class="btn btn-sm btn-tool-ping" data-action="ping" data-custom="1"><em class="icon ni ni-send"></em>Ping</button>
+                                    <button type="button" class="btn btn-sm btn-tool-trace" data-action="trace" data-custom="1"><em class="icon ni ni-route"></em>Trace</button>
+                                    <button type="button" class="btn btn-sm btn-tool-lookup" data-action="lookup" data-custom="1"><em class="icon ni ni-search"></em>Lookup</button>
+                                    <button type="button" class="btn btn-sm btn-tool-scan" data-action="scan" data-custom="1"><em class="icon ni ni-drag-alt"></em>Scan Port</button>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-sm-6 col-md-6 col-xxl-3">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolCount">Ping count</label>
+                                        <input type="number" class="form-control" id="toolCount" name="count"
+                                               value="5" min="1" max="100">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-6 col-xxl-3">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolHops">Trace max hops</label>
+                                        <input type="number" class="form-control" id="toolHops" name="hops"
+                                               value="32" min="1" max="64">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-4 col-xxl-3">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolLookupType">Lookup type</label>
+                                        <select class="form-select" id="toolLookupType" name="lookup_type">
+                                            <option value="A" selected>A</option>
+                                            <option value="AAAA">AAAA</option>
+                                            <option value="CNAME">CNAME</option>
+                                            <option value="MX">MX</option>
+                                            <option value="NS">NS</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-8 col-xxl-3">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolLookupServer">Lookup server</label>
+                                        <input type="text" class="form-control" id="toolLookupServer"
+                                               name="lookup_server" placeholder="8.8.8.8 (kosong = default)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-md-4 col-xxl-4">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolFirstPort">Scan port awal</label>
+                                        <input type="number" class="form-control" id="toolFirstPort"
+                                               name="first_port" value="1" min="1" max="65535">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-md-4 col-xxl-4">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolLastPort">Scan port akhir</label>
+                                        <input type="number" class="form-control" id="toolLastPort"
+                                               name="last_port" value="512" min="1" max="65535">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-md-4 col-xxl-4">
+                                    <div class="tools-field">
+                                        <label class="tools-label" for="toolScanTimeout">Scan timeout (ms 100–2000)</label>
+                                        <input type="number" class="form-control" id="toolScanTimeout"
+                                               name="scan_timeout" value="300" min="100" max="2000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ACTION --}}
+                            <div class="tools-actions">
+                                <input type="hidden" name="action" id="toolAction" value="ping">
+                                <button type="button" class="btn btn-primary btn-tool-ping" data-action="ping">
+                                    <em class="icon ni ni-send"></em>
+                                    <span>Ping</span>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
+                                    <em class="icon ni ni-route"></em>
+                                    <span>Trace</span>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
+                                    <em class="icon ni ni-search"></em>
+                                    <span>Lookup</span>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
+                                    <em class="icon ni ni-drag-alt"></em>
+                                    <span>Scan Port</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+                {{-- TERMINAL OUTPUT --}}
+                <div class="console-box mt-4">
+                    <div class="console-head">
+                        <span class="console-dot console-dot-red"></span>
+                        <span class="console-dot console-dot-yellow"></span>
+                        <span class="console-dot console-dot-green"></span>
+                        <h6 class="console-title"><em class="icon ni ni-terminal"></em>Terminal Output</h6>
+                        <div class="console-actions">
+                            <button type="button" class="btn btn-light btn-dim" id="btnConsoleCopy">
+                                <em class="icon ni ni-copy me-1"></em>Salin
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-dim" id="btnConsoleClear">
+                                <em class="icon ni ni-reload me-1"></em>Bersihkan
+                            </button>
+                        </div>
+                    </div>
+                    <div class="console-output" id="consoleOutput">
+                        <span class="console-hint">
+                            &gt; Pilih perangkat di kolom kiri, lalu klik <strong>Ping</strong>,
+                            <strong>Trace</strong>, <strong>Lookup</strong>, atau <strong>Scan Port</strong>.<br>
+                            Hasil eksekusi perintah akan muncul di sini.
+                        </span>
+                    </div>
                 </div>
+
             </div>
-        </div>
-    </form>
-</div>
-{{-- CONSOLE OUTPUT --}}
-<div class="nk-block">
-    <div class="console-box">
-        <div class="console-head">
-            <span class="console-dot console-dot-red"></span>
-            <span class="console-dot console-dot-yellow"></span>
-            <span class="console-dot console-dot-green"></span>
-            <h6 class="console-title">Terminal Output</h6>
-            <div class="console-actions">
-                <button type="button" class="btn btn-light btn-dim" id="btnConsoleCopy">
-                    <em class="icon ni ni-copy me-1"></em>Salin
-                </button>
-                <button type="button" class="btn btn-outline-light btn-dim" id="btnConsoleClear">
-                    <em class="icon ni ni-reload me-1"></em>Bersihkan
-                </button>
-            </div>
-        </div>
-        <div class="console-output" id="consoleOutput">
-            <span class="console-hint">
-                &gt; Pilih target di atas lalu klik <strong>Ping</strong>, <strong>Trace</strong>,
-                <strong>Lookup</strong>, atau <strong>Scan</strong>.<br>
-                Hasil eksekusi perintah akan muncul di sini secara real-time.
-            </span>
         </div>
     </div>
-</div>
+
 @endsection
 
 @push('scripts')
 <script>
 (function () {
+    'use strict';
+
     const form      = document.getElementById('networkToolForm');
     const actionBox = document.getElementById('toolAction');
     const output    = document.getElementById('consoleOutput');
+    const csrf      = document.querySelector('meta[name="csrf-token"]');
 
-    const csrf = document.querySelector('meta[name="csrf-token"]');
+    /* Pilihan target dari daftar perangkat */
+    const deviceList      = document.getElementById('deviceList');
+    const deviceSearch    = document.getElementById('deviceSearch');
+    const deviceCountHint = document.getElementById('deviceCountHint');
+    const toolTarget      = document.getElementById('toolTarget');
+    const toolDeviceId    = document.getElementById('toolDeviceId');
+    const customTarget    = document.getElementById('customTarget');
+    const statusFilter    = document.getElementById('statusFilter');
+    const taName          = document.getElementById('targetActiveName');
+    const taIp            = document.getElementById('targetActiveIp');
+    const taStatus        = document.getElementById('targetActiveStatus');
+    const deviceItems     = Array.prototype.slice.call(document.querySelectorAll('.device-item'));
+
+    const defaultTargetCount = deviceItems.length;
+    let activeStatus         = 'all';
+
+    function selectDevice(item) {
+        deviceItems.forEach(function (d) { d.classList.remove('active'); });
+        item.classList.add('active');
+
+        const ip     = item.getAttribute('data-ip');
+        const name   = item.getAttribute('data-name');
+        const status = item.getAttribute('data-status') || 'up';
+        const id     = item.getAttribute('data-id') || '';
+
+        toolDeviceId.value = id;
+        toolTarget.value = ip;
+        taName.textContent = name;
+        taIp.textContent = ip;
+        taStatus.className = 'status-badge status-' + status;
+        taStatus.textContent = status.toUpperCase();
+    }
+
+    deviceList.addEventListener('click', function (e) {
+        const item = e.target.closest('.device-item');
+        if (item) selectDevice(item);
+    });
+
+    function applyFilters() {
+        const q = deviceSearch.value.trim().toLowerCase();
+        let shown = 0;
+
+        deviceItems.forEach(function (d) {
+            const matchSearch = q === '' ||
+                d.textContent.toLowerCase().indexOf(q) !== -1;
+            const matchStatus = activeStatus === 'all' ||
+                (d.getAttribute('data-status') || 'up') === activeStatus;
+
+            const show = matchSearch && matchStatus;
+            d.style.display = show ? '' : 'none';
+            if (show) shown++;
+        });
+
+        let none = deviceList.querySelector('.device-empty-none');
+        if (shown === 0) {
+            if (!none) {
+                none = document.createElement('div');
+                none.className = 'device-empty device-empty-none';
+                none.innerHTML = 'Tidak ada perangkat yang cocok dengan pencarian / filter status.';
+                deviceList.appendChild(none);
+            }
+            none.style.display = '';
+        } else if (none) {
+            none.style.display = 'none';
+        }
+
+        deviceCountHint.textContent = shown + '/' + defaultTargetCount + ' perangkat';
+    }
+
+    deviceSearch.addEventListener('input', applyFilters);
+
+    statusFilter.addEventListener('click', function (e) {
+        const btn = e.target.closest('.status-filter-btn');
+        if (!btn) return;
+
+        activeStatus = btn.getAttribute('data-status');
+        statusFilter.querySelectorAll('.status-filter-btn')
+            .forEach(function (b) { b.classList.toggle('active', b === btn); });
+
+        applyFilters();
+    });
+
+    /* Pilih perangkat pertama secara otomatis (tanpa mengetik IP manual) */
+    const firstDevice = deviceList.querySelector('.device-item.active') || deviceItems[0];
+    if (firstDevice) selectDevice(firstDevice);
+    else toolTarget.value = '';
+
+    /* ── Eksekusi perintah (endpoint backend) ────────── */
     const routes = {
         ping:   '{{ route("admin.tools.ping") }}',
         trace:  '{{ route("admin.tools.trace") }}',
@@ -333,48 +770,6 @@
         return String(str).split('\n');
     }
 
-    function renderResult(res) {
-        if (!res.success) {
-            let msg = res.message || res.error || 'Perintah selesai dengan kode keluar ' + res.exit + '.';
-            printLine('ERROR', msg, 'err-line');
-
-            if (res.error && res.message !== res.error) {
-                printLine('DETAIL', res.error, 'err-line');
-            }
-            if (res.exit) {
-                printLine('EXIT', 'Kode keluar: ' + res.exit, 'err-line');
-            }
-            if (res.network_fault) {
-                printLine('!', 'Kegagalan terkait jaringan / DNS (bukan masalah eksekusi perintah).', 'err-line');
-            }
-            if (res.command) {
-                printLine('CMD', '$ ' + res.command, 'cmd-line');
-            }
-            if (res.output) {
-                printLine('---', '--------------------------------------------------', 'ok-line');
-                lines(res.output).forEach(function (l) {
-                    printLine('', l, 'ok-line');
-                });
-            }
-            return;
-        }
-
-        printLine('CMD', '$ ' + (res.command || ''), 'cmd-line');
-        if (res.summary) {
-            printLine('INFO', 'target: ' + res.summary, 'ok-line');
-        }
-        printLine('RUN', res.label + ' — selesai dalam ' + res.duration + ' s (exit ' + res.exit + ')', 'ok-line');
-        printLine('---', '--------------------------------------------------', 'ok-line');
-
-        const text = (res.timedout)
-            ? 'Waktu eksekusi melebihi batas maksimum…'
-            : (res.output || 'Perintah selesai tanpa output.');
-
-        lines(text).forEach(function (l) {
-            printLine('', l, 'ok-line');
-        });
-    }
-
     function printLine(prefix, text, cls) {
         const line = document.createElement('div');
         line.className = cls;
@@ -384,67 +779,277 @@
         output.scrollTop = output.scrollHeight;
     }
 
-    function banner(msg) {
-        const line = document.createElement('div');
-        line.className = 'err-line';
-        line.innerHTML = '<span class="ns-line">[!]</span> ' + escHTML(msg);
-        output.appendChild(line);
+    function banner(msg, cls) {
+        printLine('!', msg, cls || 'err-line');
+    }
+
+    function renderResult(res, action) {
+        if (action === 'ping') {
+            renderPing(res);
+            return;
+        }
+
+        if (!res.success) {
+            let msg = res.message || res.error || 'Perintah selesai dengan kode keluar ' + res.exit + '.';
+            banner(msg);
+            if (res.network_fault) printLine('!', 'Kegagalan terkait jaringan / DNS (bukan masalah eksekusi).', 'warn-line');
+            if (res.output) lines(res.output).forEach(function (l) { printLine('', l, 'ok-line'); });
+            return;
+        }
+
+        printLine('', '$ ' + (res.command || ''), 'cmd-line');
+        if (res.summary) printLine('INFO', 'target: ' + res.summary, 'ok-line');
+        printLine('RUN', res.label + ' — selesai dalam ' + res.duration + ' s', 'ok-line');
+        printLine('---', '--------------------------------------------------', 'ok-line');
+
+        const text = res.timedout
+            ? 'Waktu eksekusi melebihi batas maksimum…'
+            : (res.output || 'Perintah selesai tanpa output.');
+
+        lines(text).forEach(function (l) { printLine('', l, 'ok-line'); });
+    }
+
+    /* ── Ping: output standar + ringkasan status ───────── */
+
+    const HIGH_LATENCY_MS = 150;
+
+    function classifyPing(res) {
+        const stdout = res.output || '';
+
+        if (stdout.trim() === '' && (res.exit === 126 || res.exit === 127)) {
+            return { error: 'Perintah ping tidak dapat dijalankan di server (kode keluar ' + res.exit + ').' };
+        }
+
+        const mTx = stdout.match(/(\d+)\s+packets transmitted,\s+(\d+)\s+(?:packets\s+)?received/);
+        const tx  = mTx ? parseInt(mTx[1], 10) : null;
+        const rx  = mTx ? parseInt(mTx[2], 10) : null;
+
+        const mLoss = stdout.match(/(\d+(?:\.\d+)?)%\s*packet loss/);
+        const loss = mLoss
+            ? parseFloat(mLoss[1])
+            : (tx !== null && tx > 0 ? Math.round(((tx - rx) / tx) * 1000) / 10 : (tx !== null ? 100 : null));
+
+        const mRtt = stdout.match(/rtt\s+min\/avg\/max\/mdev\s*=\s*[\d.]+\/([\d.]+)\//i);
+        const avg  = mRtt ? parseFloat(mRtt[1]) : null;
+
+        const unreachable = /(Destination Host Unreachable|Host Unreachable|Request timeout|No route to host)/i.test(stdout);
+        const dnsFail     = /(Name or service not known|cannot resolve)/i.test(stdout);
+        const lostAll     = rx === 0 || loss === 100 || (tx === null && res.exit !== 0);
+
+        let status = 'up';
+        let reason;
+
+        if (dnsFail) {
+            status = 'down';
+            reason = 'target tidak ditemukan — nama host tidak dapat di-resolve (DNS gagal).';
+        } else if (lostAll) {
+            status = 'down';
+            if (unreachable) reason = 'host tujuan tidak dapat dijangkau (Destination Host Unreachable / timeout).';
+            else if (loss === 100 && tx !== null) reason = 'seluruh paket hilang (100% packet loss) — kabel terputus atau perangkat mati.';
+            else reason = 'perangkat tidak mengirim balasan sama sekali (tidak ada statistik ping).';
+        } else if ((loss !== null && loss > 0 && loss < 100) || (avg !== null && avg > HIGH_LATENCY_MS)) {
+            status = 'warning';
+            const causes = [];
+            if (loss !== null && loss > 0 && loss < 100) {
+                causes.push('packet loss ' + loss + '% (' + (tx - rx) + ' dari ' + tx + ' paket hilang)');
+            }
+            if (avg !== null && avg > HIGH_LATENCY_MS) {
+                causes.push('latensi ±' + avg + ' ms melebihi ambang ' + HIGH_LATENCY_MS + ' ms');
+            }
+            reason = 'koneksi tidak stabil — ' + causes.join(' dan ') + '.';
+        } else {
+            status = 'up';
+            reason = 'perangkat merespons normal — ' + (loss !== null ? loss : 0) + '% packet loss' +
+                (avg !== null ? ', latensi ±' + avg + ' ms' : '') + '.';
+        }
+
+        const metaParts = [];
+        if (tx !== null) metaParts.push(tx + ' paket terkirim');
+        if (rx !== null) metaParts.push(rx + ' diterima');
+        if (loss !== null) metaParts.push(loss + '% packet loss');
+        if (avg !== null) metaParts.push('rata-rata ' + avg + ' ms');
+
+        return { status, reason, meta: metaParts.length ? metaParts.join(' · ') : 'tidak ada data pengukuran' };
+    }
+
+    function appendVerdict(info) {
+        const labels = { up: 'UP', warning: 'WARNING', down: 'DOWN' };
+        const box = document.createElement('div');
+        box.className = 'ping-verdict ping-verdict-' + info.status;
+
+        const legend = info.source === 'database'
+            ? 'Status mengikuti data perangkat di database (status asli / hasil monitoring). Hasil uji ping manual hanya sebagai pembanding; perhatikan catatan bila terjadi perbedaan di antara keduanya.'
+            : 'Aturan status (target bebas — bukan perangkat terdaftar): UP = 0% packet loss & latensi ≤ ' + HIGH_LATENCY_MS + ' ms · WARNING = ada packet loss sebagian atau latensi > ' + HIGH_LATENCY_MS + ' ms · DOWN = 100% packet loss / perangkat tidak merespons.';
+
+        const source = info.source === 'database'
+            ? '<div class="ping-verdict-source">Sumber status: database perangkat (monitoring)</div>'
+            : '<div class="ping-verdict-source">Sumber status: hasil uji ping manual</div>';
+
+        box.innerHTML =
+            '<div class="ping-verdict-head"><span class="ping-verdict-dot"></span>Status: ' + labels[info.status] + '</div>' +
+            '<div class="ping-verdict-meta">' + escHTML(info.meta) + '</div>' +
+            '<div class="ping-verdict-text">' + escHTML(info.reason) + '</div>' +
+            source +
+            '<div class="ping-verdict-legend">' + escHTML(legend) + '</div>';
+
+        output.appendChild(box);
         output.scrollTop = output.scrollHeight;
     }
 
+    function normalizeStatus(st) {
+        const s = String(st || '').toLowerCase();
+        return (s === 'up' || s === 'down' || s === 'warning') ? s : 'unknown';
+    }
+
+    /**
+     * Sinkronkan status dengan data perangkat di database.
+     * - Target terdaftar -> status DATABASE menjadi status utama (status asli
+     *   hasil monitoring), hasil uji manual hanya pembanding + catatan akurat.
+     * - Target bebas / tidak terdaftar -> pakai hasil uji ping manual.
+     */
+    function reconcileVerdict(info, device) {
+        if (!device || !device.status || normalizeStatus(device.status) === 'unknown') {
+            return { status: info.status, reason: info.reason, meta: info.meta, source: 'manual' };
+        }
+
+        const labels   = { up: 'UP', warning: 'WARNING', down: 'DOWN' };
+        const dbStatus = normalizeStatus(device.status);
+        const measured = info.status;
+        const conflict = measured !== dbStatus;
+
+        const parts = [];
+        parts.push('status database perangkat: ' + labels[dbStatus].toLowerCase() + ' (data monitoring terakhir)');
+        parts.push('hasil uji ping manual: ' + info.reason);
+
+        if (conflict) {
+            if (measured === 'down' && dbStatus !== 'down') {
+                parts.push('catatan: uji ping manual kehilangan seluruh paket, tetapi database masih mencatat ' + labels[dbStatus] +
+                    ' — kemungkinan ICMP diblokir, gangguan sementara, atau data monitoring belum diperbarui. Status dipertahankan sesuai database.');
+            } else if (dbStatus === 'down' && measured !== 'down') {
+                parts.push('catatan: uji ping manual merespons, tetapi database masih mencatat DOWN — kemungkinan perangkat baru pulih dan monitoring belum mencatatnya. Status dipertahankan sesuai database.');
+            } else {
+                parts.push('catatan: ada perbedaan antara status database dan hasil uji ping manual.');
+            }
+        } else {
+            parts.push('hasil uji ping manual konsisten dengan status database.');
+        }
+
+        const metaParts = [];
+        if (device.name) metaParts.push('perangkat: ' + device.name);
+        if (device.avg_delay !== null && device.avg_delay !== undefined) {
+            metaParts.push('latensi monitoring terakhir ±' + device.avg_delay + ' ms');
+        }
+        if (device.last_checked) {
+            metaParts.push('dicek ' + device.last_checked);
+        }
+        if (info.meta && info.meta !== 'tidak ada data pengukuran') {
+            metaParts.push('uji manual: ' + info.meta);
+        }
+
+        return {
+            status: dbStatus,
+            reason: parts.join(' · '),
+            meta: metaParts.length ? metaParts.join(' · ') : info.meta,
+            source: 'database',
+        };
+    }
+
+    function renderPing(res) {
+        printLine('', '$ ' + String(res.command || '').replace(/^ping -4/, 'ping'), 'cmd-line');
+
+        const info = classifyPing(res);
+        if (info.error) {
+            printLine('', info.error, 'err-line');
+            return;
+        }
+
+        appendVerdict(reconcileVerdict(info, res.device || null));
+
+        const text = res.timedout
+            ? 'Waktu eksekusi melebihi batas maksimum…'
+            : (res.output || '(tidak ada output)');
+
+        lines(text).forEach(function (l) {
+            const cls = /(Destination Host Unreachable|Host Unreachable|Request timeout|cannot resolve|Name or service not known|100% packet loss|0 received)/i.test(l)
+                ? 'err-line'
+                : 'ok-line';
+            printLine('', l, cls);
+        });
+    }
+
     function setLoading(on) {
-        output.classList.toggle('is-loading', on);
         form.querySelectorAll('button[data-action]').forEach(function (btn) {
             btn.disabled = on;
         });
         if (on) {
             const cursor = document.createElement('span');
             cursor.className = 'console-cursor';
+            cursor.id = 'consoleCursor';
             output.appendChild(cursor);
+        } else {
+            const cur = document.getElementById('consoleCursor');
+            if (cur) cur.remove();
         }
+    }
+
+    function executeAction(action, target) {
+        const url  = routes[action];
+        const body = new FormData(form);
+        body.set('target', target);
+        actionBox.value = action;
+
+        output.innerHTML = '';
+        printLine('EXEC', action.toUpperCase() + ' ' + target + '…', 'cmd-line');
+        setLoading(true);
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
+            body: body,
+        })
+        .then(function (r) { return Promise.all([r.status, r.json()]); })
+        .catch(function () {
+            return [[408], { success: false, message: 'Tidak dapat terhubung ke server atau waktu habis.' }];
+        })
+        .then(function (data) {
+            setLoading(false);
+            if (data[0] === 422) { banner(data[1].message || 'Input tidak valid.'); return; }
+            renderResult(data[1], action);
+        });
     }
 
     form.querySelectorAll('button[data-action]').forEach(function (btn) {
         btn.addEventListener('click', function () {
+            const useCustom = btn.hasAttribute('data-custom');
+            let target;
 
-            const target = document.getElementById('toolTarget').value.trim();
-            if (!target) {
-                banner('Isi kolom Name/Address terlebih dahulu.');
-                document.getElementById('toolTarget').focus();
-                return;
-            }
-
-            if (btn.querySelector('.console-cursor')) {
-                return;
-            }
-
-            actionBox.value = btn.dataset.action;
-            const url      = routes[btn.dataset.action];
-            const body     = new FormData(form);
-            const action   = btn.dataset.action.toUpperCase();
-
-            output.innerHTML = '';
-            printLine('EXEC', action + ' ' + target + '…', 'cmd-line');
-            setLoading(true);
-
-            fetch(url, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
-                body: body,
-            })
-            .then(function (r) { return Promise.all([r.status, r.json()]); })
-            .catch(function () {
-                return [[408], { success: false, message: 'Tidak dapat terhubung ke server atau waktu habis.' }];
-            })
-            .then(function (data) {
-                setLoading(false);
-                if (data[0] === 422) {
-                    banner(data[1].message || 'Input tidak valid.');
+            if (useCustom) {
+                toolDeviceId.value = '';
+                target = customTarget.value.trim();
+                if (!target) {
+                    banner('Isi target kustom (IP / hostname) terlebih dahulu.');
+                    customTarget.focus();
                     return;
                 }
-                renderResult(data[1]);
-            });
+            } else {
+                target = toolTarget.value.trim();
+                if (!target) {
+                    banner('Belum ada target terpilih. Pilih salah satu perangkat di kolom kiri terlebih dahulu.');
+                    deviceSearch.focus();
+                    return;
+                }
+            }
+
+            executeAction(btn.dataset.action, target);
         });
+    });
+
+    customTarget.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const target = customTarget.value.trim();
+        if (!target) { customTarget.focus(); return; }
+        executeAction('ping', target);
     });
 
     document.getElementById('btnConsoleClear').addEventListener('click', function () {
@@ -452,12 +1057,19 @@
     });
 
     document.getElementById('btnConsoleCopy').addEventListener('click', function () {
-        const text = output.innerText;
+        const text = output.innerText.trim();
         if (!text) return;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function () {
-                alert('Output disalin ke clipboard.');
-            });
+
+        const done = function () {
+            const btn = document.getElementById('btnConsoleCopy');
+            btn.innerHTML = '<em class="icon ni ni-check-thick me-1"></em>Tersalin';
+            setTimeout(function () {
+                btn.innerHTML = '<em class="icon ni ni-copy me-1"></em>Salin';
+            }, 1800);
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done);
         } else {
             const ta = document.createElement('textarea');
             ta.value = text;
@@ -465,7 +1077,7 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            alert('Output disalin ke clipboard.');
+            done();
         }
     });
 })();

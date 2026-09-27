@@ -111,8 +111,8 @@
     title="Kelola Router"
     subtitle="Kelola daftar router dan perangkat jaringan RADNET."
     icon="wifi"
-    :crumbs="[['label' => 'Kelola Router']]"
 >
+
     <x-slot:actions>
         @auth
             <a href="{{ route('admin.device.notes.report') }}" class="btn btn-outline-primary d-none d-md-inline-flex">

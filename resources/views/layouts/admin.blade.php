@@ -32,6 +32,10 @@
             --admin-gap: 1.5rem;      /* jarak antar section */
             --admin-gap-head: 1.75rem;/* jarak judul -> konten */
             --admin-radius: .75rem;   /* radius seragam seluruh surface */
+
+            /* Token intro konten — dipakai seluruh halaman admin */
+            --admin-head-h1: 1.375rem;  /* judul = elemen visual utama */
+            --admin-head-sub: .8125rem; /* subtitle = informasi sekunder */
         }
 
         @media (min-width: 768px) {
@@ -46,11 +50,94 @@
             padding: 0 !important;
             min-height: calc(100vh - 3.75rem);
         }
+
+        /* ═══════════════════════════════════════════════════════
+           1b. SATU REFERENSI KIRI BERSAMA — SATU-SATUNYA SUMBER
+           ───────────────────────────────────────────────────────
+           Ini satu-satunya tempat yang menentukan posisi horizontal
+           di admin. .nk-header-wrap (baris header atas) dan
+           .admin-content (kolom konten) DIBAGAI satu rule yang sama,
+           sehingga secara struktural tidak mungkin berbeda:
+
+               .nk-header-wrap, .admin-content { …bersama… }
+
+           Huruf "M" pada judul header atas dan huruf "M" pada judul
+           intro konten memakai nilai yang sama persis — tidak ada
+           nilai terpisah yang bisa saling menyimpang.
+
+           TIGA hal yang membuat X-nya benar:
+
+           (1) ASAL X SAMA.
+               .nk-header-fixed punya `left: 280px` dan .nk-wrap punya
+               `padding-left: 280px`, jadi header dan konten sudah
+               berawal pada titik yang sama. Yang perlu disamakan
+               hanya geometri di dalam titik itu.
+
+           (2) TIDAK ADA PADDING TAMBAH DI HEADER.
+               Thema memberi padding horizontal di DUA tingkat, dan dua-duanya
+               harus dinolkan supaya tidak menumpuk di kiri judul header:
+                 .nk-header        -> padding:.5rem 1rem  (16px)
+                 .nk-header .container-fluid -> 0.75rem    (12px)
+               Total 28px. Inilah sumber selisih 16px + 12px yang membuat
+               judul header berdiri di kanan judul konten. Padding vertikal
+               .5rem pada .nk-header tetap dipertahankan.
+
+           (3) RAIL DI-ANCHOR KIRI, BUKAN DI-CENTER.
+               Ini akar masalah "lompatan ke kanan". Dengan
+               `margin-inline: auto`, kolom di-center di dalam ruang yang
+               tersedia, sehingga tepi KIRINYA ikut bergerak begitu
+               viewport melewati --admin-max: di 1366px rail masih dekat
+               tepi, di 1920px sudah melompat jauh ke kanan, di 2560px
+               melompat lagi. Roda mouse sedikit saja sudah menggeser
+               garis judul.
+               Dengan `margin-inline: 0 auto` sisi kiri dikunci ke
+               --admin-gutter, sementara sisa ruang mengumpul di kanan.
+               Hasilnya satu garis vertikal yang DIAM di semua lebar
+               layar: 992px, 1366px, 1440px, 1920px, 2560px.
+
+           Bukan negative margin, bukan hard-coded px per halaman, dan
+           bukan hanya "sama-sama center" — left reference-nya benar-benar
+           satu dan tidak bergerak. */
+        .nk-header-wrap,
         .admin-content {
             width: 100%;
             max-width: var(--admin-max);
-            margin-inline: auto;
-            padding: var(--admin-gap) var(--admin-gutter) calc(var(--admin-gap) * 2);
+            margin-inline: 0 auto;            /* anchor kiri, bukan center */
+            padding-inline: var(--admin-gutter);
+            box-sizing: border-box;
+        }
+
+        /* Padding horizontal header dinolkan di .nk-header DAN
+           .container-fluid — lihat penjelasan (2) di rule bersama. */
+        .nk-header {
+            padding-inline: 0;
+        }
+        .nk-header .container-fluid {
+            max-width: none;
+            padding-inline: 0;
+        }
+
+        /* .admin-content hanya menambah jarak VERTIKAL. Padding horizontal
+           sudah ditangani oleh rule bersama di atas — tidak ditulis ulang
+           di sini supaya tidak ada dua sumber nilai. */
+        .admin-content {
+            padding-block: var(--admin-gap) calc(var(--admin-gap) * 2);
+        }
+
+        /* ── 1c. RAIL YANG TETAP DI < 992px ─────────────────────
+           Di bawah 992px sidebar menjadi off-canvas, jadi tombol
+           .nk-sidebar-toggle dan .nk-navbar-toggle muncul dan
+           menempati ruang di depan judul — itu yang mendorong
+           judul ke kanan dan membuatnya tidak rata dengan konten.
+
+           Lebar tombol itu variabel (btn-sm di xs, btn-md di sm+),
+           jadi tidak bisa dicocokkan dengan px statis. Yang pasti
+           benar: judul harus didahulukan (order) supaya menjadi
+           item pertama, persis di rail yang sama dengan konten.
+           Tidak ada px yang di-hard-code, dan di >= 992px aturan ini
+           tidak berefek karena kedua tombol sudah display:none. */
+        @media (max-width: 991.98px) {
+            .nk-header-title { order: -1; }
         }
 
         /* ── 2. LARANG WRAPPER / OFFSET PER HALAMAN ─────────────── */
@@ -141,81 +228,72 @@
         .admin-page .table-responsive { margin-bottom: 0; }
         .admin-page .row { margin-bottom: 0; }
 
-        /* ── 5. KOMPONEN PAGE HEAD (dipakai semua halaman) ──────── */
+        /* ── 5. INTRO / PAGE HEAD KONTEN (SATU POLA SELURUH HALAMAN) ──
+            Header atas sudah menampilkan nama halaman aktif, jadi di sini
+            TIDAK ada breadcrumb dan TIDAK ada icon. Sisa kontennya:
+
+                [ judul + subtitle ]                    [ action.. ]
+
+            - Satu baris, rata kiri; action rata kanan & sejajar vertikal.
+            - TANPA padding/kolom ikon: teks mulai tepat di garis kiri area
+              konten, jadi sejajar dengan header atas dan dengan seluruh
+              blok lain (KPI, card, tabel, filter) di halaman ini.
+        ------------------------------------------------------- */
         .admin-page-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: .75rem 1.5rem;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            column-gap: var(--admin-gap);
             width: 100%;
         }
-        .admin-page-head-main { min-width: 0; }
-        .admin-page-head-breadcrumb { margin-bottom: .5rem; }
-        .admin-page-head-breadcrumb .breadcrumb { margin-bottom: 0; }
-        .admin-page-head-title {
-            display: flex;
-            align-items: center;
-            gap: .875rem;
-            min-width: 0;
-        }
-        .admin-page-head-icon {
-            width: 46px;
-            height: 46px;
-            flex: 0 0 auto;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: #fff;
-            font-size: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px rgba(79, 70, 229, .28);
-        }
-        .admin-page-head-icon.is-telegram {
-            background: linear-gradient(135deg, #229ed9, #38bdf8);
-            box-shadow: 0 8px 20px rgba(34, 158, 217, .28);
-        }
-        .admin-page-head-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 5px;
-            background: #fff;
-        }
+
+        .admin-page-head-title { min-width: 0; }
+
+        /* 5.2 Typography: judul = visual utama, subtitle = secondary. */
         .admin-page-head-text { min-width: 0; }
         .admin-page-head-text h1 {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: var(--admin-head-h1);
             font-weight: 800;
-            line-height: 1.3;
-            color: #1c2b4a;
+            line-height: 1.25;
+            letter-spacing: -.01em;
+            color: #16223c;
         }
         .admin-page-head-text p {
-            margin: .25rem 0 0;
-            font-size: .8rem;
-            line-height: 1.5;
+            margin: .1875rem 0 0;
+            font-size: var(--admin-head-sub);
+            line-height: 1.45;
             color: #6b7a99;
         }
+
+        /* 5.3 Action sejajar dengan area judul, rata kanan di desktop. */
         .admin-page-head-actions {
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: .5rem;
             flex-wrap: wrap;
-            margin-left: auto;
+            min-width: 0;
         }
         .admin-page-head-actions:empty { display: none; }
 
-        @media (max-width: 575.98px) {
-            .admin-page-head-icon {
-                width: 40px;
-                height: 40px;
-                border-radius: 12px;
-                font-size: 17px;
+        /* 5.4 Responsive: turun rapi, tanpa overflow. */
+        @media (max-width: 767.98px) {
+            .admin-page-head {
+                grid-template-columns: minmax(0, 1fr);
+                row-gap: .75rem;
             }
-            .admin-page-head-text h1 { font-size: 1.1rem; }
-            .admin-page-head-actions { margin-left: 0; width: 100%; justify-content: flex-start; }
+            .admin-page-head-actions {
+                justify-content: flex-start;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            :root {
+                --admin-head-h1: 1.125rem;
+                --admin-head-sub: .75rem;
+            }
         }
 
         /* Varian boxed: judul halaman berada di dalam surface penuh
@@ -224,7 +302,10 @@
             padding: calc(var(--admin-pad) + .25rem) var(--admin-pad);
         }
         .admin-page-head-boxed .admin-page-head-text h1 { color: inherit; }
-        .admin-page-head-boxed .admin-page-head-text p { color: inherit; opacity: .75; }
+        .admin-page-head-boxed .admin-page-head-text p {
+            color: inherit;
+            opacity: .8;
+        }
 
         /* ── 6. LOGO RADNEXT DI SIDEBAR ──────────────────────────
             - Biarkan logo tampil utuh (tidak dipotong wrapper 34px)

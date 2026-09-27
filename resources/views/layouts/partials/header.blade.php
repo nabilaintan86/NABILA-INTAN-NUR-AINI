@@ -9,48 +9,43 @@
                 <div class="nk-navbar-toggle me-2">
                     <button class="btn btn-sm btn-icon btn-zoom navbar-toggle d-sm-none"><em class="icon ni ni-menu-right"></em></button><button class="btn btn-md btn-icon btn-zoom navbar-toggle d-none d-sm-inline-flex"><em class="icon ni ni-menu-right"></em></button>
                 </div>
-                <div class="d-none d-sm-flex flex-column justify-content-center ms-1 ms-xl-2">
-                    <small class="overline-title mb-0">RadneXt NOC</small>
+                {{-- Header atas hanya menampilkan NAMA HALAMAN AKTIF.
+                     Tidak ada lagi brand "RadneXt NOC" di sini; nama halaman
+                     berasal dari App\Helpers\AdminPageTitle::resolve() yang
+                     di-inject lewat View::composer di AppServiceProvider.
+
+                     Tanpa margin-left: judul ini mulai tepat di gutter yang
+                     sama dengan .admin-content, sehingga sejajar vertikal
+                     dengan judul intro di konten (lihat blok 1b di
+                     layouts/admin.blade.php). --}}
+                <div class="d-none d-sm-block nk-header-title">
                     <h5 class="mb-0">{{ $pageTitle }}</h5>
                 </div>
             </div>
 
             <div class="nk-header-tools ms-auto">
                 <ul class="nk-quick-nav ms-2">
-                    <li class="dropdown">
-                        <button class="btn btn-icon btn-sm btn-zoom d-sm-none" data-bs-toggle="dropdown" data-bs-auto-close="outside"><em class="icon ni ni-search"></em></button><button class="btn btn-icon btn-md btn-zoom d-none d-sm-inline-flex" data-bs-toggle="dropdown" data-bs-auto-close="outside"><em class="icon ni ni-search"></em></button>
-                        <div class="dropdown-menu dropdown-menu-lg">
-                            <div class="dropdown-content dropdown-content-x-lg py-1">
-                                <div class="search-inline">
-                                    <div class="form-control-wrap flex-grow-1">
-                                        <input placeholder="Type Query" type="text" class="form-control-plaintext">
-                                    </div>
-                                    <em class="icon icon-sm ni ni-search"></em>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                    @php $unreadCount = $unreadCount ?? 0; @endphp
                     <li>
-                        @php $unreadNotice = \App\Models\DeviceNotification::where('is_read', false)->count(); @endphp
                         <button class="btn btn-icon btn-sm btn-zoom position-relative d-sm-none" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas">
                             <em class="icon ni ni-bell"></em>
-                            @if($unreadNotice > 0)<span class="badge bg-danger position-absolute" style="top:-4px;right:-4px;font-size:.6rem;">{{ $unreadNotice > 99 ? '99+' : $unreadNotice }}</span>@endif
+                            <span class="badge bg-danger position-absolute js-notification-badge{{ $unreadCount > 0 ? '' : ' d-none' }}" style="top:-4px;right:-4px;font-size:.6rem;" data-unread="{{ $unreadCount }}">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                         </button>
                         <button class="btn btn-icon btn-md btn-zoom position-relative d-none d-sm-inline-flex" data-bs-toggle="offcanvas" data-bs-target="#notificationOffcanvas">
                             <em class="icon ni ni-bell"></em>
-                            @if($unreadNotice > 0)<span class="badge bg-danger position-absolute" style="top:-4px;right:-4px;font-size:.6rem;">{{ $unreadNotice > 99 ? '99+' : $unreadNotice }}</span>@endif
+                            <span class="badge bg-danger position-absolute js-notification-badge{{ $unreadCount > 0 ? '' : ' d-none' }}" style="top:-4px;right:-4px;font-size:.6rem;" data-unread="{{ $unreadCount }}">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                         </button>
                     </li>
                     <li class="dropdown">
                         <a href="{{ url('/admin') }}#" data-bs-toggle="dropdown">
                         <div class="d-sm-none">
                             <div class="media media-md media-circle">
-                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                <img src="{{ Auth::user()?->avatar_url }}" alt="" class="img-thumbnail">
                             </div>
                         </div>
                         <div class="d-none d-sm-block">
                             <div class="media media-circle">
-                                <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                <img src="{{ Auth::user()?->avatar_url }}" alt="" class="img-thumbnail">
                             </div>
                         </div>
                         </a>
@@ -58,7 +53,7 @@
                             <div class="dropdown-content dropdown-content-x-lg py-3 border-bottom border-light">
                                 <div class="media-group">
                                     <div class="media media-xl media-middle media-circle">
-                                        <img src="{{ asset('admin-assets/images/avatar/a.jpg') }}" alt="" class="img-thumbnail">
+                                        <img src="{{ Auth::user()?->avatar_url }}" alt="" class="img-thumbnail">
                                     </div>
                                     <div class="media-text">
                                         <div class="lead-text">
@@ -70,6 +65,11 @@
                             </div>
                             <div class="dropdown-content dropdown-content-x-lg py-3">
                                 <ul class="link-list">
+                                    <li>
+                                        <a href="{{ route('admin.profile') }}">
+                                            <em class="icon ni ni-user"></em> <span>Profile</span>
+                                        </a>
+                                    </li>
                                     <li>
                                         <a
                                             href="{{ route('logout') }}"

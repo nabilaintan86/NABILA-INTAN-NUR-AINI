@@ -1210,8 +1210,6 @@
 <x-admin.page-head
     title="DHCP Lease"
     subtitle="Daftar perangkat yang mendapat alamat IP dari DHCP, diidentifikasi terhadap database device resmi RADNET."
-    icon="wifi"
-    :crumbs="[['label' => 'DHCP Lease']]"
 >
     <x-slot:actions>
         <button type="button" class="btn-dhcp-outline btn-sm" data-reload>

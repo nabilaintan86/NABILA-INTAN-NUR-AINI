@@ -23,7 +23,7 @@ class AdminPageTitleTest extends TestCase
             '/admin/device-notes' => 'Report Catatan',
             '/admin/dhcp-lease' => 'DHCP Lease',
             '/admin/laporan' => 'Laporan & Grafik',
-            '/admin/tools' => 'Tools',
+            '/admin/tools' => 'Network Tools',
             '/admin/troubleshooting' => 'Troubleshooting',
         ];
 

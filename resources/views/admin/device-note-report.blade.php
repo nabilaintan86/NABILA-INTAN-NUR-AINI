@@ -95,11 +95,6 @@
 <x-admin.page-head
     title="Report Catatan Perangkat"
     subtitle="Histori catatan operasional dari database."
-    icon="reports"
-    :crumbs="[
-        ['label' => 'Kelola Router', 'url' => route('admin.kelola-router')],
-        ['label' => 'Report Catatan'],
-    ]"
 >
     <x-slot:actions>
         @can('create', \App\Models\Note::class)
@@ -161,9 +156,9 @@
             </select>
         </div>
         <div class="col-6 col-lg-2">
-            <label for="user_id" class="form-label">Pengguna</label>
+            <label for="user_id" class="form-label">Pembuat</label>
             <select name="user_id" id="user_id" class="form-select">
-                <option value="">Semua pengguna</option>
+                <option value="">Semua pembuat</option>
                 @foreach($users as $filterUser)
                     <option value="{{ $filterUser->id }}" @selected((int) $filters['user_id'] === (int) $filterUser->id)>{{ $filterUser->name }}</option>
                 @endforeach
@@ -205,18 +200,19 @@
                 <table class="table table-hover note-report-table">
                     <thead class="table-light">
                         <tr>
-                            <th>Tanggal</th>
-                            <th>Perangkat</th>
-                            <th>Pengguna</th>
-                            <th>Prioritas</th>
                             <th>Catatan</th>
+                            <th>Perangkat</th>
+                            <th>Pembuat</th>
+                            <th>Role</th>
+                            <th>Prioritas</th>
+                            <th>Waktu</th>
                             <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($notes as $note)
                             <tr>
-                                <td class="text-nowrap">{{ $note->tanggal?->format('d M Y, H:i') }}</td>
+                                <td class="note-text">{{ $note->catatan }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         @if($note->device)
@@ -231,19 +227,35 @@
                                     </div>
                                 </td>
                                 <td>
+                                    {{-- Pembuat diambil dari relasi note.user (id user saat membuat),
+                                         bukan dari input manual. --}}
                                     @if($note->user)
                                         <span class="note-user">
                                             <span class="note-user-avatar" aria-hidden="true">{{ strtoupper(substr(trim($note->user->name), 0, 2)) }}</span>
                                             <span>{{ $note->user->name }}</span>
                                         </span>
                                     @else
+                                        {{-- Catatan lama tanpa info pembuat: jangan mengarang nama. --}}
                                         <span class="text-muted">User tidak ditemukan</span>
+                                        <span class="d-block text-muted smaller">Catatan lama</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($note->user)
+                                        <span class="note-priority note-priority-normal">{{ $note->user->role_label }}</span>
+                                    @else
+                                        <span class="text-muted">&mdash;</span>
                                     @endif
                                 </td>
                                 <td>
                                     <span class="note-priority note-priority-{{ strtolower($note->priority_label) }}">{{ $note->priority_label }}</span>
                                 </td>
-                                <td class="note-text">{{ $note->catatan }}</td>
+                                <td class="text-nowrap">
+                                    {{ $note->tanggal?->format('d M Y, H:i') ?? '-' }}
+                                    @if($note->updated_at && $note->tanggal && $note->updated_at->gt($note->tanggal))
+                                        <span class="d-block text-muted smaller">Diperbarui {{ $note->updated_at->format('d M Y, H:i') }}</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="note-action-group">
                                         @can('update', $note)
@@ -261,7 +273,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-5">
+                                <td colspan="7" class="text-center text-muted py-5">
                                     <em class="icon ni ni-inbox d-block mb-2" style="font-size:32px;"></em>
                                     Tidak ada catatan yang sesuai filter.
                                 </td>
