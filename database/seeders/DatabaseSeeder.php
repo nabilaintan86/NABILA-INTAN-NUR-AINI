@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ActivityLogSeeder::class,
             PopMappingSeeder::class,
             DeviceConnectionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

@@ -87,6 +87,42 @@ Route::prefix('admin')
         Route::get('/monitoring/device/{device}', [MonitoringController::class, 'device'])
             ->name('monitoring.device');
 
+        // Drag and drop posisi perangkat pada Map View
+        Route::post('/monitoring/device/{device}/position', [MonitoringController::class, 'updatePosition'])
+            ->name('monitoring.device.position');
+
+        // Reset semua posisi perangkat ke tata letak default
+        Route::post('/monitoring/reset-positions', [MonitoringController::class, 'resetPositions'])
+            ->name('monitoring.reset-positions');
+
+        // Atur arah panah relasi (->, <-, <->, --)
+        Route::post('/monitoring/connection/{connection}/direction', [MonitoringController::class, 'updateDirection'])
+            ->name('monitoring.connection.direction');
+
+        // CRUD Relasi Antar-Perangkat (WhatsUp Gold)
+        Route::post('/monitoring/connection', [MonitoringController::class, 'storeConnection'])
+            ->name('monitoring.connection.store');
+        Route::put('/monitoring/connection/{connection}', [MonitoringController::class, 'updateConnection'])
+            ->name('monitoring.connection.update');
+        Route::delete('/monitoring/connection/{connection}', [MonitoringController::class, 'destroyConnection'])
+            ->name('monitoring.connection.destroy');
+
+        // CRUD Card Area / POP Pembatas Router (WhatsUp Gold 2026)
+        Route::post('/monitoring/area', [MonitoringController::class, 'storeArea'])
+            ->name('monitoring.area.store');
+        Route::put('/monitoring/area/{area}', [MonitoringController::class, 'updateArea'])
+            ->name('monitoring.area.update');
+        Route::delete('/monitoring/area/{area}', [MonitoringController::class, 'destroyArea'])
+            ->name('monitoring.area.destroy');
+        Route::post('/monitoring/area/{area}/bounds', [MonitoringController::class, 'updateAreaBounds'])
+            ->name('monitoring.area.bounds');
+
+        // Simpan & Reset Kustomisasi Full Layout Map oleh Super Admin (Pembatas Router, Posisi, Jarak Jarum)
+        Route::post('/monitoring/map-layout', [MonitoringController::class, 'saveMapLayout'])
+            ->name('monitoring.map-layout.save');
+        Route::post('/monitoring/map-layout/reset', [MonitoringController::class, 'resetMapLayout'])
+            ->name('monitoring.map-layout.reset');
+
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
 

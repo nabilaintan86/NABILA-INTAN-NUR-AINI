@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Device;
 use App\Models\DeviceConnection;
+use App\Models\MapSetting;
 use App\Models\MonitoringLog;
+use App\Models\NetworkArea;
 
 /**
- * Sumber tunggal topology jaringan "RADNET Wireless Network 2025".
+ * Sumber tunggal topology jaringan "RADNET Wireless Network 2026".
  *
  * Menghasilkan payload topology yang SAMA untuk semua halaman
  * (admin.monitoring) sehingga konsisten.
@@ -410,54 +412,84 @@ class NetworkTopologyService
      */
     public function build(): array
     {
-        $devices = Device::whereIn('id', array_keys($this->topologyPositions))
-            ->get()
-            ->keyBy('id');
+        // 1. Ambil seluruh model NetworkArea aktif dari database
+        $dbAreas = NetworkArea::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
 
-        $rawConnections = DeviceConnection::select('from_device_id', 'to_device_id', 'connection_type')
-            ->get()
+        $areasByName = [];
+        $areasById = [];
+        foreach ($dbAreas as $a) {
+            $areasByName[$a->name] = $a;
+            $areasById[$a->id] = $a;
+        }
+
+        // 2. Ambil seluruh perangkat
+        $devices = Device::all()->keyBy('id');
+
+        // 3. Ambil seluruh relasi koneksi
+        $rawConnections = DeviceConnection::all()
             ->filter(fn ($c) => isset($devices[$c->from_device_id]) && isset($devices[$c->to_device_id]));
 
         $degree = [];
         $edges = [];
         foreach ($rawConnections as $c) {
-            [$min, $max] = $this->normalizePair((int) $c->from_device_id, (int) $c->to_device_id);
-            $key = $min . ':' . $max;
-
-            if (isset($this->edgeDirections[$key])) {
-                [$fromId, $toId] = $this->edgeDirections[$key];
-            } else {
-                $fromId = (int) $c->from_device_id;
-                $toId = (int) $c->to_device_id;
-            }
+            $fromId = (int) $c->from_device_id;
+            $toId = (int) $c->to_device_id;
+            $direction = $c->direction ?: 'forward';
 
             $edges[] = [
-                'from' => $fromId,
-                'to'   => $toId,
-                'type' => $c->connection_type,
+                'id'        => (int) $c->id,
+                'from'      => $fromId,
+                'to'        => $toId,
+                'type'      => $c->connection_type ?: 'ethernet',
+                'direction' => $direction,
             ];
-            $degree[$c->from_device_id] = ($degree[$c->from_device_id] ?? 0) + 1;
-            $degree[$c->to_device_id] = ($degree[$c->to_device_id] ?? 0) + 1;
+            $degree[$fromId] = ($degree[$fromId] ?? 0) + 1;
+            $degree[$toId]   = ($degree[$toId] ?? 0) + 1;
         }
 
-        // --- 1) Layout INTERNAL tiap area: device dalam GRID beberapa kolom/baris ---
-        $grid = [];
-        foreach ($this->areaDevices as $name => $ids) {
-            $ids = array_values(array_filter(
-                $ids,
-                fn ($id) => isset($this->topologyPositions[$id]) && isset($devices[$id])
-            ));
+        // 4. Petakan perangkat ke masing-masing area
+        $areaDevicesMap = [];
+        foreach ($dbAreas as $ar) {
+            $areaDevicesMap[$ar->name] = [];
+        }
 
+        foreach ($devices as $dev) {
+            $assignedAreaName = null;
+
+            if ($dev->network_area_id && isset($areasById[$dev->network_area_id])) {
+                $assignedAreaName = $areasById[$dev->network_area_id]->name;
+            } elseif ($dev->pop_name && isset($areasByName[$dev->pop_name])) {
+                $assignedAreaName = $dev->pop_name;
+            } else {
+                // Cek fallback legacy dictionary $this->areaDevices
+                foreach ($this->areaDevices as $legacyName => $legacyIds) {
+                    if (in_array($dev->id, $legacyIds, true)) {
+                        $assignedAreaName = $legacyName;
+                        break;
+                    }
+                }
+            }
+
+            if ($assignedAreaName && isset($areaDevicesMap[$assignedAreaName])) {
+                $areaDevicesMap[$assignedAreaName][] = $dev->id;
+            } elseif ($assignedAreaName) {
+                $areaDevicesMap[$assignedAreaName] = [$dev->id];
+            }
+        }
+
+        // 5. Layout kotak area dan grid internal
+        $grid = [];
+        foreach ($areaDevicesMap as $name => $ids) {
             usort($ids, function ($a, $b) use ($degree) {
                 return ($degree[$b] ?? 0) <=> ($degree[$a] ?? 0) ?: $a <=> $b;
             });
 
             $n = count($ids);
-            if ($n === 0) {
-                continue;
-            }
-            $cols = self::GRID_COLS[$name] ?? max(1, (int) ceil(sqrt($n)));
-            $rows = (int) ceil($n / $cols);
+            $cols = self::GRID_COLS[$name] ?? max(1, (int) ceil(sqrt($n ?: 1)));
+            $rows = max(1, (int) ceil($n / $cols));
 
             $points = [];
             foreach ($ids as $i => $id) {
@@ -467,105 +499,46 @@ class NetworkTopologyService
                 ];
             }
 
-            // Lebar mengikuti ISI device (kompak): kebutuhan grid + diameter icon +
-            // padding, atau cukup untuk nama tag di dalam kotak (mana lebih
-            // besar). Tidak dipaksa melebar hanya untuk mengejar lebar group
-            // lain; semua icon selalu UTUH di dalam box. Tinggi ikut jumlah
-            // baris (+ header & label bawah), jadi responsif thd jumlah node.
+            $areaModel = $areasByName[$name] ?? null;
+            $defaultW = max(
+                ($cols - 1) * self::DEVICE_DX + self::AREA_ICON + 2 * self::AREA_PAD_LR,
+                14 + mb_strlen((string) $name) * 8 + 48,
+                self::AREA_MIN_W
+            );
+            $defaultH = ($rows - 1) * self::DEVICE_DY + self::AREA_PAD_TOP + self::AREA_PAD_BOT;
+
             $grid[$name] = [
                 'cols'   => $cols,
                 'rows'   => $rows,
                 'points' => $points,
-                'w'      => max(
-                    ($cols - 1) * self::DEVICE_DX + self::AREA_ICON + 2 * self::AREA_PAD_LR,
-                    14 + mb_strlen((string) $name) * 8 + 48,
-                    self::AREA_MIN_W
-                ),
-                'h'      => ($rows - 1) * self::DEVICE_DY + self::AREA_PAD_TOP + self::AREA_PAD_BOT,
+                'w'      => $areaModel && $areaModel->width > 60 ? $areaModel->width : $defaultW,
+                'h'      => $areaModel && $areaModel->height > 60 ? $areaModel->height : $defaultH,
+                'x'      => $areaModel ? $areaModel->pos_x : 20,
+                'y'      => $areaModel ? $areaModel->pos_y : 20,
             ];
         }
 
-        // --- 2) LAYOUT PANEL: urutan tetap mengikuti MAP (kiri->kanan per baris) ---
-        // Baris 1 (main row, sejajar atas): Plaza BRI, Intiland (4x5, julur ke
-        //                        bawah sedang), POP Yapalis, POP SMK2, GRUP HIJAU
-        //                        (2x11, trnk menutup sisi kanan), Hotel Bumi (2x5,
-        //                        PALING KANAN, box-nya disamakan dengan HIJAU).
-        // Baris 2 (sela, isi penuh): Bumi Mandiri -> POP Gresik bawahnya, POP Vuri
-        //          bawah Intiland, POP SMKN 1 (1x4) bawah Yapalis.
-        // Baris 3 (TRUK BAWAH): EPON-BU, POP SMK8, POP Rajasa (1x3 berjajar),
-        //          POP Sham FM (5 kolom), POP SMK-YPM (3x6 menjulang di bawah
-        //          SMK2). Kolom-kolom kanan mengisi penuh; hanya tersisa satu
-        //          koridor vertikal rapi antara konten kiri & tembok kanan.
-        // HIJAU & Hotel Bumi sisi-sebelahan di kanan menutup bingkai; TIDAK ada
-        // POP di bawah/kanannya. Urutan tidak berubah.
-        $areaRows = [
-            ['Plaza BRI', 'Intiland', 'POP Yapalis', 'POP SMK2', 'GRUP HIJAU', 'Hotel Bumi'],
-            ['Bumi Mandiri', 'POP Vuri', 'POP SMKN 1', 'POP Gresik'],
-            ['EPON-BU', 'POP SMK8', 'POP Rajasa', 'POP Sham FM', 'POP SMK-YPM'],
-        ];
+        // Box koordinat awal dari database
+        $box = [];
+        foreach ($grid as $name => $g) {
+            $box[$name] = [
+                'x' => $g['x'],
+                'y' => $g['y'],
+                'w' => $g['w'],
+                'h' => $g['h'],
+            ];
+        }
 
-        $rowsDesc = [];
-        $y = self::AREA_MARGIN;
-        foreach ($areaRows as $row) {
-            // Pass 1: kumpulkan panel baris, tinggi band & lebar baris.
-            $placed = [];
-            $rowH = 0;
-            $rowW = 0;
-            foreach ($row as $name) {
-                if (! isset($grid[$name])) {
-                    continue;
+        // Ambil layout custom dari MapSetting jika ada
+        $customLayout = MapSetting::get('topology_2026_layout', []);
+        if (!empty($customLayout['areas']) && is_array($customLayout['areas'])) {
+            foreach ($customLayout['areas'] as $ar) {
+                if (!empty($ar['name']) && isset($box[$ar['name']])) {
+                    $box[$ar['name']]['x'] = (int) round($ar['x']);
+                    $box[$ar['name']]['y'] = (int) round($ar['y']);
+                    $box[$ar['name']]['w'] = (int) round($ar['w']);
+                    $box[$ar['name']]['h'] = (int) round($ar['h']);
                 }
-                $placed[] = $name;
-                $rowH = max($rowH, $grid[$name]['h']);
-                $rowW += $grid[$name]['w'] + self::AREA_GAP_X;
-            }
-            if (! $placed) {
-                continue;
-            }
-            $rowW -= self::AREA_GAP_X;
-
-            $placedAt = [];
-            $x = self::AREA_MARGIN;
-            foreach ($placed as $name) {
-                $placedAt[$name] = $x;
-                $x += $grid[$name]['w'] + self::AREA_GAP_X;
-            }
-
-            $rowsDesc[] = compact('placed', 'rowH', 'rowW', 'y', 'placedAt');
-            $y += $rowH + self::AREA_GAP_Y;
-        }
-
-        // Baris-demi-baris: x berurutan; seluruh panel di-sejajarkan pada tepi
-        // ATAS band; setiap baris di-center horizontal terhadap baris terlebar.
-        $maxRowW = max(array_column($rowsDesc, 'rowW') ?: [0]);
-        $tiles = [];
-        foreach ($rowsDesc as $rd) {
-            $offX = (int) (($maxRowW - $rd['rowW']) / 2);
-            foreach ($rd['placed'] as $name) {
-                $g = $grid[$name];
-                $tiles[$name] = [
-                    'x' => $rd['placedAt'][$name] + $offX,
-                    'y' => $rd['y'],
-                    'w' => $g['w'],
-                    'h' => $g['h'],
-                ];
-            }
-        }
-        $box = $tiles;
-
-        // Terapkan posisi manual untuk area bawah (isi sela / tanpa ruang kosong).
-        foreach (self::POSITION_OVERRIDE as $name => [$bX, $bY]) {
-            if (isset($box[$name])) {
-                $box[$name]['x'] = $bX;
-                $box[$name]['y'] = $bY;
-            }
-        }
-
-        // Samakan TINGGI KOTAK panel agar trnk kanan (Hotel Bumi) sejajar lurus
-        // dengan HIJAU (box lebih tinggi dari isi device tetap aman).
-        foreach (self::HEIGHT_SYNC as $name => $refName) {
-            if (isset($box[$name]) && isset($box[$refName])) {
-                $box[$name]['h'] = $box[$refName]['h'];
             }
         }
 
@@ -574,12 +547,12 @@ class NetworkTopologyService
             $this->areaLayout[$name] = array_values($b);
         }
 
-        // --- 3) Node di koordinat tampilan (grid internal + posisi panel) ---
+        // 6. Node di koordinat tampilan
         $nodes = [];
         foreach ($grid as $name => $g) {
             $b = $box[$name];
             $contentW = ($g['cols'] - 1) * self::DEVICE_DX;
-            $ox = $b['x'] + ($b['w'] - $contentW) / 2;
+            $ox = $b['x'] + max(20, ($b['w'] - $contentW) / 2);
             $oy = $b['y'] + self::AREA_PAD_TOP;
 
             foreach ($g['points'] as $id => [$lx, $ly]) {
@@ -587,37 +560,45 @@ class NetworkTopologyService
                 if (! $device) {
                     continue;
                 }
-                $x = $ox + $lx;
-                $y = $oy + $ly;
+
+                if ($device->map_positioned && $device->pos_x !== null && $device->pos_y !== null) {
+                    $x = (int) $device->pos_x;
+                    $y = (int) $device->pos_y;
+                } else {
+                    $x = (int) round($ox + $lx);
+                    $y = (int) round($oy + $ly);
+                }
 
                 $nodes[] = [
-                    'id'     => (int) $id,
-                    'name'   => $device->name,
-                    'ip'     => $device->ip_address,
+                    'id'       => (int) $id,
+                    'name'     => $device->name,
+                    'ip'       => $device->ip_address,
                     'icon'     => $device->icon_key,
                     'type'     => $device->display_type,
                     'protocol' => $device->display_protocol,
-                    'status'  => $device->status,
-                    'pop'    => $device->pop_name,
-                    'degree' => $degree[$id] ?? 0,
-                    'x'      => $x,
-                    'y'      => $y,
-                    'area'   => $this->areaFor((float) $x, (float) $y, (int) $id) ?: $name,
+                    'status'   => $device->status,
+                    'pop'      => $device->pop_name ?: $name,
+                    'degree'   => $degree[$id] ?? 0,
+                    'x'        => $x,
+                    'y'        => $y,
+                    'area'     => $name,
                 ];
             }
         }
 
-        // --- 4) Kelompokkan node per area & tentukan hub ---
+        // 7. Kelompokkan node per area
         $byArea = [];
         foreach ($nodes as $n) {
             $byArea[$n['area']][] = $n;
         }
 
         $areas = [];
-        $maxRight = 0;
-        $maxBottom = 0;
+        $maxRight = 1300;
+        $maxBottom = 1100;
+
         foreach ($this->areaLayout as $name => [$bx, $by, $bw, $bh]) {
             $group = $byArea[$name] ?? [];
+            $areaModel = $areasByName[$name] ?? null;
 
             $hubId = null;
             $max = -1;
@@ -637,23 +618,37 @@ class NetworkTopologyService
             $maxBottom = max($maxBottom, $by + $bh);
 
             $areas[] = [
-                'name'  => $name,
-                'x'     => $bx,
-                'y'     => $by,
-                'w'     => $bw,
-                'h'     => $bh,
-                'nodes' => array_values($group),
+                'id'           => $areaModel?->id,
+                'name'         => $name,
+                'code'         => $areaModel?->code,
+                'x'            => $bx,
+                'y'            => $by,
+                'w'            => $bw,
+                'h'            => $bh,
+                'border_color' => $areaModel?->border_color ?: '#1a8024',
+                'bg_color'     => $areaModel?->bg_color ?: '#f8fafc',
+                'title_color'  => $areaModel?->title_color ?: '#1a8024',
+                'nodes'        => array_values($group),
             ];
         }
 
+        // Arrow settings
+        $arrowSettings = $customLayout['arrow_settings'] ?? [
+            'clearance'    => 28,
+            'needle_size'  => 7,
+            'stroke_width' => 2.2,
+        ];
+
         return [
-            'viewBox' => sprintf(
+            'viewBox'       => sprintf(
                 '0 0 %d %d',
                 (int) ceil($maxRight + self::AREA_MARGIN),
                 (int) ceil($maxBottom + self::AREA_MARGIN)
             ),
-            'areas'   => $areas,
-            'edges'   => $edges,
+            'areas'         => $areas,
+            'edges'         => $edges,
+            'arrowSettings' => $arrowSettings,
+            'isCustomized'  => !empty($customLayout),
         ];
     }
 

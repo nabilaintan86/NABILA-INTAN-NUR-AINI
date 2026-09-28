@@ -2,229 +2,101 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\DeviceType;
 use App\Models\Device;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DeviceSeeder extends Seeder
 {
     public function run(): void
     {
-        $devices = [
-            [
-                'name'                  => 'POP Gresik',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.254',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.38,
-                'missed_percentage'     => 0.62,
-                'down_time'             => '22:16:03',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 4,
-                'min_delay'             => 1,
-                'max_delay'             => 5033,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'Intiland 1',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.4',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.84,
-                'missed_percentage'     => 0.16,
-                'down_time'             => '05:45:12',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 6,
-                'avg_delay'             => 0,
-                'min_delay'             => 0,
-                'max_delay'             => 120,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'PJB',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.134',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.73,
-                'missed_percentage'     => 0.27,
-                'down_time'             => '09:56:48',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 5,
-                'min_delay'             => 1,
-                'max_delay'             => 230,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'Border',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.3',
-                'polls'                 => 15238,
-                'responded_percentage'  => 52.36,
-                'missed_percentage'     => 47.64,
-                'down_time'             => '15d 2h 11m',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 42,
-                'avg_delay'             => 0,
-                'min_delay'             => 0,
-                'max_delay'             => 0,
-                'status'                => 'down',
-            ],
-            [
-                'name'                  => 'SMKN-1',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.241',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.32,
-                'missed_percentage'     => 0.68,
-                'down_time'             => '24:23:55',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 3,
-                'min_delay'             => 1,
-                'max_delay'             => 180,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'SBY-JKT',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.0.29',
-                'polls'                 => 15238,
-                'responded_percentage'  => 97.70,
-                'missed_percentage'     => 2.30,
-                'down_time'             => '1d 0h 45m',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 12,
-                'avg_delay'             => 14,
-                'min_delay'             => 8,
-                'max_delay'             => 550,
-                'status'                => 'down',
-            ],
-            [
-                'name'                  => 'IIX-JI',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '218.100.32.1',
-                'polls'                 => 15238,
-                'responded_percentage'  => 53.79,
-                'missed_percentage'     => 46.21,
-                'down_time'             => '14d 3h 12m',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 38,
-                'avg_delay'             => 0,
-                'min_delay'             => 0,
-                'max_delay'             => 0,
-                'status'                => 'warning',
-            ],
-            [
-                'name'                  => '56:17',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.56.17',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.91,
-                'missed_percentage'     => 0.09,
-                'down_time'             => '03:12:07',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 2,
-                'min_delay'             => 1,
-                'max_delay'             => 95,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'DNS 1',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.10',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.95,
-                'missed_percentage'     => 0.05,
-                'down_time'             => '01:45:02',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 1,
-                'min_delay'             => 1,
-                'max_delay'             => 42,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => '93.11',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.93.11',
-                'polls'                 => 15238,
-                'responded_percentage'  => 98.76,
-                'missed_percentage'     => 1.24,
-                'down_time'             => '45:18:33',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 3,
-                'avg_delay'             => 7,
-                'min_delay'             => 2,
-                'max_delay'             => 310,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'POP YPM',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.50',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.60,
-                'missed_percentage'     => 0.40,
-                'down_time'             => '17:30:15',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 2,
-                'avg_delay'             => 6,
-                'min_delay'             => 2,
-                'max_delay'             => 280,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'SM-FM',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.60',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.15,
-                'missed_percentage'     => 0.85,
-                'down_time'             => '30:42:18',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 1,
-                'avg_delay'             => 5,
-                'min_delay'             => 1,
-                'max_delay'             => 195,
-                'status'                => 'up',
-            ],
-            [
-                'name'                  => 'Pop Krian',
-                'type'                  => 'Router',
-                'protocol'              => 'ICMP',
-                'ip_address'            => '202.154.4.70',
-                'polls'                 => 15238,
-                'responded_percentage'  => 99.48,
-                'missed_percentage'     => 0.52,
-                'down_time'             => '22:58:44',
-                'period'                => '30d 0h 30m',
-                'alerts_count'          => 0,
-                'avg_delay'             => 4,
-                'min_delay'             => 1,
-                'max_delay'             => 165,
-                'status'                => 'up',
-            ],
+        $csvPath = base_path('devices.csv');
+        if (! file_exists($csvPath)) {
+            return;
+        }
+
+        // Down and warning devices matching the WhatsUp Gold network diagram
+        $downIps = [
+            '202.154.4.3',    // Border
+            '202.154.0.29',   // SBY-JKT
+            '202.154.4.83',   // SMKN2
+            '192.168.94.3',   // to SMKN8
+            '192.168.94.2',   // to SMK2
+            '202.154.4.82',   // R.SMK8
+            '192.168.94.67',  // AP SMK8
+            '192.168.93.30',  // Perbanas
+            '192.168.92.35',  // 92.35
+            '192.168.92.36',  // Karantina
+            '192.168.36.10',  // LT 22
+            '192.168.93.194', // To SMK Nasional
         ];
 
-        foreach ($devices as $device) {
-            Device::updateOrCreate(
-                ['ip_address' => $device['ip_address']],
-                $device
-            );
+        $warnIps = [
+            '218.100.32.1',   // IIX-JI
+        ];
+
+        $file = fopen($csvPath, 'r');
+        fgetcsv($file); // skip header
+
+        $devices = [];
+        $id = 1;
+
+        while (($row = fgetcsv($file)) !== false) {
+            if (empty($row[0])) {
+                continue;
+            }
+
+            $rawName = trim((string) $row[0]);
+            $ip = trim((string) ($row[1] ?? ''));
+            $cleanName = preg_replace('/\s+/u', ' ', trim(
+                preg_replace('/\(\s*[\d.:]+\s*\)\s*$/u', '',
+                    preg_replace('/\*+/u', '',
+                        str_replace(["\xc2\xa0", "\xa0"], ' ', $rawName)
+                    )
+                )
+            ));
+
+            $type = DeviceType::inferType($cleanName);
+            $protocol = 'ICMP';
+            $status = in_array($ip, $downIps, true)
+                ? 'down'
+                : (in_array($ip, $warnIps, true) ? 'warning' : 'up');
+
+            $devices[] = [
+                'id'                   => $id,
+                'name'                 => $cleanName,
+                'ip_address'           => $ip,
+                'type'                 => $type,
+                'protocol'             => $protocol,
+                'icon_type'            => DeviceType::iconKey($type),
+                'status'               => $status,
+                'polls'                => 15238,
+                'responded_percentage' => $status === 'down' ? 0.00 : ($status === 'warning' ? 88.50 : 99.85),
+                'missed_percentage'    => $status === 'down' ? 100.00 : ($status === 'warning' ? 11.50 : 0.15),
+                'down_time'            => $status === 'down' ? '12:45:00' : '00:00:00',
+                'period'               => '30d 0h 30m',
+                'alerts_count'         => $status === 'down' ? 8 : ($status === 'warning' ? 2 : 0),
+                'avg_delay'            => $status === 'down' ? 0 : ($status === 'warning' ? 120 : 4),
+                'min_delay'            => $status === 'down' ? 0 : 1,
+                'max_delay'            => $status === 'down' ? 0 : ($status === 'warning' ? 450 : 120),
+                'created_at'           => now(),
+                'updated_at'           => now(),
+            ];
+
+            $id++;
+        }
+
+        fclose($file);
+
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            Device::truncate();
+            Device::insert($devices);
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } else {
+            Device::truncate();
+            Device::insert($devices);
         }
     }
 }

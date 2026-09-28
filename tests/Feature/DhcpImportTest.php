@@ -90,6 +90,84 @@ class DhcpImportTest extends TestCase
         @unlink($path);
     }
 
+    /**
+     * Ekspor DHCP server umum memakai header ber-spasi atau ber-hyphen
+     * (mis. "MAC Address", "mac-address", "IP Address", "address"), bukan
+     * bentuk snake_case. Header-header ini harus tetap terdeteksi.
+     */
+    public function test_dhcp_import_command_resolves_spaced_and_hyphenated_headers(): void
+    {
+        Device::create([
+            'name' => 'POP SBY',
+            'ip_address' => '192.168.1.1',
+            'pop_name' => 'Surabaya',
+        ]);
+
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
+
+        $csv = [
+            'MAC Address,IP Address,Host Name,Vendor,Router,Location,First Seen,Last Seen',
+            'AA:BB:CC:00:00:41,192.168.1.1,known-device,MikroTik,Router A,Surabaya,2026-09-01 10:00:00,2026-09-25 08:00:00',
+            'AA:BB:CC:00:00:42,192.168.1.77,guest-wifi,Canon,Router A,Surabaya,2026-09-25 08:00:00,2026-09-25 09:00:00',
+        ];
+
+        $path = tempnam(sys_get_temp_dir(), 'dhcp_').'.csv';
+        file_put_contents($path, implode("\n", $csv)."\n");
+
+        try {
+            $this->artisan('dhcp:import', ['file' => $path])
+                ->expectsOutputToContain('2 lease berhasil di-import, 1 Known, 1 New, 0 Unknown.')
+                ->assertExitCode(0);
+        } finally {
+            @unlink($path);
+            $restoreRegistry();
+        }
+
+        $this->assertSame(2, DhcpLease::count());
+        $this->assertSame(1, DhcpLease::where('classification', 'known')->count());
+        $this->assertSame(1, DhcpLease::where('classification', 'new')->count());
+    }
+
+    /**
+     * Ekspor MikroTik memakai "mac-address" / "address" / "host-name".
+     */
+    public function test_dhcp_import_command_resolves_mikrotik_style_headers(): void
+    {
+        Device::create([
+            'name' => 'POP SBY',
+            'ip_address' => '192.168.1.1',
+            'pop_name' => 'Surabaya',
+        ]);
+
+        $restoreRegistry = $this->useRegistryCsv(
+            "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\nPOP SBY,192.168.1.1,ICMP,,,,up\n"
+        );
+
+        $csv = [
+            'mac-address,address,host-name,vendor,router,location,lease_start,lease_end,last_seen',
+            'AA:BB:CC:00:00:51,192.168.1.1,known-device,MikroTik,Router A,Surabaya,2026-09-01 10:00:00,2026-10-01 10:00:00,2026-09-25 08:00:00',
+            'AA:BB:CC:00:00:52,192.168.1.99,unknown-host,Canon,Router A,Surabaya,2026-09-25 08:00:00,,,',
+        ];
+
+        $path = tempnam(sys_get_temp_dir(), 'dhcp_').'.csv';
+        file_put_contents($path, implode("\n", $csv)."\n");
+
+        try {
+            $this->artisan('dhcp:import', ['file' => $path])
+                ->expectsOutputToContain('2 lease berhasil di-import, 1 Known, 1 New, 0 Unknown.')
+                ->assertExitCode(0);
+        } finally {
+            @unlink($path);
+            $restoreRegistry();
+        }
+
+        $known = DhcpLease::where('ip_address', '192.168.1.1')->first();
+        $this->assertSame('known', $known->classification);
+        $this->assertSame('Surabaya', $known->location);
+    }
+
     public function test_dhcp_import_command_rejects_missing_mac_address_column(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'dhcp_').'.csv';

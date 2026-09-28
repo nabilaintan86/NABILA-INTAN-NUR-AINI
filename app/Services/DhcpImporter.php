@@ -30,8 +30,8 @@ class DhcpImporter
     public const DEFAULT_FILE = 'storage/app/dhcp/devices.csv';
 
     protected const HEADER_ALIASES = [
-        'mac_address' => ['mac_address', 'mac', 'macaddr'],
-        'ip_address' => ['ip_address', 'ip', 'ipaddr'],
+        'mac_address' => ['mac_address', 'mac', 'macaddr', 'macaddress'],
+        'ip_address' => ['ip_address', 'ip', 'ipaddr', 'address'],
         'hostname' => ['hostname', 'host', 'client_hostname', 'name'],
         'client_id' => ['client_id', 'clientid', 'client-id', 'client_identifier'],
         'vendor' => ['vendor', 'oui', 'vendor_class'],
@@ -290,7 +290,7 @@ class DhcpImporter
 
     protected function resolveColumns(array $headers): array
     {
-        $normalize = fn (string $value) => preg_replace('/[^a-z0-9_]/i', '', strtolower($value));
+        $normalize = fn (string $value) => preg_replace('/[^a-z0-9]/i', '', strtolower($value));
         $map = [];
 
         foreach (self::HEADER_ALIASES as $field => $aliases) {

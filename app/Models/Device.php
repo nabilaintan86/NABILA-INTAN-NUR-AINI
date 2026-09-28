@@ -32,6 +32,10 @@ class Device extends Model
         'icon_type',
         'router_version',
         'pop_name',
+        'network_area_id',
+        'pos_x',
+        'pos_y',
+        'map_positioned',
         'deskripsi',
         'gambar',
         'penyebab',
@@ -137,5 +141,10 @@ class Device extends Model
     public function getIconUrlAttribute(): string
     {
         return DeviceType::iconUrl($this->type, $this->icon_type);
+    }
+
+    public function networkArea()
+    {
+        return $this->belongsTo(NetworkArea::class, 'network_area_id');
     }
 }

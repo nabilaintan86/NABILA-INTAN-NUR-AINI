@@ -82,7 +82,7 @@
                     </li>
 
                     {{-- Monitoring Jaringan --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && (!request()->has('tab') || request()->query('tab') === 'topview') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.monitoring') }}"
                             class="nk-menu-link"
@@ -93,6 +93,38 @@
 
                             <span class="nk-menu-text">
                                 Monitoring Jaringan
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Relasi Perangkat --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'relasi' ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.monitoring', ['tab' => 'relasi']) }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-network"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Relasi Perangkat
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Kelola Card Area (POP) --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'area' ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.monitoring', ['tab' => 'area']) }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-layers"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Kelola Card Area (POP)
                             </span>
                         </a>
                     </li>
@@ -151,6 +183,38 @@
 
                             <span class="nk-menu-text">
                                 Kelola Router
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Card Area (POP) --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'area' ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.monitoring', ['tab' => 'area']) }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-layers"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Card Area (POP)
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Relasi Perangkat --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'relasi' ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.monitoring', ['tab' => 'relasi']) }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-network"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Relasi Perangkat
                             </span>
                         </a>
                     </li>
