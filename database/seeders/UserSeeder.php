@@ -10,22 +10,28 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@radnet.com',
-            'password' => Hash::make('password123'),
-            'role' => 'super_admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'superadmin@radnet.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'super_admin',
+            ]
+        );
 
-        User::create([
-            'name' => 'Staff NOC',
-            'email' => 'staff@radnet.com',
-            'password' => Hash::make('password123'),
-            'role' => 'staff',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'staff@radnet.com'],
+            [
+                'name' => 'Staff NOC',
+                'password' => Hash::make('password123'),
+                'role' => 'staff',
+            ]
+        );
 
-        $this->command->info('✅ User berhasil dibuat!');
-        $this->command->info('   Super Admin → superadmin@radnet.com / password123');
-        $this->command->info('   Staff       → staff@radnet.com / password123');
+        if ($this->command) {
+            $this->command->info('✅ User berhasil dibuat!');
+            $this->command->info('   Super Admin → superadmin@radnet.com / password123');
+            $this->command->info('   Staff       → staff@radnet.com / password123');
+        }
     }
 }

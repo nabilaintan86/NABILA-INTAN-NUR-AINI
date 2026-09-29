@@ -279,6 +279,72 @@ class DeviceConnectionSeeder extends Seeder
         'KOMINFO (202.154.4.94)' => ['name' => 'KOMINFO', 'ip' => '202.154.4.94', 'reason' => 'Berkaitan dgn PDI-Router (Sham FM). Kominfo Rajasa = 202.154.4.226.'],
     ];
 
+    protected array $connectionDirections = [
+        '25:26'   => 'reverse',
+        '78:81'   => 'reverse',
+        '78:79'   => 'forward',
+        '78:80'   => 'forward',
+        '2:58'    => 'reverse',
+        '2:37'    => 'reverse',
+        '2:12'    => 'reverse',
+        '2:83'    => 'reverse',
+        '2:44'    => 'reverse',
+        '2:42'    => 'reverse',
+        '2:53'    => 'reverse',
+        '2:59'    => 'reverse',
+        '2:3'     => 'reverse',
+        '2:5'     => 'reverse',
+        '2:55'    => 'reverse',
+        '2:65'    => 'reverse',
+        '55:56'   => 'reverse',
+        '65:66'   => 'reverse',
+        '4:6'     => 'reverse',
+        '4:7'     => 'forward',
+        '93:94'   => 'forward',
+        '13:94'   => 'forward',
+        '18:50'   => 'forward',
+        '75:76'   => 'forward',
+        '110:111' => 'reverse',
+        '109:110' => 'reverse',
+        '108:109' => 'reverse',
+        '72:73'   => 'reverse',
+        '72:74'   => 'reverse',
+        '61:67'   => 'reverse',
+        '61:77'   => 'reverse',
+        '48:92'   => 'reverse',
+        '48:57'   => 'reverse',
+        '48:84'   => 'reverse',
+        '47:48'   => 'forward',
+        '92:113'  => 'reverse',
+        '113:114' => 'reverse',
+        '114:115' => 'reverse',
+        '69:70'   => 'reverse',
+        '68:69'   => 'reverse',
+        '48:68'   => 'reverse',
+        '45:49'   => 'forward',
+        '47:49'   => 'reverse',
+        '10:11'   => 'forward',
+        '11:43'   => 'forward',
+        '11:71'   => 'forward',
+        '11:88'   => 'forward',
+        '11:19'   => 'forward',
+        '11:62'   => 'forward',
+        '11:38'   => 'forward',
+        '62:63'   => 'forward',
+        '39:40'   => 'forward',
+        '38:39'   => 'forward',
+        '20:21'   => 'forward',
+        '85:86'   => 'reverse',
+        '85:87'   => 'forward',
+        '28:29'   => 'reverse',
+        '28:30'   => 'reverse',
+        '28:31'   => 'reverse',
+        '28:32'   => 'reverse',
+        '28:33'   => 'reverse',
+        '28:35'   => 'reverse',
+        '28:34'   => 'reverse',
+    ];
+
     protected array $resolved = [];
     protected array $failed = [];
 
@@ -407,9 +473,17 @@ class DeviceConnectionSeeder extends Seeder
                     ->where('to_device_id', $toId)
                     ->exists();
 
+                $direction = $this->connectionDirections[$fromId . ':' . $toId]
+                    ?? $this->connectionDirections[$toId . ':' . $fromId]
+                    ?? 'forward';
+
                 DeviceConnection::updateOrCreate(
                     ['from_device_id' => $fromId, 'to_device_id' => $toId],
-                    ['connection_type' => 'ethernet', 'updated_at' => $now]
+                    [
+                        'connection_type' => 'ethernet',
+                        'direction'       => $direction,
+                        'updated_at'      => $now,
+                    ]
                 );
 
                 if (!$exists) {

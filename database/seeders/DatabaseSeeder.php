@@ -18,11 +18,12 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
+            UserSeeder::class,
             DeviceSeeder::class,
             ActivityLogSeeder::class,
             PopMappingSeeder::class,
+            NetworkAreaSeeder::class,
             DeviceConnectionSeeder::class,
-            UserSeeder::class,
         ]);
     }
 }
