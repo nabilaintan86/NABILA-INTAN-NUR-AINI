@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Device;
 use App\Models\DeviceConnection;
+use App\Models\DevicePosition;
 use App\Models\MapSetting;
 use App\Models\MonitoringLog;
 use App\Models\NetworkArea;
@@ -410,6 +411,7 @@ class NetworkTopologyService
      * 3. Node diterjemahkan ke koordinat tampilan; area via klasifikasi
      *    geometris (areaFor). Edge/hub/status/data TIDAK diubah.
      */
+
     public function build(): array
     {
         // 1. Ambil seluruh model NetworkArea aktif dari database
@@ -425,46 +427,87 @@ class NetworkTopologyService
             $areasById[$a->id] = $a;
         }
 
-        // 2. Ambil seluruh perangkat
+        // 2. Ambil seluruh perangkat (data master)
         $devices = Device::all()->keyBy('id');
 
-        // 3. Ambil seluruh relasi koneksi
-        $rawConnections = DeviceConnection::all()
-            ->filter(fn ($c) => isset($devices[$c->from_device_id]) && isset($devices[$c->to_device_id]));
+        // 3. Ambil seluruh POSISI device (device_positions).
+        $positions = DevicePosition::orderBy('id')->get();
+        $positionMap = [];
+        foreach ($positions as $pos) {
+            $positionMap[$pos->id] = $pos;
+        }
+
+        // 3a. VIRTUAL POSITIONS: device yang belum punya posisi di DB
+        //     tetap dirender di area asalnya via grid fallback.
+        //     Virtual id = -device_id (negatif, biar nggak bentrok).
+        $deviceIdsWithPos = $positions->pluck('device_id')->unique()->all();
+        foreach ($devices as $dev) {
+            if (in_array($dev->id, $deviceIdsWithPos, true)) continue;
+
+            $virtualId = -1 * (int) $dev->id;
+            $virtual = new DevicePosition();
+            $virtual->id = $virtualId;
+            $virtual->device_id = (int) $dev->id;
+            $virtual->network_area_id = $dev->network_area_id;
+            $virtual->pos_x = null;
+            $virtual->pos_y = null;
+
+            $positionMap[$virtualId] = $virtual;
+            $positions->push($virtual);
+        }
+
+        // 3b. Ambil seluruh relasi yang SUDAH punya from_position_id & to_position_id.
+        // 3b. Ambil SEMUA relasi. Kalau from/to_position_id NULL,
+        //     resolve ke VIRTUAL position id (-device_id).
+        // 3b. Ambil SEMUA relasi. Kalau from/to_position_id NULL,
+        //     resolve ke posisi device (real atau virtual).
+        $rawConnections = DeviceConnection::all();
 
         $degree = [];
         $edges = [];
         foreach ($rawConnections as $c) {
-            $fromId = (int) $c->from_device_id;
-            $toId = (int) $c->to_device_id;
+            if (! isset($devices[$c->from_device_id]) || ! isset($devices[$c->to_device_id])) {
+                continue;
+            }
+
+            $fromPosId = $c->from_position_id
+                ? (int) $c->from_position_id
+                : $this->positionIdForDevice((int) $c->from_device_id, $positionMap);
+            $toPosId = $c->to_position_id
+                ? (int) $c->to_position_id
+                : $this->positionIdForDevice((int) $c->to_device_id, $positionMap);
+
             $direction = $c->direction ?: 'forward';
 
             $edges[] = [
                 'id'        => (int) $c->id,
-                'from'      => $fromId,
-                'to'        => $toId,
+                'from'      => $fromPosId,
+                'to'        => $toPosId,
                 'type'      => $c->connection_type ?: 'ethernet',
                 'direction' => $direction,
             ];
-            $degree[$fromId] = ($degree[$fromId] ?? 0) + 1;
-            $degree[$toId]   = ($degree[$toId] ?? 0) + 1;
+            $degree[$fromPosId] = ($degree[$fromPosId] ?? 0) + 1;
+            $degree[$toPosId]   = ($degree[$toPosId] ?? 0) + 1;
         }
-
-        // 4. Petakan perangkat ke masing-masing area
+        // 4. Petakan POSISI ke masing-masing area
         $areaDevicesMap = [];
         foreach ($dbAreas as $ar) {
             $areaDevicesMap[$ar->name] = [];
         }
 
-        foreach ($devices as $dev) {
+        foreach ($positions as $pos) {
+            $dev = $devices[$pos->device_id] ?? null;
+            if (! $dev) continue;
+
             $assignedAreaName = null;
 
-            if ($dev->network_area_id && isset($areasById[$dev->network_area_id])) {
+            if ($pos->network_area_id && isset($areasById[$pos->network_area_id])) {
+                $assignedAreaName = $areasById[$pos->network_area_id]->name;
+            } elseif ($dev->network_area_id && isset($areasById[$dev->network_area_id])) {
                 $assignedAreaName = $areasById[$dev->network_area_id]->name;
             } elseif ($dev->pop_name && isset($areasByName[$dev->pop_name])) {
                 $assignedAreaName = $dev->pop_name;
             } else {
-                // Cek fallback legacy dictionary $this->areaDevices
                 foreach ($this->areaDevices as $legacyName => $legacyIds) {
                     if (in_array($dev->id, $legacyIds, true)) {
                         $assignedAreaName = $legacyName;
@@ -474,9 +517,9 @@ class NetworkTopologyService
             }
 
             if ($assignedAreaName && isset($areaDevicesMap[$assignedAreaName])) {
-                $areaDevicesMap[$assignedAreaName][] = $dev->id;
+                $areaDevicesMap[$assignedAreaName][] = $pos->id;
             } elseif ($assignedAreaName) {
-                $areaDevicesMap[$assignedAreaName] = [$dev->id];
+                $areaDevicesMap[$assignedAreaName] = [$pos->id];
             }
         }
 
@@ -555,33 +598,34 @@ class NetworkTopologyService
             $ox = $b['x'] + max(20, ($b['w'] - $contentW) / 2);
             $oy = $b['y'] + self::AREA_PAD_TOP;
 
-            foreach ($g['points'] as $id => [$lx, $ly]) {
-                $device = $devices[$id] ?? null;
-                if (! $device) {
-                    continue;
-                }
+            foreach ($g['points'] as $posId => [$lx, $ly]) {
+                $pos = $positionMap[$posId] ?? null;
+                if (! $pos) continue;
+                $device = $devices[$pos->device_id] ?? null;
+                if (! $device) continue;
 
-                if ($device->map_positioned && $device->pos_x !== null && $device->pos_y !== null) {
-                    $x = (int) $device->pos_x;
-                    $y = (int) $device->pos_y;
+                if ($pos->pos_x !== null && $pos->pos_y !== null) {
+                    $x = (int) $pos->pos_x;
+                    $y = (int) $pos->pos_y;
                 } else {
                     $x = (int) round($ox + $lx);
                     $y = (int) round($oy + $ly);
                 }
 
                 $nodes[] = [
-                    'id'       => (int) $id,
-                    'name'     => $device->name,
-                    'ip'       => $device->ip_address,
-                    'icon'     => $device->icon_key,
-                    'type'     => $device->display_type,
-                    'protocol' => $device->display_protocol,
-                    'status'   => $device->status,
-                    'pop'      => $device->pop_name ?: $name,
-                    'degree'   => $degree[$id] ?? 0,
-                    'x'        => $x,
-                    'y'        => $y,
-                    'area'     => $name,
+                    'id'        => (int) $posId,
+                    'device_id' => (int) $device->id,
+                    'name'      => $device->name,
+                    'ip'        => $device->ip_address,
+                    'icon'      => $device->icon_key,
+                    'type'      => $device->display_type,
+                    'protocol'  => $device->display_protocol,
+                    'status'    => $device->status,
+                    'pop'       => $device->pop_name ?: $name,
+                    'degree'    => $degree[$posId] ?? 0,
+                    'x'         => $x,
+                    'y'         => $y,
+                    'area'      => $name,
                 ];
             }
         }
@@ -652,6 +696,7 @@ class NetworkTopologyService
         ];
     }
 
+
     /**
      * Pembagian area GEOMETRIS: nama area yang kotaknya memuat titik.
      *
@@ -661,6 +706,24 @@ class NetworkTopologyService
      *
      * @return string|null nama area, atau null bila di luar semua kotak.
      */
+    /**
+     * Cari position_id untuk sebuah device dari `$positionMap`.
+     * Prioritas: position real (id > 0) yang cocok dengan device.
+     * Kalau nggak ada, fallback ke virtual (-device_id).
+     */
+    private function positionIdForDevice(int $deviceId, array $positionMap): int
+    {
+        $bestReal = null;
+        foreach ($positionMap as $pid => $pos) {
+            if ((int) $pos->device_id !== $deviceId) continue;
+            if ($pid > 0) {
+                $bestReal = $pid;
+                break;
+            }
+        }
+
+        return $bestReal !== null ? (int) $bestReal : -1 * $deviceId;
+    }
     private function areaFor(float $x, float $y, int $deviceId): ?string
     {
         $containing = [];
@@ -714,44 +777,78 @@ class NetworkTopologyService
             ->orderBy('id')
             ->pluck('name', 'id');
 
-        $degree = DeviceConnection::selectRaw('from_device_id as device_id, count(*) as c')
-            ->groupBy('from_device_id')
-            ->pluck('c', 'device_id');
+        $degree = DeviceConnection::selectRaw('from_position_id as position_id, count(*) as c')
+            ->whereNotNull('from_position_id')
+            ->groupBy('from_position_id')
+            ->pluck('c', 'position_id');
 
-        $degreeTo = DeviceConnection::selectRaw('to_device_id as device_id, count(*) as c')
-            ->groupBy('to_device_id')
-            ->pluck('c', 'device_id');
+        $degreeTo = DeviceConnection::selectRaw('to_position_id as position_id, count(*) as c')
+            ->whereNotNull('to_position_id')
+            ->groupBy('to_position_id')
+            ->pluck('c', 'position_id');
 
-        return Device::query()
-            ->orderByRaw('COALESCE(network_area_id, 999999) asc')
-            ->orderBy('name')
-            ->get()
-            ->map(function (Device $device) use ($areasById, $degree, $degreeTo) {
-                $areaName = $areasById[$device->network_area_id] ?? null;
-                $placed = (bool) $device->map_positioned
-                    && $device->pos_x !== null
-                    && $device->pos_y !== null;
+        $devices = Device::orderBy('name')->get()->keyBy('id');
+        $positions = DevicePosition::orderBy('id')->get();
 
-                return [
-                    'id'             => (int) $device->id,
-                    'name'           => $device->name,
-                    'ip'             => $device->ip_address,
-                    'icon'           => $device->icon_key,
-                    'type'           => $device->display_type,
-                    'protocol'       => $device->display_protocol,
-                    'status'         => $device->status,
-                    'router_version' => $device->router_version,
-                    'pop'            => $device->pop_name ?: ($areaName ?: 'Belum ditempatkan'),
-                    'area_id'        => $device->network_area_id ? (int) $device->network_area_id : null,
-                    'area'           => $areaName,
-                    'placed'         => $placed,
-                    'pos_x'          => $device->pos_x !== null ? (int) $device->pos_x : null,
-                    'pos_y'          => $device->pos_y !== null ? (int) $device->pos_y : null,
-                    'links'          => (int) (($degree[$device->id] ?? 0) + ($degreeTo[$device->id] ?? 0)),
-                ];
-            })
-            ->values()
-            ->all();
+        $result = [];
+
+        // 1. Device yang punya posisi — 1 entry per POSISI
+        foreach ($positions as $pos) {
+            $device = $devices[$pos->device_id] ?? null;
+            if (! $device) continue;
+
+            $areaName = $areasById[$pos->network_area_id] ?? null;
+            $links = (int) (($degree[$pos->id] ?? 0) + ($degreeTo[$pos->id] ?? 0));
+
+            $result[] = [
+                'id'             => (int) $device->id,
+                'position_id'    => (int) $pos->id,
+                'name'           => $device->name,
+                'ip'             => $device->ip_address,
+                'icon'           => $device->icon_key,
+                'type'           => $device->display_type,
+                'protocol'       => $device->display_protocol,
+                'status'         => $device->status,
+                'router_version' => $device->router_version,
+                'pop'            => $areaName ?: ($device->pop_name ?: 'Belum ditempatkan'),
+                'area_id'        => $pos->network_area_id ? (int) $pos->network_area_id : null,
+                'area'           => $areaName,
+                'placed'         => true,
+                'pos_x'          => $pos->pos_x !== null ? (int) $pos->pos_x : null,
+                'pos_y'          => $pos->pos_y !== null ? (int) $pos->pos_y : null,
+                'links'          => $links,
+            ];
+        }
+
+        // 2. Device yang BELUM punya posisi — 1 entry
+        $deviceIdsWithPos = $positions->pluck('device_id')->unique()->all();
+
+        foreach ($devices as $device) {
+            if (in_array($device->id, $deviceIdsWithPos, true)) continue;
+
+            $areaName = $areasById[$device->network_area_id] ?? null;
+
+            $result[] = [
+                'id'             => (int) $device->id,
+                'position_id'    => null,
+                'name'           => $device->name,
+                'ip'             => $device->ip_address,
+                'icon'           => $device->icon_key,
+                'type'           => $device->display_type,
+                'protocol'       => $device->display_protocol,
+                'status'         => $device->status,
+                'router_version' => $device->router_version,
+                'pop'            => $device->pop_name ?: ($areaName ?: 'Belum ditempatkan'),
+                'area_id'        => $device->network_area_id ? (int) $device->network_area_id : null,
+                'area'           => $areaName,
+                'placed'         => false,
+                'pos_x'          => null,
+                'pos_y'          => null,
+                'links'          => 0,
+            ];
+        }
+
+        return $result;
     }
 
     /**

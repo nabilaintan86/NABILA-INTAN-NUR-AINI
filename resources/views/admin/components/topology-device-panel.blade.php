@@ -36,8 +36,7 @@
         min-height: 0;
         position: relative;
     }
-
-    .wug-device-panel {
+        .wug-device-panel {
         width: 286px;
         flex: 0 0 286px;
         background: #ffffff;
@@ -45,6 +44,9 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        height: 100%;
+        max-height: 100%;
+        overflow: hidden;
         transition: width .2s ease, flex-basis .2s ease;
         z-index: 20;
     }
@@ -713,6 +715,7 @@
                 + '</div>' + actions
                 + '</div>';
         });
+        window.WugDeviceList = devices;   // ← BARIS BARU
 
         listEl.innerHTML = html;
 
@@ -1116,9 +1119,11 @@
                 fetch(URLS.connection, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        from_device_id: pendingConnect.from.id,
-                        to_device_id: pendingConnect.to.id,
+                                body: JSON.stringify({
+                        from_device_id: pendingConnect.from.device_id || pendingConnect.from.id,
+                        to_device_id: pendingConnect.to.device_id || pendingConnect.to.id,
+                        from_position_id: pendingConnect.from.id > 0 ? pendingConnect.from.id : null,
+                        to_position_id: pendingConnect.to.id > 0 ? pendingConnect.to.id : null,
                         connection_type: type,
                         direction: dir
                     })

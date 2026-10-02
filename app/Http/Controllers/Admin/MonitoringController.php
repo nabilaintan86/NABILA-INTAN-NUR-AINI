@@ -214,18 +214,16 @@ class MonitoringController extends Controller
         }
 
         $validated = $request->validate([
-            'pos_x' => 'required|numeric',
-            'pos_y' => 'required|numeric',
+            'pos_x'           => 'required|numeric',
+            'pos_y'           => 'required|numeric',
             'network_area_id' => 'nullable|integer|exists:network_areas,id',
+            'position_id'     => 'nullable|integer|exists:device_positions,id',
         ]);
 
-        $data = [
-            'pos_x'          => (int) round($validated['pos_x']),
-            'pos_y'          => (int) round($validated['pos_y']),
-            'map_positioned' => true,
-        ];
+        $positionId = $validated['position_id'] ?? null;
 
         $assignedArea = null;
+        $areaId = null;
 
         if (array_key_exists('network_area_id', $validated)) {
             $area = $validated['network_area_id']
@@ -233,28 +231,48 @@ class MonitoringController extends Controller
                 : null;
 
             if ($area) {
-                $data['network_area_id'] = $area->id;
+                $areaId = $area->id;
                 $assignedArea = $area->name;
-            } elseif ($device->network_area_id) {
-                // Device dilepas dari area (ditarik keluar kotak POP).
-                $data['network_area_id'] = null;
-                $assignedArea = null;
             }
         }
 
-        $device->update($data);
+        if ($positionId) {
+            // UPDATE posisi yang sudah ada
+            $pos = \App\Models\DevicePosition::find($positionId);
+            if ($pos) {
+                $pos->update([
+                    'pos_x'           => (int) round($validated['pos_x']),
+                    'pos_y'           => (int) round($validated['pos_y']),
+                    'network_area_id' => $areaId,
+                ]);
+            }
+        } else {
+            // BELUM punya posisi → CREATE posisi baru (multi-position)
+            \App\Models\DevicePosition::create([
+                'device_id'       => $device->id,
+                'network_area_id' => $areaId,
+                'pos_x'           => (int) round($validated['pos_x']),
+                'pos_y'           => (int) round($validated['pos_y']),
+            ]);
+
+            // Update juga legacy field di device (untuk kompatibilitas)
+            $device->update([
+                'pos_x'          => (int) round($validated['pos_x']),
+                'pos_y'          => (int) round($validated['pos_y']),
+                'network_area_id' => $areaId,
+                'map_positioned' => true,
+            ]);
+        }
 
         return response()->json([
-            'success'       => true,
-            'message'       => "Posisi perangkat {$device->name} berhasil diperbarui.",
-            'pos_x'         => $device->pos_x,
-            'pos_y'         => $device->pos_y,
-            'network_area_id' => $device->network_area_id,
-            'area'          => $assignedArea,
-            'devices'       => $this->topologyService->deviceList(),
+            'success'         => true,
+            'message'         => "Posisi perangkat {$device->name} berhasil diperbarui.",
+            'network_area_id' => $areaId,
+            'area'            => $assignedArea,
+            'devices'         => $this->topologyService->deviceList(),
+            'topology'        => $this->topologyService->build(),
         ]);
     }
-
     /**
      * Reset semua posisi perangkat ke tata letak default.
      */
@@ -569,16 +587,20 @@ class MonitoringController extends Controller
         }
 
         $validated = $request->validate([
-            'from_device_id'  => 'required|exists:device,id',
-            'to_device_id'    => 'required|exists:device,id|different:from_device_id',
-            'connection_type' => 'nullable|string|max:50',
-            'direction'       => 'required|string|in:forward,reverse,bidirectional,none',
+            'from_device_id'   => 'required|exists:devices,id',
+            'to_device_id'     => 'required|exists:devices,id|different:from_device_id',
+            'from_position_id' => 'nullable|integer|exists:device_positions,id',
+            'to_position_id'   => 'nullable|integer|exists:device_positions,id',
+            'connection_type'  => 'nullable|string|max:50',
+            'direction'        => 'required|string|in:forward,reverse,bidirectional,none',
         ]);
 
         $conn = DeviceConnection::updateOrCreate(
             [
-                'from_device_id' => $validated['from_device_id'],
-                'to_device_id'   => $validated['to_device_id'],
+                'from_position_id' => $validated['from_position_id'] ?? null,
+                'to_position_id'   => $validated['to_position_id'] ?? null,
+                'from_device_id'   => $validated['from_device_id'],
+                'to_device_id'     => $validated['to_device_id'],
             ],
             [
                 'connection_type' => $validated['connection_type'] ?? 'ethernet',
@@ -592,12 +614,12 @@ class MonitoringController extends Controller
                 'message'    => 'Relasi perangkat berhasil ditambahkan.',
                 'connection' => $conn->load(['fromDevice', 'toDevice']),
                 'topology'   => $this->topologyService->build(),
+                'devices'    => $this->topologyService->deviceList(),
             ]);
         }
 
         return redirect()->route('admin.monitoring')->with('success', 'Relasi perangkat berhasil ditambahkan.');
     }
-
     /**
      * Edit data relasi koneksi antar-perangkat.
      */
@@ -608,8 +630,8 @@ class MonitoringController extends Controller
         }
 
         $validated = $request->validate([
-            'from_device_id'  => 'required|exists:device,id',
-            'to_device_id'    => 'required|exists:device,id|different:from_device_id',
+            'from_device_id'  => 'required|exists:devices,id',
+            'to_device_id'    => 'required|exists:devices,id|different:from_device_id',
             'connection_type' => 'nullable|string|max:50',
             'direction'       => 'required|string|in:forward,reverse,bidirectional,none',
         ]);

@@ -150,7 +150,7 @@ class DeviceNoteController extends Controller
             $rules['device_id'] = [
                 $requireDevice ? 'required' : 'nullable',
                 'integer',
-                'exists:device,id',
+                'exists:devices,id',
             ];
         }
 
