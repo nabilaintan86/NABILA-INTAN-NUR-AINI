@@ -213,6 +213,7 @@ class NetworkToolsPageTest extends TestCase
         $this->assertStringNotContainsString('tools-list-panel', $left);
         $this->assertStringNotContainsString('tools-panel-body', $left);
         $this->assertStringNotContainsString('tools-panel-head', $left);
+        $this->assertStringNotContainsString('device-box', $left);
         $this->assertStringNotContainsString('Perangkat / Router', $left);
         $this->assertStringNotContainsString(
             'Klik salah satu perangkat untuk menjadikannya target diagnosa.',
@@ -231,8 +232,11 @@ class NetworkToolsPageTest extends TestCase
         $searchPos = strpos($left, 'id="deviceSearch"');
         $this->assertNotFalse($sectionOpen, 'baris pencarian harus ada di awal section');
         $this->assertLessThan($searchPos, $sectionOpen, 'pencarian adalah elemen pertama');
-        $boxOpen = strpos($left, 'class="device-box"');
-        $this->assertLessThan($boxOpen, $searchPos, 'pencarian datang sebelum kotak daftar');
+
+        // Daftar perangkat datang setelah pencarian (id deviceList di bawahnya).
+        $listPos = strpos($left, 'id="deviceList"');
+        $this->assertNotFalse($listPos, 'daftar perangkat harus ada');
+        $this->assertLessThan($listPos, $searchPos, 'pencarian datang sebelum daftar perangkat');
     }
 
     public function test_left_panel_holds_the_full_device_list_with_search_and_status_filter(): void
@@ -243,12 +247,14 @@ class NetworkToolsPageTest extends TestCase
         $end   = strpos($html, 'id="tierLuar"');
         $top   = substr($html, $start, $end - $start);
 
-        // Kotak daftar perangkat, pencarian, dan filter status semuanya di kiri.
+        // Daftar perangkat, pencarian, dan filter status semuanya di kiri,
+        // tanpa card pembungkus (device-box) di sekelilingnya.
         $this->assertStringContainsString('id="deviceList"', $top);
         $this->assertStringContainsString('id="deviceSearch"', $top);
         $this->assertStringContainsString('Cari nama atau alamat IP', $top);
         $this->assertStringContainsString('id="statusFilter"', $top);
-        $this->assertStringContainsString('class="device-box"', $top);
+        $this->assertStringContainsString('class="device-list"', $top);
+        $this->assertStringNotContainsString('class="device-box"', $top);
 
         foreach (['all', 'up', 'warning', 'down'] as $status) {
             $this->assertStringContainsString('data-status="'.$status.'"', $top);

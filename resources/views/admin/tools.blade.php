@@ -172,15 +172,8 @@
     .tool-filter-btn.active { box-shadow: 0 0 0 3px rgba(13, 148, 136, .16); }
     .tool-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-    /* Kotak pembungkus daftar perangkat. Dipisah dari panel supaya daftar
-       yang memakai lebar penuh ini terbaca sebagai satu blok utuh. */
-    .device-box {
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        background: #f8fafc;
-        padding: 10px;
-    }
-
+    /* Daftar perangkat tanpa card pembungkus: baris-baris duduk langsung di
+       kolom, rata dan menyatu dengan pencarian & filter di atasnya. */
     .device-list {
         display: flex; flex-direction: column; gap: 6px;
         max-height: 520px; min-height: 200px;
@@ -837,46 +830,45 @@
                 </div>
             </div>
 
-            {{-- Kotak daftar perangkat --}}
-            <div class="device-box">
-                <div class="device-list" id="deviceList">
-                    @forelse($devices as $device)
-                        @php
-                            $status = in_array($device->status, ['down', 'warning', 'up'], true)
-                                ? $device->status
-                                : 'up';
-                        @endphp
-                        <button type="button"
-                                class="device-item"
-                                aria-pressed="false"
-                                data-id="{{ $device->id }}"
-                                data-name="{{ $device->name }}"
-                                data-ip="{{ $device->ip_address }}"
-                                data-status="{{ $status }}"
-                                data-type="{{ $device->type_icon }}"
-                                data-delay="{{ round((float) $device->avg_delay, 1) }}"
-                                data-loss="{{ round((float) $device->missed_percentage, 1) }}">
-                            {{-- Ikon mengikuti TIPE perangkat, bukan satu ikon
-                                 WiFi untuk semua baris. Peta tipe -> ikon ada
-                                 di ToolsController::DEVICE_TYPES dan sudah
-                                 divalidasi ada di font ikon tema, jadi tidak
-                                 mungkin baris tanpa gambar. --}}
-                            <span class="device-ic"><em class="icon ni ni-{{ $device->type_icon }}"></em></span>
-                            <span class="device-item-txt">
-                                <span class="device-name">{{ $device->name }}</span>
-                                <span class="device-ip">{{ $device->ip_address }}</span>
-                                <span class="device-type">{{ $device->type }}</span>
-                            </span>
-                            <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
-                        </button>
-                    @empty
-                        <div class="device-empty">
-                            <em class="icon ni ni-wifi-off" style="font-size:28px;opacity:.35"></em>
-                            Belum ada perangkat terdaftar.<br>
-                            Tambahkan lewat menu «Kelola Perangkat».
-                        </div>
-                    @endforelse
-                </div>
+            {{-- Daftar perangkat. Tanpa card pembungkus (device-box): baris-baris
+                 perangkat duduk langsung di kolom, rata dan menyatu. --}}
+<div class="device-list" id="deviceList">
+                @forelse($devices as $device)
+                    @php
+                        $status = in_array($device->status, ['down', 'warning', 'up'], true)
+                            ? $device->status
+                            : 'up';
+                    @endphp
+                    <button type="button"
+                            class="device-item"
+                            aria-pressed="false"
+                            data-id="{{ $device->id }}"
+                            data-name="{{ $device->name }}"
+                            data-ip="{{ $device->ip_address }}"
+                            data-status="{{ $status }}"
+                            data-type="{{ $device->type_icon }}"
+                            data-delay="{{ round((float) $device->avg_delay, 1) }}"
+                            data-loss="{{ round((float) $device->missed_percentage, 1) }}">
+                        {{-- Ikon mengikuti TIPE perangkat, bukan satu ikon
+                             WiFi untuk semua baris. Peta tipe -> ikon ada
+                             di ToolsController::DEVICE_TYPES dan sudah
+                             divalidasi ada di font ikon tema, jadi tidak
+                             mungkin baris tanpa gambar. --}}
+                        <span class="device-ic"><em class="icon ni ni-{{ $device->type_icon }}"></em></span>
+                        <span class="device-item-txt">
+                            <span class="device-name">{{ $device->name }}</span>
+                            <span class="device-ip">{{ $device->ip_address }}</span>
+                            <span class="device-type">{{ $device->type }}</span>
+                        </span>
+                        <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
+                    </button>
+                @empty
+                    <div class="device-empty">
+                        <em class="icon ni ni-wifi-off" style="font-size:28px;opacity:.35"></em>
+                        Belum ada perangkat terdaftar.<br>
+                        Tambahkan lewat menu «Kelola Perangkat».
+                    </div>
+                @endforelse
             </div>
         </section>
         </div>
