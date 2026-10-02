@@ -207,9 +207,11 @@ class NetworkToolsPageTest extends TestCase
         $end   = strpos($html, 'id="tierPemeriksaan"');
         $left  = substr($html, $start, $end - $start);
 
-        // Kartu hijau "Perangkat / Router" dihapus total: panel kiri dimulai
-        // langsung dari pencarian, lalu filter status, lalu daftar perangkat.
-        $this->assertStringContainsString('tools-list-panel', $left);
+        // SELURUH kartu pembungkus panel kiri sudah hilang: tidak ada lagi
+        // tools-panel/tools-list-panel/tools-panel-body di sisi kiri, jadi
+        // baris pencarian adalah elemen pertama setelah section terbuka.
+        $this->assertStringNotContainsString('tools-list-panel', $left);
+        $this->assertStringNotContainsString('tools-panel-body', $left);
         $this->assertStringNotContainsString('tools-panel-head', $left);
         $this->assertStringNotContainsString('Perangkat / Router', $left);
         $this->assertStringNotContainsString(
@@ -217,20 +219,20 @@ class NetworkToolsPageTest extends TestCase
             $left
         );
 
-        // CSS kepala panel hijau tidak ada lagi di stylesheet.
+        // CSS pembungkus kartu hijau tidak ada lagi di stylesheet.
         $this->assertStringNotContainsString('.tools-list-panel .tools-panel-head', $html);
         $this->assertDoesNotMatchRegularExpression(
             '/\.tools-panel-head[^{]*\{[^}]*linear-gradient\([^)]*0f766e/',
             $html
         );
 
-        // Isi panel utuh, dan pencarian adalah elemen pertama di dalam body.
-        $this->assertStringContainsString('id="deviceSearch"', $left);
-        $this->assertStringContainsString('Cari nama atau alamat IP', $left);
-        $this->assertStringContainsString('id="deviceList"', $left);
-        $bodyOpen = strpos($left, 'tools-panel-body');
+        // Pencarian adalah elemen pertama di dalam section, paling atas.
+        $sectionOpen = strpos($left, 'class="tool-search mb-2"');
         $searchPos = strpos($left, 'id="deviceSearch"');
-        $this->assertLessThan($searchPos, $bodyOpen, 'pencarian langsung di bawah kepala panel');
+        $this->assertNotFalse($sectionOpen, 'baris pencarian harus ada di awal section');
+        $this->assertLessThan($searchPos, $sectionOpen, 'pencarian adalah elemen pertama');
+        $boxOpen = strpos($left, 'class="device-box"');
+        $this->assertLessThan($boxOpen, $searchPos, 'pencarian datang sebelum kotak daftar');
     }
 
     public function test_left_panel_holds_the_full_device_list_with_search_and_status_filter(): void

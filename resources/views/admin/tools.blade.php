@@ -126,13 +126,11 @@
     .tools-tier > .tool-target { margin-bottom: 0; }
 
     /* ══ 2. DAFTAR PERANGKAT RADNET ═════════════════════ */
-    /* Kotak kartu hijau "Perangkat / Router" di atas panel kiri DIHAPUS
-       total: kini panel dimulai langsung dari baris pencarian, lalu filter
-       status, lalu daftar 115 perangkat — teks pada kartu itu hanya
-       mengulang yang sudah terbaca dari isi daftar di bawahnya. Kelas
-       .tools-list-panel yang ada di markup dibiarkan agar panel kiri tetap
-       mudah diarahkan lewat CSS/JS bila diperlukan, tanpa memaksakan
-       header berwarna. Warna hijau tetap hidup di ikon perangkat
+    /* SELURUH pembungkus kartu panel kiri DIHAPUS total: tidak ada lagi
+       <div class="tools-panel tools-list-panel"> maupun tools-panel-body
+       di sisi kiri. Kolom dimulai langsung dari baris pencarian, lalu
+       filter status, lalu daftar 115 perangkat — bersih tanpa kotak putih
+       atau border yang mengapit. Warna hijau tetap hidup di ikon perangkat
        (.device-ic) sebagai penanda visual daftar perangkat. */
 
     .tool-search { position: relative; }
@@ -802,9 +800,10 @@
              Kolom kiri khusus perangkat internal: pencarian, filter status,
              lalu daftar perangkat. Klik satu baris untuk menjadikannya target.
 
-             Kotak kartu hijau "Perangkat / Router" DIHAPUS: panel kini mulai
-             langsung dari baris pencarian, menyambung bersih ke daftar 115
-             perangkat. Judul pada kartu itu hanya mengulang isi daftar.
+             ENTIRE kartu pembungkus panel kiri DIHAPUS (tidak tersisa): kolom
+             dimulai langsung dari baris pencarian, lalu filter status, lalu
+             daftar 115 perangkat — tanpa kotak putih/berborder yang mengapit.
+             Pencarian duduk paling atas secara bersih dan rapi.
 
              Catatan: tidak ada baris yang ditandai `active` dari awal. Target
              bawaan halaman ini adalah Server Radnet (Server Lokal) di panel
@@ -813,76 +812,70 @@
              di daftar. --}}
         <div class="col-12 col-lg-5 col-xxl-4">
         <section class="tools-section" id="tierRadnet">
-            <div class="tools-panel tools-list-panel">
-                <div class="tools-panel-body">
+            {{-- Pencarian --}}
+            <div class="tool-search mb-2">
+                <em class="icon ni ni-search"></em>
+                <input type="text" class="form-control" id="deviceSearch"
+                       placeholder="Cari nama atau alamat IP…" autocomplete="off"
+                       aria-label="Cari perangkat Radnet berdasarkan nama atau alamat IP">
+            </div>
 
-                    {{-- Pencarian --}}
-                    <div class="tool-search mb-2">
-                        <em class="icon ni ni-search"></em>
-                        <input type="text" class="form-control" id="deviceSearch"
-                               placeholder="Cari nama atau alamat IP…" autocomplete="off"
-                               aria-label="Cari perangkat Radnet berdasarkan nama atau alamat IP">
-                    </div>
+            {{-- Filter status --}}
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <span class="tool-count" id="deviceCountHint">
+                    {{ $totalDevices }} perangkat
+                </span>
+                <div class="tool-filters" id="statusFilter" role="group" aria-label="Saring status perangkat">
+                    <button type="button" class="tool-filter-btn active" data-status="all">
+                        <span class="tool-dot" style="background:#0284c7"></span>Semua</button>
+                    <button type="button" class="tool-filter-btn" data-status="up">
+                        <span class="tool-dot" style="background:#22c55e"></span>UP</button>
+                    <button type="button" class="tool-filter-btn" data-status="warning">
+                        <span class="tool-dot" style="background:#eab308"></span>WRN</button>
+                    <button type="button" class="tool-filter-btn" data-status="down">
+                        <span class="tool-dot" style="background:#ef4444"></span>DOWN</button>
+                </div>
+            </div>
 
-                    {{-- Filter status --}}
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                        <span class="tool-count" id="deviceCountHint">
-                            {{ $totalDevices }} perangkat
-                        </span>
-                        <div class="tool-filters" id="statusFilter" role="group" aria-label="Saring status perangkat">
-                            <button type="button" class="tool-filter-btn active" data-status="all">
-                                <span class="tool-dot" style="background:#0284c7"></span>Semua</button>
-                            <button type="button" class="tool-filter-btn" data-status="up">
-                                <span class="tool-dot" style="background:#22c55e"></span>UP</button>
-                            <button type="button" class="tool-filter-btn" data-status="warning">
-                                <span class="tool-dot" style="background:#eab308"></span>WRN</button>
-                            <button type="button" class="tool-filter-btn" data-status="down">
-                                <span class="tool-dot" style="background:#ef4444"></span>DOWN</button>
+            {{-- Kotak daftar perangkat --}}
+            <div class="device-box">
+                <div class="device-list" id="deviceList">
+                    @forelse($devices as $device)
+                        @php
+                            $status = in_array($device->status, ['down', 'warning', 'up'], true)
+                                ? $device->status
+                                : 'up';
+                        @endphp
+                        <button type="button"
+                                class="device-item"
+                                aria-pressed="false"
+                                data-id="{{ $device->id }}"
+                                data-name="{{ $device->name }}"
+                                data-ip="{{ $device->ip_address }}"
+                                data-status="{{ $status }}"
+                                data-type="{{ $device->type_icon }}"
+                                data-delay="{{ round((float) $device->avg_delay, 1) }}"
+                                data-loss="{{ round((float) $device->missed_percentage, 1) }}">
+                            {{-- Ikon mengikuti TIPE perangkat, bukan satu ikon
+                                 WiFi untuk semua baris. Peta tipe -> ikon ada
+                                 di ToolsController::DEVICE_TYPES dan sudah
+                                 divalidasi ada di font ikon tema, jadi tidak
+                                 mungkin baris tanpa gambar. --}}
+                            <span class="device-ic"><em class="icon ni ni-{{ $device->type_icon }}"></em></span>
+                            <span class="device-item-txt">
+                                <span class="device-name">{{ $device->name }}</span>
+                                <span class="device-ip">{{ $device->ip_address }}</span>
+                                <span class="device-type">{{ $device->type }}</span>
+                            </span>
+                            <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
+                        </button>
+                    @empty
+                        <div class="device-empty">
+                            <em class="icon ni ni-wifi-off" style="font-size:28px;opacity:.35"></em>
+                            Belum ada perangkat terdaftar.<br>
+                            Tambahkan lewat menu «Kelola Perangkat».
                         </div>
-                    </div>
-
-                    {{-- Kotak daftar perangkat --}}
-                    <div class="device-box">
-                        <div class="device-list" id="deviceList">
-                            @forelse($devices as $device)
-                                @php
-                                    $status = in_array($device->status, ['down', 'warning', 'up'], true)
-                                        ? $device->status
-                                        : 'up';
-                                @endphp
-                                <button type="button"
-                                        class="device-item"
-                                        aria-pressed="false"
-                                        data-id="{{ $device->id }}"
-                                        data-name="{{ $device->name }}"
-                                        data-ip="{{ $device->ip_address }}"
-                                        data-status="{{ $status }}"
-                                        data-type="{{ $device->type_icon }}"
-                                        data-delay="{{ round((float) $device->avg_delay, 1) }}"
-                                        data-loss="{{ round((float) $device->missed_percentage, 1) }}">
-                                    {{-- Ikon mengikuti TIPE perangkat, bukan satu ikon
-                                         WiFi untuk semua baris. Peta tipe -> ikon ada
-                                         di ToolsController::DEVICE_TYPES dan sudah
-                                         divalidasi ada di font ikon tema, jadi tidak
-                                         mungkin baris tanpa gambar. --}}
-                                    <span class="device-ic"><em class="icon ni ni-{{ $device->type_icon }}"></em></span>
-                                    <span class="device-item-txt">
-                                        <span class="device-name">{{ $device->name }}</span>
-                                        <span class="device-ip">{{ $device->ip_address }}</span>
-                                        <span class="device-type">{{ $device->type }}</span>
-                                    </span>
-                                    <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
-                                </button>
-                            @empty
-                                <div class="device-empty">
-                                    <em class="icon ni ni-wifi-off" style="font-size:28px;opacity:.35"></em>
-                                    Belum ada perangkat terdaftar.<br>
-                                    Tambahkan lewat menu «Kelola Perangkat».
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
+                    @endforelse
                 </div>
             </div>
         </section>
