@@ -20,16 +20,33 @@ class MonitoringController extends Controller
 
     public function index(DeviceCsvService $source)
     {
-        // Ambil data perangkat dari database (yang sudah disinkronkan dengan devices.csv)
-        $devices = Device::all();
+        /* Hanya perangkat yang terdaftar di devices.csv yang boleh tampil.
+           Baris lain di tabel device (sisa impor lama, uji coba, atau
+           perangkat yang sudah dinonaktifkan) disembunyikan di sini juga,
+           bukan cuma saat menghitung jumlahnya — kalau tidak, peta dan
+           tabelnya akan lebih banyak daripada total yang tertulis di
+           bagian atas halaman. */
+        $officialIps = $source->officialIps();
+
+        $devices = Device::query()
+            ->whereIn('ip_address', $officialIps)
+            ->get();
+
         if ($devices->isEmpty()) {
             $devices = $source->officialDevices();
         }
 
-        $totalUp      = $devices->where('status', 'up')->count();
-        $totalDown    = $devices->where('status', 'down')->count();
-        $totalWarning = $devices->where('status', 'warning')->count();
-        $totalUnknown = $devices->whereNotIn('status', ['up', 'down', 'warning'])->count();
+        /* Angka status TIDAK dihitung ulang dari $devices di atas.
+           Baris di luar daftar resmi (mis. sisa impor lama) sengaja tidak
+           boleh ikut dihitung, kalau tidak total Monitoring bisa berbeda
+           dari Dashboard untuk data yang sama. Satu sumber untuk semua
+           halaman: DeviceCsvService::officialSummary(). */
+        $summary = $source->officialSummary();
+
+        $totalUp      = $summary['up'];
+        $totalDown    = $summary['down'];
+        $totalWarning = $summary['warning'];
+        $totalUnknown = $summary['unknown'];
         $totalServicesDown = 0;
 
         // Ambil seluruh relasi koneksi antar-perangkat untuk tabel relasi
@@ -61,7 +78,7 @@ class MonitoringController extends Controller
             'networkAreas',
             'logs'
         ) + [
-            'deviceSource' => $source->officialSummary(),
+            'deviceSource' => $summary,
             'topology'     => $this->topologyService->build(),
         ]);
     }

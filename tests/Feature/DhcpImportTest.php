@@ -7,16 +7,20 @@ use App\Models\DhcpLease;
 use App\Services\DeviceCsvService;
 use Illuminate\Http\UploadedFile;
 use Tests\Feature\Concerns\CreatesDhcpTables;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\TestCase;
 
 class DhcpImportTest extends TestCase
 {
     use CreatesDhcpTables;
+    use AuthenticatesAdmin;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->createDhcpTables();
+
+        $this->authenticateAsAdmin();
     }
 
     /**

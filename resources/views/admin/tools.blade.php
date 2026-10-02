@@ -2,7 +2,11 @@
 
 @section('title', 'Network Tools · RADNET NOC')
 
+{{-- Komponen tab pemantauan ping (header kotak biru, tombol, terminal) ikut
+     dimuat di halaman ini. CSS-nya page-scoped, tanpa preflight, jadi tidak
+     menimpa layout yang sudah ada. --}}
 @push('styles')
+@vite(['resources/css/ping-monitor.css'])
 <style>
     /* ══ 1. KARTU / BAGIAN HALAMAN ══════════════════════ */
     /* Jarak antar bagian & radius outer surface mengikuti standar layout global
@@ -22,154 +26,44 @@
         border-bottom: 1px solid #eef1f6;
     }
     .tools-panel-no {
-        width: 28px; height: 28px;
+        width: 34px; height: 34px;
         flex-shrink: 0;
-        border-radius: 8px;
+        border-radius: 9px;
         display: flex; align-items: center; justify-content: center;
         background: #1d4ed8; color: #fff;
-        font-size: 13px; font-weight: 800;
+        font-size: 16px; font-weight: 800;
     }
     .tools-panel-title {
         margin: 0;
-        font-size: 15px; font-weight: 800; color: #16223c;
+        font-size: 21px; font-weight: 800; color: #16223c;
         line-height: 1.3;
     }
     .tools-panel-tag {
         display: inline-block;
-        font-size: 10px; font-weight: 800; letter-spacing: .3px;
+        font-size: 12.5px; font-weight: 800; letter-spacing: .3px;
         text-transform: uppercase;
-        padding: 2px 7px; border-radius: 999px;
+        padding: 3px 9px; border-radius: 999px;
         background: #eef2ff; color: #4338ca;
         vertical-align: 2px;
     }
     .tools-panel-sub {
-        margin: 2px 0 0;
-        font-size: 12.5px; color: #64748b; line-height: 1.5;
+        margin: 3px 0 0;
+        font-size: 16px; color: #64748b; line-height: 1.5;
     }
     .tools-panel-body { padding: 16px 18px; }
     .tools-panel-badge { margin-left: auto; flex-shrink: 0; }
 
-    /* ══ 1b. SUMMARY VIEW (ALA WHATSUP GOLD) ═══════════════
-       Empat kartu angka (Total / UP / DOWN / Warning) plus tabel sebaran
-       perangkat per Area-POP. Semuanyapresentation: angka sudah dihitung
-       sekali di ToolsController::index(), jadi halaman ini tidak punya
-       aturan penghitungannya sendiri yang bisa berbeda dari backend. */
-    .sum-kpi {
-        display: flex; align-items: center; gap: 13px;
-        height: 100%;
-        padding: 14px 16px;
-        border: 1px solid #e5e9f0; border-radius: 14px;
-        background: #fff;
-    }
-    .sum-kpi-ic {
-        width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 19px;
-    }
-    .sum-kpi--total   .sum-kpi-ic { background: #e0f2fe; color: #0369a1; }
-    .sum-kpi--up      .sum-kpi-ic { background: #dcfce7; color: #15803d; }
-    .sum-kpi--down    .sum-kpi-ic { background: #fee2e2; color: #dc2626; }
-    .sum-kpi--warning .sum-kpi-ic { background: #fef9c3; color: #a16207; }
+    /* CATATAN — tidak ada lagi bar/badge ringkasan statistik di halaman ini.
+       Kemarin masih ada strip "Total Perangkat · UP · WARNING · DOWN" di
+       bagian atas, sekarang DIHAPUS total sesuai permintaan: angkanya
+       mengulang apa yang sudah terlihat di daftar perangkat di bawah
+       (jumlah baris + badge status tiap baris), jadi strip itu hanya
+       menambah(layer yang sama dua kali).
 
-    .sum-kpi-body { min-width: 0; flex: 1 1 auto; }
-    .sum-kpi-label {
-        display: block;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .5px;
-        text-transform: uppercase; color: #64748b;
-    }
-    .sum-kpi-value {
-        display: block; margin-top: 1px;
-        font-size: 25px; font-weight: 800; line-height: 1.15; color: #16223c;
-    }
-    .sum-kpi-value.is-zero { color: #94a3b8; }
-    .sum-kpi-note {
-        display: block; font-size: 11.5px; line-height: 1.5; color: #64748b; margin-top: 2px;
-    }
-
-    /* Batang proporsi UP / WARNING / DOWN. Menyorot bagian yang bermasalah
-       supaya angka "0" tetap berarti sesuatu, bukan sekadar kosong. */
-    .sum-bar {
-        display: flex; height: 6px; margin-top: 9px;
-        border-radius: 999px; overflow: hidden; background: #eef2f7;
-    }
-    .sum-bar span { display: block; height: 100%; }
-    .sum-bar .sum-bar-up      { background: #22c55e; }
-    .sum-bar .sum-bar-warning { background: #eab308; }
-    .sum-bar .sum-bar-down    { background: #ef4444; }
-    .sum-bar-legend {
-        display: flex; flex-wrap: wrap; gap: 4px 14px;
-        margin-top: 8px; font-size: 11.5px; color: #64748b;
-    }
-    .sum-bar-legend span { display: inline-flex; align-items: center; gap: 5px; }
-    .sum-bar-legend b { color: #16223c; font-weight: 800; }
-
-    /* Panel pembungkus tabel sebaran per Area/POP. */
-    .sum-panel { margin-top: 16px; }
-    .sum-panel-head {
-        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-        padding: 13px 18px;
-        border-bottom: 1px solid #eef1f6;
-        background: #fbfcfe;
-    }
-    .sum-panel-title {
-        margin: 0; font-size: 14.5px; font-weight: 800; color: #16223c;
-    }
-    .sum-panel-sub { margin: 2px 0 0; font-size: 12px; color: #64748b; }
-    .sum-panel-total {
-        margin-left: auto;
-        font-size: 11px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
-        padding: 4px 10px; border-radius: 999px;
-        background: #e0f2fe; color: #0369a1;
-    }
-    .sum-panel-body { padding: 0; }
-
-    .sum-table-wrap { overflow-x: auto; }
-    .sum-table { width: 100%; margin: 0; border-collapse: collapse; font-size: 12.8px; }
-    .sum-table thead th {
-        padding: 9px 14px;
-        background: #f8fafc;
-        border-bottom: 1px solid #e5e9f0;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .4px;
-        text-transform: uppercase; color: #64748b;
-        text-align: left; white-space: nowrap;
-    }
-    .sum-table tbody td {
-        padding: 10px 14px;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155; vertical-align: middle;
-    }
-    .sum-table tbody tr:last-child td { border-bottom: 0; }
-    .sum-table tbody tr:hover td { background: #f8fafc; }
-    .sum-table .num { text-align: center; width: 92px; }
-    .sum-table .sum-area { font-weight: 800; color: #16223c; }
-    .sum-table .sum-area-code { display: block; font-size: 11.5px; font-weight: 600; color: #64748b; }
-    .sum-count {
-        display: inline-block; min-width: 34px;
-        font-weight: 800; text-align: center;
-        padding: 2px 8px; border-radius: 999px;
-        font-size: 11.5px;
-    }
-    .sum-count--up      { background: #dcfce7; color: #15803d; }
-    .sum-count--warning { background: #fef9c3; color: #a16207; }
-    .sum-count--down    { background: #fee2e2; color: #b91c1c; }
-    .sum-count--plain   { background: #f1f5f9; color: #94a3b8; }
-    .sum-lihat {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 10px;
-        border: 1px solid #e2e8f0; border-radius: 999px;
-        background: #fff; color: #475569;
-        font-size: 11.5px; font-weight: 700; text-decoration: none;
-        white-space: nowrap;
-        transition: border-color .15s, background .15s, color .15s;
-    }
-    .sum-lihat:hover { border-color: #93c5fd; background: #f8fbff; color: #1d4ed8; }
-    .sum-lihat .icon { font-size: 12px; }
-
-    .sum-empty {
-        padding: 26px 16px; text-align: center;
-        color: #64748b; font-size: 12.8px; line-height: 1.6;
-    }
-    .sum-empty .icon { display: block; font-size: 28px; opacity: .35; margin-bottom: 6px; }
+       Konsekuensinya halaman ini tidak lagi mengirim $summary maupun
+       $areaSummary ke view. Jumlah dan kondisi perangkat tetap punya
+       SATU sumber, yaitu DeviceCsvService (tabel device yang sudah
+       disinkronkan dengan devices.csv) — lihat ToolsController::index(). */
 
     /* Jarak antar-bagian.
        Setiap <section class="tools-section"> adalah satu bagian tersendiri,
@@ -192,7 +86,7 @@
         margin-bottom: 12px; flex-wrap: wrap;
     }
     .tools-subsection-title {
-        margin: 0; font-size: 14px; font-weight: 800; color: #16223c;
+        margin: 0; font-size: 18px; font-weight: 800; color: #16223c;
     }
 
     /* ══ 1c. TIGA PILIHAN TARGET (SUSUNAN PANEL KANAN) ═══
@@ -214,16 +108,16 @@
     }
     .tools-tier-no {
         flex-shrink: 0;
-        font-size: 10px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
-        padding: 3px 8px; border-radius: 999px;
+        font-size: 14px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+        padding: 4px 10px; border-radius: 999px;
         background: #eef2ff; color: #4338ca;
     }
     .tools-tier-txt { min-width: 0; }
     .tools-tier-title {
-        margin: 0; font-size: 14px; font-weight: 800; color: #16223c; line-height: 1.35;
+        margin: 0; font-size: 20px; font-weight: 800; color: #16223c; line-height: 1.35;
     }
     .tools-tier-sub {
-        margin: 2px 0 0; font-size: 12.2px; color: #64748b; line-height: 1.5;
+        margin: 3px 0 0; font-size: 16px; color: #64748b; line-height: 1.5;
     }
 
     /* Isi setiap pilihan menyentuh bagiannya sendiri, jadi jarak sisa
@@ -232,29 +126,25 @@
     .tools-tier > .tool-target { margin-bottom: 0; }
 
     /* ══ 2. DAFTAR PERANGKAT RADNET ═════════════════════ */
-    /* Panel kiri memakai header hijau supaya jelas bedanya dari panel kanan
-       yang biru: hijau = daftar perangkat, biru = target & pemeriksaan. */
-    .tools-list-panel .tools-panel-head {
-        background: linear-gradient(135deg, #0f766e 0%, #14b8a6 60%, #2dd4bf 100%);
-        border-bottom-color: transparent;
-    }
-    .tools-list-panel .tools-panel-no { background: rgba(255, 255, 255, .22); }
-    .tools-list-panel .tools-panel-title { color: #fff; }
-    .tools-list-panel .tools-panel-sub { color: #d7f5ef; }
-    .tools-list-panel .tools-panel-tag {
-        background: rgba(255, 255, 255, .2); color: #fff;
-    }
+    /* Kotak kartu hijau "Perangkat / Router" di atas panel kiri DIHAPUS
+       total: kini panel dimulai langsung dari baris pencarian, lalu filter
+       status, lalu daftar 115 perangkat — teks pada kartu itu hanya
+       mengulang yang sudah terbaca dari isi daftar di bawahnya. Kelas
+       .tools-list-panel yang ada di markup dibiarkan agar panel kiri tetap
+       mudah diarahkan lewat CSS/JS bila diperlukan, tanpa memaksakan
+       header berwarna. Warna hijau tetap hidup di ikon perangkat
+       (.device-ic) sebagai penanda visual daftar perangkat. */
 
     .tool-search { position: relative; }
     .tool-search .icon {
         position: absolute; left: 11px; top: 50%;
         transform: translateY(-50%);
-        font-size: 13px; color: #94a3b8;
+        font-size: 15px; color: #94a3b8;
         pointer-events: none;
     }
     .tool-search .form-control {
-        padding-left: 32px;
-        font-size: 13px;
+        padding-left: 38px;
+        font-size: 18px;
         border-color: #e2e8f0;
         border-radius: 9px;
         box-shadow: none;
@@ -263,14 +153,14 @@
         border-color: #0d9488;
         box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
     }
-    .tool-count { font-size: 11.5px; color: #64748b; font-weight: 600; }
+    .tool-count { font-size: 17px; color: #475569; font-weight: 700; }
 
-    .tool-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tool-filters { display: flex; gap: 7px; flex-wrap: wrap; }
     .tool-filter-btn {
-        display: inline-flex; align-items: center; gap: 5px;
+        display: inline-flex; align-items: center; gap: 6px;
         border: 1px solid #e2e8f0; background: #fff; color: #475569;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
-        padding: 4px 9px; border-radius: 999px; cursor: pointer; line-height: 1;
+        font-size: 16px; font-weight: 800; letter-spacing: .3px;
+        padding: 7px 13px; border-radius: 999px; cursor: pointer; line-height: 1;
         transition: border-color .15s, background .15s, color .15s;
     }
     /* Warna tiap filter selalu terlihat, bukan hanya saat aktif, supaya
@@ -304,9 +194,9 @@
     .device-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     .device-item {
-        display: flex; align-items: center; gap: 10px;
+        display: flex; align-items: center; gap: 11px;
         width: 100%; text-align: left;
-        padding: 9px 11px;
+        padding: 11px 13px;
         border: 1px solid #eef2f7; border-radius: 11px;
         background: #f8fafc; cursor: pointer;
         transition: border-color .15s, background .15s, box-shadow .15s;
@@ -316,32 +206,41 @@
         background: #f0fdfa; border-color: #0d9488;
         box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
     }
-    /* Ikon WiFi selalu dalam kotak hijau: penanda visual devices, bukan
-       status. Statusnya dibaca dari badge di kanan. */
+    /* Ikon perangkat selalu dalam kotak hijau: penanda visual devices, bukan
+       status. Statusnya dibaca dari badge di kanan. Ikonnya sendiri mengikuti
+       tipe perangkat (Router / Switch / EPON / OLT / Perangkat). */
     .device-ic {
-        width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+        width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
         background: linear-gradient(135deg, #0f766e, #14b8a6);
-        color: #d7f5ef; font-size: 14px;
+        color: #d7f5ef; font-size: 19px;
     }
     .device-item-txt { min-width: 0; flex: 1 1 auto; }
     .device-name {
-        display: block; font-size: 13px; font-weight: 700; color: #0f172a;
+        display: block; font-size: 19px; font-weight: 700; color: #0f172a;
+        line-height: 1.35;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .device-ip {
-        display: block; font-size: 11.5px; color: #64748b; margin-top: 1px;
+        display: block; font-size: 16px; color: #475569; margin-top: 2px;
         font-family: 'Consolas', 'Menlo', monospace;
+    }
+    /* Tipe perangkat (Router / Switch / EPON / OLT / Perangkat). Baris ketiga
+       ini yang memberitahu arti ikon di sebelahnya, jadi teksnya sengaja
+       dibuat paling kecil dari tiga baris nama. */
+    .device-type {
+        display: block; font-size: 14.5px; color: #94a3b8; margin-top: 2px;
+        font-weight: 600; letter-spacing: .2px;
     }
     .device-empty {
         text-align: center; color: #64748b;
-        padding: 26px 10px; font-size: 12.8px; line-height: 1.6;
+        padding: 30px 10px; font-size: 16.5px; line-height: 1.6;
     }
 
     .status-badge {
         flex-shrink: 0;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
-        padding: 3px 8px; border-radius: 999px;
+        font-size: 15.5px; font-weight: 800; letter-spacing: .3px;
+        padding: 6px 13px; border-radius: 999px;
     }
     .status-up      { background: #dcfce7; color: #15803d; }
     .status-down    { background: #fee2e2; color: #dc2626; }
@@ -367,23 +266,23 @@
         box-shadow: 0 0 0 3px rgba(29, 78, 216, .12);
     }
     .tool-local-ic {
-        width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+        width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
-        background: #1d4ed8; color: #fff; font-size: 18px;
+        background: #1d4ed8; color: #fff; font-size: 24px;
     }
     .tool-local-txt { min-width: 0; flex: 1 1 auto; }
     .tool-local-name {
         display: block;
-        font-size: 14.5px; font-weight: 800; color: #16223c;
+        font-size: 20px; font-weight: 800; color: #16223c;
     }
     .tool-local-hint {
-        display: block; font-size: 12px; color: #64748b; margin-top: 2px; line-height: 1.5;
+        display: block; font-size: 16px; color: #64748b; margin-top: 3px; line-height: 1.5;
     }
     .tool-local-check {
         flex-shrink: 0;
-        width: 24px; height: 24px; border-radius: 50%;
+        width: 28px; height: 28px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        background: #dcfce7; color: #15803d; font-size: 13px;
+        background: #dcfce7; color: #15803d; font-size: 16px;
         opacity: 0; transition: opacity .15s;
     }
     .tool-local-option.is-active .tool-local-check { opacity: 1; }
@@ -400,45 +299,55 @@
     .tool-outside-head {
         display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
     }
-    .tool-outside-head .icon { font-size: 16px; color: #6d28d9; margin-top: 1px; }
+    .tool-outside-head .icon { font-size: 18px; color: #6d28d9; margin-top: 1px; }
     .tool-outside-title {
-        font-size: 13.5px; font-weight: 800; color: #16223c; line-height: 1.4;
+        font-size: 17px; font-weight: 800; color: #16223c; line-height: 1.4;
     }
     .tool-outside-sub {
-        margin: 2px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;
+        margin: 2px 0 0; font-size: 14.5px; color: #64748b; line-height: 1.5;
     }
 
     .tool-target {
         border: 1px solid #e5e9f0; border-radius: 12px;
         background: #f8fafc; padding: 13px 14px; margin-bottom: 14px;
     }
+    /* Pemilih langsung semua perangkat Radnet (Pilihan 2). Tiap opsi membawa
+       nama, alamat, status, dan tipe ikon dari tabel device (sinkron dengan
+       devices.csv), sehingga 115 perangkat bisa dipilih sebagai target tanpa
+       perlu mengingat-nghaf vig nama di panel kiri. */
+    .tool-picker { margin: -2px 0 14px; }
+    .tool-picker .tool-field-label { font-size: 15.5px; }
+    .tool-picker .form-select {
+        font-size: 17px; padding: 11px 13px; border-radius: 10px;
+        border-color: #cbd5e1; box-shadow: none; background-color: #fff;
+    }
     .tool-target.is-empty { border-style: dashed; background: #fff; }
     .tool-target-top { display: flex; align-items: center; gap: 11px; }
     .tool-target-ic {
-        width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+        width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
-        background: #1d4ed8; color: #fff; font-size: 16px;
+        background: #1d4ed8; color: #fff; font-size: 21px;
     }
     .tool-target.is-empty .tool-target-ic { background: #e2e8f0; color: #94a3b8; }
     .tool-target-txt { min-width: 0; flex: 1 1 auto; }
     .tool-target-label {
-        font-size: 10px; font-weight: 800; letter-spacing: .6px;
+        font-size: 14px; font-weight: 800; letter-spacing: .6px;
         text-transform: uppercase; color: #64748b;
     }
     .tool-target-name {
-        font-size: 14.5px; font-weight: 800; color: #16223c;
+        font-size: 21px; font-weight: 800; color: #16223c;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .tool-target-ip {
-        font-size: 12px; color: #475569;
+        font-size: 17px; color: #475569;
         font-family: 'Consolas', 'Menlo', monospace;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .tool-target-meta {
-        display: flex; gap: 16px; flex-wrap: wrap;
+        display: flex; gap: 18px; flex-wrap: wrap;
         margin-top: 11px; padding-top: 10px;
         border-top: 1px dashed #e2e8f0;
-        font-size: 12px; color: #475569;
+        font-size: 16px; color: #475569;
     }
     .tool-target-meta span { display: inline-flex; align-items: center; gap: 6px; }
     .tool-target-meta b { color: #16223c; }
@@ -451,9 +360,9 @@
     }
     .tool-btn {
         display: flex; align-items: center; justify-content: center; gap: 7px;
-        padding: 11px 8px;
+        padding: 15px 10px;
         border: 0; border-radius: 10px;
-        color: #fff; font-size: 13.5px; font-weight: 700;
+        color: #fff; font-size: 18px; font-weight: 700;
         cursor: pointer;
         transition: filter .15s, transform .05s, opacity .15s;
     }
@@ -471,17 +380,17 @@
         display: grid; gap: 7px;
     }
     .tool-guide-item {
-        display: flex; align-items: flex-start; gap: 8px;
-        font-size: 12.2px; line-height: 1.5; color: #475569;
+        display: flex; align-items: center; gap: 9px;
+        font-size: 16px; line-height: 1.5; color: #475569;
     }
     .tool-guide-text { min-width: 0; }
     .tool-guide-name {
         display: block; font-weight: 800; color: #16223c; margin-bottom: 1px;
     }
     .tool-guide-color {
-        font-style: normal; font-size: 10px; font-weight: 800;
+        font-style: normal; font-size: 12px; font-weight: 800;
         letter-spacing: .3px; text-transform: uppercase;
-        padding: 1px 6px; border-radius: 999px;
+        padding: 2px 8px; border-radius: 999px;
         vertical-align: 1px;
     }
     .tool-guide-color--ping   { background: #d1fae5; color: #047857; }
@@ -499,7 +408,7 @@
 
     /* ══ 5. INPUT TARGET BEBAS ══════════════════════════ */
     .tool-input {
-        font-size: 13.5px; border-color: #e2e8f0;
+        font-size: 16.5px; border-color: #e2e8f0;
         border-radius: 10px; box-shadow: none;
         font-family: 'Consolas', 'Menlo', monospace;
     }
@@ -509,10 +418,10 @@
     }
     .tool-input-group .input-group-text {
         background: #f1f5f9; border-color: #e2e8f0;
-        color: #64748b; font-size: 13px;
+        color: #64748b; font-size: 16px;
     }
     .tool-hint {
-        font-size: 12px; color: #64748b; margin: 7px 0 13px; line-height: 1.5;
+        font-size: 14.5px; color: #64748b; margin: 7px 0 13px; line-height: 1.5;
     }
 
     /* ══ 6. PARAMETER PEMERIKSAAN (OPSIONAL) ══════════════ */
@@ -528,8 +437,8 @@
         list-style: none;
         cursor: pointer;
         display: flex; align-items: center; gap: 9px;
-        padding: 10px 13px;
-        font-size: 12.5px; font-weight: 700; color: #475569;
+        padding: 12px 14px;
+        font-size: 15px; font-weight: 700; color: #475569;
     }
     .tools-advanced > summary::-webkit-details-marker { display: none; }
     .tools-advanced > summary::after {
@@ -541,27 +450,27 @@
         transition: transform .2s;
     }
     .tools-advanced[open] > summary::after { transform: rotate(180deg) translateY(-2px); }
-    .tools-advanced > summary .icon { font-size: 14px; color: #94a3b8; }
+    .tools-advanced > summary .icon { font-size: 17px; color: #94a3b8; }
     .tools-advanced-hint {
         font-weight: 600; color: #94a3b8;
     }
     .tools-advanced-body { padding: 0 13px 14px; }
     .tool-field-label {
         display: block;
-        font-size: 11px; font-weight: 700; color: #334155;
+        font-size: 13.5px; font-weight: 700; color: #334155;
         margin-bottom: 5px;
     }
-    .tool-field-note { font-size: 11.5px; color: #94a3b8; margin-top: 4px; }
+    .tool-field-note { font-size: 13.5px; color: #94a3b8; margin-top: 4px; }
     .tools-advanced .form-control,
     .tools-advanced .form-select {
-        font-size: 12.5px; border-color: #e2e8f0; border-radius: 9px; box-shadow: none;
+        font-size: 15.5px; border-color: #e2e8f0; border-radius: 9px; box-shadow: none;
     }
 
     /* ══ 7. HASIL PEMERIKSAAN ═══════════════════════════ */
     .tools-result { display: grid; gap: 12px; }
     .tools-result-empty {
         text-align: center; color: #64748b;
-        padding: 30px 14px; font-size: 13px; line-height: 1.7;
+        padding: 34px 14px; font-size: 15.5px; line-height: 1.7;
     }
     .tools-result-empty .icon {
         display: block; font-size: 30px; opacity: .35; margin-bottom: 8px;
@@ -586,12 +495,12 @@
         border-bottom: 1px solid #eef1f6;
     }
     .result-title {
-        margin: 0; font-size: 14px; font-weight: 800; color: #16223c; line-height: 1.35;
+        margin: 0; font-size: 18px; font-weight: 800; color: #16223c; line-height: 1.35;
     }
     .result-badge {
         display: inline-flex; align-items: center; gap: 5px;
         flex-shrink: 0;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .4px;
+        font-size: 13px; font-weight: 800; letter-spacing: .4px;
         padding: 4px 9px; border-radius: 999px;
     }
     .result-badge--up      { background: #dcfce7; color: #15803d; }
@@ -609,15 +518,15 @@
         padding: 0 15px 11px;
         background: #f8fafc;
         border-bottom: 1px solid #eef1f6;
-        font-size: 11.5px; color: #64748b;
+        font-size: 14px; color: #64748b;
     }
     .result-when-item { display: inline-flex; align-items: center; gap: 5px; }
-    .result-when-item .icon { font-size: 12px; color: #94a3b8; }
+    .result-when-item .icon { font-size: 15px; color: #94a3b8; }
     .result-when-item b { color: #16223c; font-weight: 800; }
     .result-when-item.is-target b { font-family: 'Consolas', 'Menlo', monospace; }
 
     .result-text {
-        margin: 0; font-size: 13px; line-height: 1.65; color: #334155;
+        margin: 0; font-size: 15.5px; line-height: 1.65; color: #334155;
     }
     .result-text + .result-text { margin-top: 7px; }
 
@@ -630,41 +539,41 @@
         border-radius: 10px; padding: 9px 11px;
     }
     .metric-label {
-        font-size: 10px; font-weight: 800; letter-spacing: .4px;
+        font-size: 12px; font-weight: 800; letter-spacing: .4px;
         text-transform: uppercase; color: #64748b;
     }
     .metric-value {
-        font-size: 13.5px; font-weight: 800; color: #16223c; margin-top: 2px;
+        font-size: 16px; font-weight: 800; color: #16223c; margin-top: 2px;
     }
-    .metric-value small { font-size: 11.5px; font-weight: 600; color: #64748b; }
+    .metric-value small { font-size: 14px; font-weight: 600; color: #64748b; }
 
     .result-list { margin-top: 13px; }
     .result-row {
         display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
         padding: 7px 0;
         border-bottom: 1px dashed #eef1f6;
-        font-size: 12.5px; color: #334155;
+        font-size: 15px; color: #334155;
     }
     .result-row:last-child { border-bottom: 0; }
     .result-row-key { flex-shrink: 0; font-weight: 700; color: #16223c; }
     .result-row-val {
         text-align: right; min-width: 0; word-break: break-word;
-        font-family: 'Consolas', 'Menlo', monospace; font-size: 12px;
+        font-family: 'Consolas', 'Menlo', monospace; font-size: 14.5px;
     }
-    .result-row-val.is-plain { font-family: inherit; font-size: 12.5px; }
+    .result-row-val.is-plain { font-family: inherit; font-size: 15px; }
     .result-row.is-dim { color: #94a3b8; }
 
     .result-note {
         margin-top: 13px;
         background: #f8fafc; border: 1px solid #eef1f6; border-radius: 9px;
         padding: 9px 11px;
-        font-size: 11.8px; line-height: 1.6; color: #475569;
+        font-size: 14px; line-height: 1.6; color: #475569;
     }
     .result-note strong { color: #16223c; }
 
     .result-list-head {
         margin: 15px 0 6px;
-        font-size: 11px; font-weight: 800; letter-spacing: .4px;
+        font-size: 13px; font-weight: 800; letter-spacing: .4px;
         text-transform: uppercase; color: #64748b;
     }
 
@@ -692,12 +601,12 @@
         border-bottom: 1px solid rgba(148, 163, 184, .22);
     }
     .analysis-title {
-        font-size: 10.5px; font-weight: 800; letter-spacing: .6px;
+        font-size: 13px; font-weight: 800; letter-spacing: .6px;
         text-transform: uppercase; color: #64748b;
     }
     .analysis-badge {
         display: inline-flex; align-items: center; gap: 5px;
-        font-size: 11px; font-weight: 800; letter-spacing: .4px;
+        font-size: 13px; font-weight: 800; letter-spacing: .4px;
         padding: 3px 9px; border-radius: 999px;
     }
     .analysis-badge--up      { background: #dcfce7; color: #15803d; }
@@ -708,15 +617,15 @@
 
     .analysis-headline {
         margin: 0;
-        font-size: 13.5px; font-weight: 800; color: #16223c; line-height: 1.45;
+        font-size: 16px; font-weight: 800; color: #16223c; line-height: 1.45;
     }
     .analysis-body { padding: 12px 14px 14px; }
 
     .analysis-reason {
         display: flex; align-items: flex-start; gap: 9px;
-        font-size: 13px; line-height: 1.7; color: #334155;
+        font-size: 15.5px; line-height: 1.7; color: #334155;
     }
-    .analysis-reason .icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+    .analysis-reason .icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
     .analysis--up      .analysis-reason .icon { color: #16a34a; }
     .analysis--warning .analysis-reason .icon { color: #d97706; }
     .analysis--down,
@@ -731,7 +640,7 @@
         display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
         padding-bottom: 5px;
         border-bottom: 1px dashed rgba(148, 163, 184, .3);
-        font-size: 12px;
+        font-size: 14.5px;
     }
     .analysis-fact-key { color: #64748b; }
     .analysis-fact-val {
@@ -745,9 +654,9 @@
         background: rgba(255, 255, 255, .75);
         border: 1px solid rgba(148, 163, 184, .25);
         border-radius: 10px;
-        font-size: 12.3px; line-height: 1.65; color: #475569;
+        font-size: 14.8px; line-height: 1.65; color: #475569;
     }
-    .analysis-reco .icon { font-size: 14px; color: #0d9488; flex-shrink: 0; margin-top: 1px; }
+    .analysis-reco .icon { font-size: 17px; color: #0d9488; flex-shrink: 0; margin-top: 1px; }
     .analysis-reco b { color: #16223c; }
 
     /* ══ 7c. LOG TERMINAL MENTAH ══
@@ -763,10 +672,10 @@
         display: flex; align-items: center; gap: 8px;
         padding: 9px 13px;
         background: #f8fafc;
-        font-size: 12.3px; font-weight: 800; color: #475569;
+        font-size: 14.8px; font-weight: 800; color: #475569;
     }
     .result-log > summary::-webkit-details-marker { display: none; }
-    .result-log > summary .icon { font-size: 14px; color: #94a3b8; }
+    .result-log > summary .icon { font-size: 17px; color: #94a3b8; }
     .result-log > summary::after {
         content: '';
         margin-left: auto;
@@ -777,14 +686,14 @@
     }
     .result-log[open] > summary::after { transform: rotate(180deg) translateY(-2px); }
     .result-log-hint {
-        font-weight: 600; color: #94a3b8; font-size: 11px;
+        font-weight: 600; color: #94a3b8; font-size: 13px;
     }
     .result-log-body {
         margin: 0; padding: 12px 14px;
         border-top: 1px solid #eef1f6;
         background: #0f172a; color: #cbd5f5;
         font-family: 'Consolas', 'Menlo', monospace;
-        font-size: 11.8px; line-height: 1.65;
+        font-size: 14.8px; line-height: 1.65;
         white-space: pre-wrap; word-break: break-word;
         max-height: 340px; overflow: auto;
     }
@@ -809,9 +718,6 @@
     @media (max-width: 767.98px) {
         .tool-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .result-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .sum-kpi { padding: 12px 14px; }
-        .sum-kpi-value { font-size: 22px; }
-        .sum-panel-total { margin-left: 0; }
     }
     @media (max-width: 575.98px) {
         .result-metrics { grid-template-columns: minmax(0, 1fr); }
@@ -823,7 +729,6 @@
 @section('content')
     @php
         $totalDevices   = $devices->count();
-        $devicesIssue   = $devices->whereIn('status', ['down', 'warning'])->count();
     @endphp
 
     <x-admin.page-head
@@ -831,163 +736,59 @@
         subtitle="Cek perangkat & jaringan Radnet. Pilih target, lalu tekan tombolnya." />
 
     {{-- ══════════════════════════════════════════════════════════════════
-         SUMMARY VIEW — ALA WHATSUP GOLD (TAMPILAN SAJA)
+         PEMANTAUAN PING — TAB RADNET / LUAR / RINGKASAN
          ══════════════════════════════════════════════════════════════════
-         Kartu statistik ringkasan + tabel sebaran perangkat per Area/POP.
+         Tampilan ini sebelumnya berdiri sendiri di /admin/ping-monitor,
+         sekarang sudah pindah ke sini dan aktif sepenuhnya: header kotak
+         biru ala WhatsUp Gold, terminal log per paket, dan kotak analisis
+         bahasa sehari-hari untuk atasan.
 
-         Bagian ini murni visual: semua angka sudah dihitung di
-         ToolsController::index() dari daftar perangkat yang sama dengan
-         panel di bawahnya, jadi total di sini selalu cocok dengan jumlah
-         baris di daftar. Tidak ada tombol diagnosa di sini dan tidak ada
-         yang memanggil endpoint ping/trace/lookup/scan — pilihan target dan
-         tombol pemeriksaan tetap milik panel di bawah.
-    --}}
-    <section class="tools-section" id="ringkasan">
-        <h2 class="visually-hidden">Ringkasan Kondisi Jaringan</h2>
+         Sengaja diletakkan paling atas supaya kondisi server yang
+         dipantau terlihat di halaman yang sama dengan daftar perangkat
+         dan alat diagnosanya.
 
-        <div class="row g-3">
-            <div class="col-6 col-xl-3">
-                <div class="sum-kpi sum-kpi--total">
-                    <span class="sum-kpi-ic"><em class="icon ni ni-server"></em></span>
-                    <div class="sum-kpi-body">
-                        <span class="sum-kpi-label">Total Perangkat</span>
-                        <span class="sum-kpi-value @if($summary['empty']) is-zero @endif">{{ $summary['total'] }}</span>
-                        <span class="sum-kpi-note">
-                            {{ $summary['empty'] ? 'Belum ada perangkat terdaftar' : $summary['total'].' perangkat di seluruh Area / POP' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+         Tombol "Return to Tools" yang dulu ada tidak ikut, karena halaman
+         ini sudah Network Tools: tombol tersebut hanya akan menaut ke
+         halaman yang sedang dibuka.
+         ══════════════════════════════════════════════════════════════════ --}}
+    <section aria-labelledby="pmHeading">
+        <h2 id="pmHeading" class="visually-hidden">Pemantauan Ping Server</h2>
 
-            <div class="col-6 col-xl-3">
-                <div class="sum-kpi sum-kpi--up">
-                    <span class="sum-kpi-ic"><em class="icon ni ni-check-circle"></em></span>
-                    <div class="sum-kpi-body">
-                        <span class="sum-kpi-label">Items UP</span>
-                        <span class="sum-kpi-value @if($summary['up'] === 0) is-zero @endif">{{ $summary['up'] }}</span>
-                        <span class="sum-kpi-note">Merespons normal</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-xl-3">
-                <div class="sum-kpi sum-kpi--down">
-                    <span class="sum-kpi-ic"><em class="icon ni ni-cross-circle"></em></span>
-                    <div class="sum-kpi-body">
-                        <span class="sum-kpi-label">Items DOWN</span>
-                        <span class="sum-kpi-value @if($summary['down'] === 0) is-zero @endif">{{ $summary['down'] }}</span>
-                        <span class="sum-kpi-note">Tidak merespons / mati</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-xl-3">
-                <div class="sum-kpi sum-kpi--warning">
-                    <span class="sum-kpi-ic"><em class="icon ni ni-alert-circle"></em></span>
-                    <div class="sum-kpi-body">
-                        <span class="sum-kpi-label">Warning / High Delay</span>
-                        <span class="sum-kpi-value @if($summary['warning'] === 0) is-zero @endif">{{ $summary['warning'] }}</span>
-                        <span class="sum-kpi-note">Latensi tinggi / packet loss</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Proporsi kondisi + tabel sebaran per Area / POP --}}
-        <div class="tools-panel sum-panel">
-            <div class="sum-panel-head">
-                <div>
-                    <h3 class="sum-panel-title">Distribusi Perangkat per Area / POP</h3>
-                    <p class="sum-panel-sub">Jumlah perangkat di tiap Area beserta kondisinya saat ini.</p>
-                </div>
-                <span class="sum-panel-total">{{ $summary['total'] }} total perangkat</span>
-            </div>
-
-            <div class="sum-panel-body">
-                @if($summary['empty'])
-                    <div class="sum-empty">
-                        <em class="icon ni ni-server"></em>
-                        Belum ada perangkat untuk diringkas.<br>
-                        Tambahkan perangkat lewat menu «Kelola Perangkat» supaya ringkasan ini terisi.
-                    </div>
-                @else
-                    {{-- Batang proporsi: dibaca sekilas sebelum tabel yang detail. --}}
-                    <div style="padding:14px 18px 0">
-                        <div class="sum-bar" role="img"
-                             aria-label="Proporsi kondisi perangkat: {{ $summary['up'] }} UP, {{ $summary['warning'] }} warning, {{ $summary['down'] }} down dari {{ $summary['total'] }} perangkat">
-                            <span class="sum-bar-up" style="width:{{ $summary['upPct'] }}%"></span>
-                            <span class="sum-bar-warning" style="width:{{ $summary['warnPct'] }}%"></span>
-                            <span class="sum-bar-down" style="width:{{ $summary['downPct'] }}%"></span>
-                        </div>
-                        <div class="sum-bar-legend">
-                            <span><span class="tool-dot" style="background:#22c55e"></span>UP <b>{{ $summary['upPct'] }}%</b></span>
-                            <span><span class="tool-dot" style="background:#eab308"></span>Warning <b>{{ $summary['warnPct'] }}%</b></span>
-                            <span><span class="tool-dot" style="background:#ef4444"></span>Down <b>{{ $summary['downPct'] }}%</b></span>
-                        </div>
-                    </div>
-
-                    <div class="sum-table-wrap">
-                        <table class="sum-table">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="num">No</th>
-                                    <th scope="col">Nama Area / POP</th>
-                                    <th scope="col" class="num">Total</th>
-                                    <th scope="col" class="num">UP</th>
-                                    <th scope="col" class="num">Warning</th>
-                                    <th scope="col" class="num">Down</th>
-                                    <th scope="col">Status Area</th>
-                                    <th scope="col">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($areaSummary as $row => $area)
-                                    @php
-                                        $areaStatus  = $area['status'];
-                                        $areaLabel   = ['up' => 'UP', 'warning' => 'WARNING', 'down' => 'DOWN'][$areaStatus];
-                                        $areaReason  = match ($areaStatus) {
-                                            'down'    => $area['down'].' perangkat di Area ini tidak merespons dan perlu dicek sekarang.',
-                                            'warning' => 'Semua perangkat masih merespons, tapi '.$area['warning'].' di antaranya lambat atau sering kehilangan paket.',
-                                            default   => 'Semua '.$area['total'].' perangkat di Area ini merespons normal.',
-                                        };
-                                    @endphp
-                                    <tr>
-                                        <td class="num">{{ $row + 1 }}</td>
-                                        <td class="sum-area">
-                                            {{ $area['name'] }}
-                                            <span class="sum-area-code">{{ $area['upPct'] }}% perangkat UP</span>
-                                        </td>
-                                        <td class="num"><span class="sum-count sum-count--plain">{{ $area['total'] }}</span></td>
-                                        <td class="num">
-                                            <span class="sum-count {{ $area['up'] > 0 ? 'sum-count--up' : 'sum-count--plain' }}">{{ $area['up'] }}</span>
-                                        </td>
-                                        <td class="num">
-                                            <span class="sum-count {{ $area['warning'] > 0 ? 'sum-count--warning' : 'sum-count--plain' }}">{{ $area['warning'] }}</span>
-                                        </td>
-                                        <td class="num">
-                                            <span class="sum-count {{ $area['down'] > 0 ? 'sum-count--down' : 'sum-count--plain' }}">{{ $area['down'] }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-{{ $areaStatus }}">{{ $areaLabel }}</span>
-                                            <span class="d-block small text-muted mt-1">{{ $areaReason }}</span>
-                                        </td>
-                                        <td>
-                                            {{-- Mendorong ke tampilan Relasi di halaman Monitoring, tempat
-                                                 semua hubungan antar-perangkat ini ditampilkan. --}}
-                                            <a class="sum-lihat"
-                                               href="{{ route('admin.monitoring', ['tab' => 'relasi']) }}">
-                                                <em class="icon ni ni-network"></em>Lihat Relasi
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </div>
-        </div>
+        @include('admin.ping-monitor._tabs')
     </section>
+
+    {{-- ══════════════════════════════════════════════════════════════════
+         PEMISAH ANTARA TAB PEMANTAUAN PING DAN ALAT DIAGNOSA DI BAWAHNYA
+         ══════════════════════════════════════════════════════════════════ --}}
+    <div class="border-t border-slate-800" role="presentation"></div>
+
+    {{-- ══════════════════════════════════════════════════════════════════
+         RINGKASAN STATISTIK — SUDAH DIHAPUS TOTAL
+         ══════════════════════════════════════════════════════════════════
+         Di titik ini dulu ada satu baris ringkasan ("115 Perangkat Radnet"
+         plus chip UP / WARNING / DOWN) dan sebelumnya juga empat kartu KPI
+         besar serta tabel sebaran per Area/POP. Semuanya DIHAPUS sesuai
+         permintaan supaya bagian atas halaman benar-benar bersih: angkanya
+         hanya mengulang apa yang sudah terlihat di daftar perangkat di
+         bawah — jumlah baris pada deviceCountHint dan badge status
+         UP / WARNING / DOWN pada tiap baris.
+
+         ToolsController::index() karena itu tidak lagi mengirim $summary
+         maupun $areaSummary ke view ini, dan tidak ada lagi kelas CSS
+         .sum-strip / .sum-chip di stylesheet halaman.
+
+         Angka total TETAP bisa dibaca di satu tempat saja yang jujur:
+         DeviceCsvService::officialSummary() (tabel `device`, yang sudah
+         disinkronkan dengan devices.csv), dipakai Dashboard, Monitoring,
+         DHCP Lease, dan Log — bukan dihitung ulang di halaman ini.
+    --}}
+
+    {{-- Satu-satunya penaga bila view ini someday dirender tanpa
+         $analysisLimits: nilai default-nya nol, lalu dipakai JavaScript
+         sebagai cadangan kalau respons JSON datang tanpa field 'analysis'. --}}
+    @php
+        $analysisLimits = $analysisLimits ?? [];
+    @endphp
 
     <form id="networkToolForm" autocomplete="off">
 
@@ -1001,6 +802,10 @@
              Kolom kiri khusus perangkat internal: pencarian, filter status,
              lalu daftar perangkat. Klik satu baris untuk menjadikannya target.
 
+             Kotak kartu hijau "Perangkat / Router" DIHAPUS: panel kini mulai
+             langsung dari baris pencarian, menyambung bersih ke daftar 115
+             perangkat. Judul pada kartu itu hanya mengulang isi daftar.
+
              Catatan: tidak ada baris yang ditandai `active` dari awal. Target
              bawaan halaman ini adalah Server Radnet (Server Lokal) di panel
              kanan, jadi menandai salah satu perangkat sejak awal akan
@@ -1009,25 +814,6 @@
         <div class="col-12 col-lg-5 col-xxl-4">
         <section class="tools-section" id="tierRadnet">
             <div class="tools-panel tools-list-panel">
-                <div class="tools-panel-head">
-                    <span class="tools-panel-no">1</span>
-                    <div>
-                        <h2 class="tools-panel-title">Perangkat / Router</h2>
-                        <p class="tools-panel-sub">Klik salah satu perangkat untuk menjadikannya target diagnosa.</p>
-                    </div>
-                    @if($totalDevices === 0)
-                        <span class="tools-panel-badge status-badge" id="radnetCount">Belum ada perangkat</span>
-                    @else
-                        <span class="tools-panel-badge status-badge {{ $devicesIssue > 0 ? 'status-warning' : 'status-up' }}"
-                              id="radnetCount"
-                              title="{{ $devicesIssue > 0
-                                  ? $devicesIssue.' perangkat sedang bermasalah: mati atau koneksi tidak stabil'
-                                  : 'Semua '.$totalDevices.' perangkat merespons dengan baik' }}">
-                            {{ $devicesIssue > 0 ? $devicesIssue.' perlu dicek' : 'Semua normal' }}
-                        </span>
-                    @endif
-                </div>
-
                 <div class="tools-panel-body">
 
                     {{-- Pencarian --}}
@@ -1071,12 +857,19 @@
                                         data-name="{{ $device->name }}"
                                         data-ip="{{ $device->ip_address }}"
                                         data-status="{{ $status }}"
+                                        data-type="{{ $device->type_icon }}"
                                         data-delay="{{ round((float) $device->avg_delay, 1) }}"
                                         data-loss="{{ round((float) $device->missed_percentage, 1) }}">
-                                    <span class="device-ic"><em class="icon ni ni-wifi"></em></span>
+                                    {{-- Ikon mengikuti TIPE perangkat, bukan satu ikon
+                                         WiFi untuk semua baris. Peta tipe -> ikon ada
+                                         di ToolsController::DEVICE_TYPES dan sudah
+                                         divalidasi ada di font ikon tema, jadi tidak
+                                         mungkin baris tanpa gambar. --}}
+                                    <span class="device-ic"><em class="icon ni ni-{{ $device->type_icon }}"></em></span>
                                     <span class="device-item-txt">
                                         <span class="device-name">{{ $device->name }}</span>
                                         <span class="device-ip">{{ $device->ip_address }}</span>
+                                        <span class="device-type">{{ $device->type }}</span>
                                     </span>
                                     <span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span>
                                 </button>
@@ -1151,12 +944,30 @@
                         <span class="tools-tier-no">Pilihan 2</span>
                         <div class="tools-tier-txt">
                             <h3 class="tools-tier-title">Target dari daftar jaringan</h3>
-                            <p class="tools-tier-sub">Perangkat yang diklik di panel kiri. Alamat dan statusnya otomatis ikut berubah di sini.</p>
+                            <p class="tools-tier-sub">Pilih perangkat Radnet di bawah ini, lalu alamat, status, dan ikonnya otomatis ikut di panel kanan.</p>
                         </div>
+                    </div>
+                    <div class="tool-picker">
+                        <label class="tool-field-label" for="devicePicker">
+                            {{ $totalDevices }} perangkat Radnet — pilih salah satu:
+                        </label>
+                        <select class="form-select" id="devicePicker" aria-label="Pilih perangkat Radnet dari daftar jaringan">
+                            <option value="">— Pilih perangkat dari daftar jaringan —</option>
+                            @foreach($devices as $device)
+                                @php
+                                    $pickStatus = in_array($device->status, ['down', 'warning', 'up'], true)
+                                        ? $device->status
+                                        : 'up';
+                                @endphp
+                                <option value="{{ $device->id }}">
+                                    {{ $device->name }} · {{ $device->ip_address }} · {{ strtoupper($pickStatus) }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="tool-target" id="toolTargetCard" role="status" aria-live="polite">
                         <div class="tool-target-top">
-                            <span class="tool-target-ic"><em class="icon ni ni-wifi"></em></span>
+                            <span class="tool-target-ic"><em class="icon ni ni-server" id="toolTargetIcon"></em></span>
                             <div class="tool-target-txt">
                                 <div class="tool-target-label">Perangkat terpilih</div>
                                 <div class="tool-target-name" id="toolTargetName">Server Radnet (Server Lokal)</div>
@@ -1319,17 +1130,18 @@
     const deviceHint    = document.getElementById('deviceCountHint');
     const deviceItems   = Array.prototype.slice.call(document.querySelectorAll('.device-item'));
     const statusFilter  = document.getElementById('statusFilter');
-    const radnetCount   = document.getElementById('radnetCount');
     const customInput   = document.getElementById('customTarget');
 
     const targetCard    = document.getElementById('toolTargetCard');
     const targetName    = document.getElementById('toolTargetName');
     const targetIp      = document.getElementById('toolTargetIp');
     const targetStatus  = document.getElementById('toolTargetStatus');
+    const targetIcon    = document.getElementById('toolTargetIcon');
     const targetMeta    = document.getElementById('toolTargetMeta');
     const targetDelay   = document.getElementById('toolTargetDelay');
     const targetLoss    = document.getElementById('toolTargetLoss');
     const localBtn      = document.getElementById('toolLocalBtn');
+    const devicePicker  = document.getElementById('devicePicker');
 
     /* Alamat yang dipakai saat target aktif = Server Radnet (Lokal). Awalnya
        kosong karena "memeriksa server lokal" berarti tidak ada alamat yang
@@ -2365,6 +2177,15 @@
        Token LOCAL_TARGET sudah dideklarasikan di atas bersama konstanta
        halaman lain, jadi di sini tidak perlu diulang. */
 
+    /* Ikon kartu target mengikuti asal target: server lokal memakai ikon
+       server, perangkat terpilih memakai ikon tipenya, target luar memakai
+       ikon globe. Tanpa ini, kartu target selalu menampilkan satu ikon yang
+       sama padahal target-nya sudah berganti. */
+    function setTargetIcon(icon) {
+        if (!targetIcon) { return; }
+        targetIcon.className = 'icon ni ' + (icon || 'ni-server');
+    }
+
     function markLocalActive(on) {
         localBtn.classList.toggle('is-active', on);
         localBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2376,6 +2197,7 @@
             d.classList.remove('active');
             d.setAttribute('aria-pressed', 'false');
         });
+        if (devicePicker) { devicePicker.value = ''; }
 
         markLocalActive(true);
 
@@ -2384,6 +2206,7 @@
         if (customInput) { customInput.value = ''; }
 
         targetCard.classList.remove('is-empty');
+        setTargetIcon('ni-server');
         targetName.textContent = 'Server Radnet (Server Lokal)';
         targetIp.textContent   = 'Diperiksa langsung dari server NOC';
         targetStatus.hidden    = true;
@@ -2396,6 +2219,7 @@
             d.classList.remove('active');
             d.setAttribute('aria-pressed', 'false');
         });
+        if (devicePicker) { devicePicker.value = ''; }
 
         markLocalActive(false);
 
@@ -2403,6 +2227,7 @@
         toolDeviceId.value = '';
 
         targetCard.classList.remove('is-empty');
+        setTargetIcon('ni-globe');
         targetName.textContent = 'Target dari luar';
         targetIp.textContent   = host + ' · di luar daftar jaringan Radnet';
         targetStatus.hidden    = true;
@@ -2485,6 +2310,9 @@
         item.classList.add('active');
         item.setAttribute('aria-pressed', 'true');
         selectedItem = item;
+        if (devicePicker) {
+            devicePicker.value = item.getAttribute('data-id') || '';
+        }
 
         // Trim dipakai di semua bacaan: spasi sisa dari kolom IP di daftar
         // perangkat akan membuat alamat yang dikirim tidak cocok dengan
@@ -2495,6 +2323,9 @@
         const status = item.getAttribute('data-status') || 'up';
         const delay  = num(item.getAttribute('data-delay'));
         const loss   = num(item.getAttribute('data-loss'));
+        /* data-type diisi dari peta ToolsController::DEVICE_TYPES, jadi nama
+           ikon di sini selalu ada di font ikon tema. */
+        const icon   = (item.getAttribute('data-type') || '').trim();
 
         targetCard.classList.remove('is-empty');
         markLocalActive(false);
@@ -2512,6 +2343,7 @@
             toolDeviceId.value = '';
             if (customInput) { customInput.value = ''; }
 
+            setTargetIcon(num(icon) ? icon : 'ni-help');
             targetName.textContent = name || 'Perangkat tanpa nama';
             targetIp.textContent   = 'Belum punya alamat IP, jadi belum bisa diperiksa';
             targetStatus.hidden    = true;
@@ -2534,6 +2366,7 @@
         toolDeviceId.value = (item.getAttribute('data-id') || '').trim();
         if (customInput) { customInput.value = ''; }
 
+        setTargetIcon(icon);
         targetName.textContent = name || ip;
         targetIp.textContent   = ip;
         targetStatus.hidden    = false;
@@ -2552,6 +2385,24 @@
         const item = e.target.closest('.device-item');
         if (item) { selectDevice(item); }
     });
+
+    /* Pemilih 115 perangkat di panel kanan. Opsinya membawa data yang sama
+       dengan baris di panel kiri (data-id) dan dipakai lewat jalur yang sama
+       (selectDevice), jadi memilih dari dropdown dan mengklik di daftar
+       menghasilkan target, ikon, dan status yang persis sama. */
+    if (devicePicker) {
+        devicePicker.addEventListener('change', function () {
+            const id = this.value;
+            if (!id) { return; }
+            const item = deviceItems.find(function (d) {
+                return d.getAttribute('data-id') === id;
+            });
+            if (item) {
+                selectDevice(item);
+                item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        });
+    }
 
     /* Daftar perangkat sudah berupa <button>, jadi Enter dan Space sudah
        bekerja. Yang ditambah di sini adalah panah atas/bawah supaya pengguna
@@ -2652,9 +2503,13 @@
        perlu menggulir daftar perangkat dulu. */
     setLocalTarget();
 
-    if (!deviceItems.length) {
-        radnetCount.hidden = true;
-    }
+    /* Daftar perangkat kosong: Blade sudah menanganinya sendiri lewat blok
+       forelse/empty di dalam #deviceList, jadi tidak ada badge atau kartu lagi
+       yang perlu disembunyikan dari JavaScript. */
 })();
 </script>
+
+{{-- Skrip tab pemantauan ping, dibungkus IIFE sendiri supaya tidak
+     menabrak variabel di atas yang memang hidup di halaman yang sama. --}}
+@include('admin.ping-monitor._script')
 @endpush

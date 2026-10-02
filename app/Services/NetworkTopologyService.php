@@ -425,8 +425,21 @@ class NetworkTopologyService
             $areasById[$a->id] = $a;
         }
 
-        // 2. Ambil seluruh perangkat
-        $devices = Device::all()->keyBy('id');
+        /* 2. Ambil seluruh perangkat — HANYA yang terdaftar di devices.csv.
+           Peta harus menampilkan perangkat yang sama dengan yang dihitung
+           Dashboard dan Monitoring; kalau baris lain ikut terbawa, peta
+           jadi lebih penuh daripada total di bagian atas halaman.
+           Kalau daftar resmi kosong (mis. instalasi tanpa devices.csv),
+           filter dilewati agar peta tidak ikut kosong. */
+        $officialIps = app(DeviceCsvService::class)->officialIps();
+
+        $query = Device::query();
+
+        if ($officialIps !== []) {
+            $query->whereIn('ip_address', $officialIps);
+        }
+
+        $devices = $query->get()->keyBy('id');
 
         // 3. Ambil seluruh relasi koneksi
         $rawConnections = DeviceConnection::all()

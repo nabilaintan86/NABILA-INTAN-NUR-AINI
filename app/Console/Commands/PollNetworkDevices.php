@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\HasSharedPollLock;
 use App\Models\ActivityLog;
 use App\Models\Device;
 use App\Services\DeviceCsvService;
@@ -13,6 +14,8 @@ use Illuminate\Support\Str;
 
 class PollNetworkDevices extends Command
 {
+    use HasSharedPollLock;
+
     private const WARNING_LATENCY_THRESHOLD_MS = 150;
 
     protected $signature = 'network:poll {--no-log : Jangan simpan riwayat log aktivitas} {--no-snmp : Lewati pemeriksaan SNMP (data tambahan, tidak memengaruhi status ICMP)}';
@@ -21,6 +24,13 @@ class PollNetworkDevices extends Command
 
     public function handle(DeviceCsvService $source, SnmpInspectionService $snmp, DeviceStatusNotifier $notifier): int
     {
+        // Kunci bersama dengan monitor:ping: hanya satu siklus polling berat
+        // yang boleh jalan dalam satu waktu.
+        if (! $this->acquirePollLock()) {
+            return self::SUCCESS;
+        }
+
+        try {
         // Hanya perangkat resmi (devices.csv) yang dipoll, satu kali per IP.
         $devices = $source->officialDevicesUnique();
 
@@ -162,6 +172,9 @@ class PollNetworkDevices extends Command
         }
 
         return self::SUCCESS;
+        } finally {
+            $this->releasePollLock();
+        }
     }
 
     /**

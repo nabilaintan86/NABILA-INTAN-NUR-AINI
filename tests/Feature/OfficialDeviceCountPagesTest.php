@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Services\DeviceCsvService;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\CreatesDeviceTables;
+use Tests\Feature\Concerns\CreatesNetworkAreaTables;
 use Tests\TestCase;
 
 /**
@@ -13,13 +15,16 @@ use Tests\TestCase;
  */
 class OfficialDeviceCountPagesTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use CreatesDeviceTables;
+    use CreatesNetworkAreaTables;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->createDeviceTables();
+        $this->createNetworkAreaTables();
 
         // 2 perangkat resmi
         Device::create(['name' => 'POP SBY', 'ip_address' => '10.0.0.1', 'status' => 'up', 'avg_delay' => 10]);
@@ -40,6 +45,8 @@ class OfficialDeviceCountPagesTest extends TestCase
         $this->beforeApplicationDestroyed(fn () => is_file($path) && @unlink($path));
 
         $this->app->singleton(DeviceCsvService::class, fn () => new DeviceCsvService()->usePath($path));
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_dashboard_summary_json_ignores_rows_outside_the_csv(): void
@@ -60,10 +67,23 @@ class OfficialDeviceCountPagesTest extends TestCase
 
     public function test_monitoring_page_counts_only_official_devices(): void
     {
-        $this->get(route('admin.monitoring'))->assertOk();
+        $html = $this->get(route('admin.monitoring'))->assertOk()->getContent();
 
         $this->assertCount(2, app(DeviceCsvService::class)->officialDevices());
         $this->assertCount(5, Device::all(), 'tabel device tetap menyimpan semua baris');
+
+        // AngkaMonitoring harus sama dengan Dashboard: 2 perangkat resmi,
+        // bukan 5 baris tabel. Tiga dummy di luar daftar resmi tidak boleh
+        // menambah satu pun angka.
+        $summary = app(DeviceCsvService::class)->officialSummary();
+        $this->assertSame(2, $summary['up'] + $summary['down'] + $summary['warning'] + $summary['unknown']);
+
+        $this->assertSame(3, $summary['db_extra_rows']);
+
+        foreach (['10.0.0.97' => 'Dummy 0', '10.0.0.99' => 'Dummy 2'] as $ip => $name) {
+            $this->assertStringNotContainsString($name, $html, 'perangkat di luar daftar resmi tidak boleh tampil');
+            $this->assertStringNotContainsString($ip, $html, 'perangkat di luar daftar resmi tidak boleh tampil');
+        }
     }
 
     public function test_dashboard_and_monitoring_report_the_same_official_total(): void

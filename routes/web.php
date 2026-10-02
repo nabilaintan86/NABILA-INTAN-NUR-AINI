@@ -10,12 +10,25 @@ use App\Http\Controllers\Admin\LogHistoryController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\SpeedTestController;
 use App\Http\Controllers\Admin\TelegramUserController;
 use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| PUNTAK MASUK
+|--------------------------------------------------------------------------
+*/
+
+// Tanpa route ini, mengetik domain monitoring ini hanya menghasilkan 404.
+// Akar situs langsung meneruskan ke dashboard admin; middleware auth di
+// dalam group admin yang memutuskan apakah pengunjung melihat login atau
+// dashboard, jadi tidak ada aturan yang diduplikasi di sini.
+Route::get('/', fn () => redirect()->route('admin.dashboard'));
 
 /*
 |--------------------------------------------------------------------------
@@ -50,10 +63,19 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
 |--------------------------------------------------------------------------
 | ADMIN
 |--------------------------------------------------------------------------
+|
+| Seluruh isi aplikasi ada di group ini, jadi `auth` dipasang DI LEVEL
+| GROUP, bukan(route per route). Sebelumnya dashboard, monitoring, log,
+| notifikasi, laporan, DHCP lease, device notes, dan Network Tools
+| didefinisikan tanpa middleware sama sekali — anyone yang tahu URL-nya
+| bisa membaca peta jaringan, latency, dan catatan perangkat tanpa login.
+| Group `role:super_admin` di dalamnya tetap seperti sebelumnya.
+|
 */
 
 Route::prefix('admin')
     ->name('admin.')
+    ->middleware('auth')
     ->group(function () {
 
         /*
@@ -268,6 +290,73 @@ Route::prefix('admin')
 
         /*
         |--------------------------------------------------------------------------
+        | Ping Monitor -> dialihkan ke Network Tools
+        |--------------------------------------------------------------------------
+        | Tampilan ping monitor (tab Radnet / Luar / Ringkasan, terminal log,
+        | dan analisis bahasa sehari-hari) sudah dipindahkan ke dalam
+        | /admin/tools, jadi halaman /admin/ping-monitor tidak lagi menjadi
+        | halaman terpisah. URL lamanya tetap hidup sebagai redirect supaya
+        | bookmark dan tautan yang sudah dibagikan orang tidak jadi 404.
+        |
+        | Redirect, bukan dihapus, dengan alasan yang sama.
+        */
+
+        Route::middleware(['auth', 'role:super_admin'])->group(function () {
+            Route::permanentRedirect('/ping-monitor', '/admin/tools')
+                ->name('ping-monitor');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Speed Test (khusus Super Admin)
+        |--------------------------------------------------------------------------
+        | Pengujian dijalankan di sisi server lewat SpeedTestService
+        | (speedtest-cli melalui SSH), jadi halaman dan seluruh endpoint
+        | dibatasi Super Admin: staff Forbidden, tamu/Login.
+        |
+        | Batas throttle sengaja tidak seragam:
+        |   run    satu pengujian penuh sekaligus -> ketat (6/menit).
+        |   step   polling bertahap tiap detik, butuh beberapa panggilan
+        |          per pengujian -> longgar, kalau disamakan dengan 'run'
+        |          pengujian akan kena 429 di tengah jalan.
+        |   probe  cuplikan live, diamankan RateLimiter internal controller
+        |          (20 per 10 detik per run) -> route ini hanya pelindung kasar.
+        */
+
+        Route::middleware(['auth', 'role:super_admin'])->group(function () {
+            Route::get('/speed-test', [SpeedTestController::class, 'index'])
+                ->name('speed-test');
+
+            Route::post('/speed-test/run', [SpeedTestController::class, 'run'])
+                ->middleware('throttle:6,1')
+                ->name('speed-test.run');
+
+            Route::post('/speed-test/start', [SpeedTestController::class, 'start'])
+                ->middleware('throttle:30,1')
+                ->name('speed-test.start');
+
+            Route::post('/speed-test/step', [SpeedTestController::class, 'step'])
+                ->middleware('throttle:180,1')
+                ->name('speed-test.step');
+
+            Route::post('/speed-test/probe', [SpeedTestController::class, 'probe'])
+                ->middleware('throttle:120,1')
+                ->name('speed-test.probe');
+
+            Route::get('/speed-test/history', [SpeedTestController::class, 'history'])
+                ->name('speed-test.history');
+
+            // Tong unggah milik sendiri: pengukuran laju unggah di browser
+            // harus mengunggah ke origin yang sama, karena CDN luar menolak
+            // POST lintas asal (CORS). Batasnya longgar karena satu pengujian
+            // mengunggah beberapa kali berturut-turut.
+            Route::post('/speed-test/upload-sink', [SpeedTestController::class, 'uploadSink'])
+                ->middleware('throttle:120,1')
+                ->name('speed-test.upload-sink');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
         | Kelola User (khusus Super Admin, middleware role)
         |--------------------------------------------------------------------------
         */
@@ -318,7 +407,9 @@ Route::prefix('admin')
 // without changing the admin middleware or controllers.
 Route::get('/laporan', function () {
     return redirect()->route('admin.laporan');
-})->name('laporan.redirect');
+})
+    ->middleware('auth')
+    ->name('laporan.redirect');
 
 Route::get('/kelola-router', function () {
     return redirect()->route('admin.kelola-router');

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\HasSharedPollLock;
 use App\Models\Device;
 use App\Models\MonitoringLog;
 use App\Services\DeviceCsvService;
@@ -13,12 +14,21 @@ use Illuminate\Support\Facades\Log;
 
 class MonitorDevices extends Command
 {
+    use HasSharedPollLock;
+
     protected $signature = 'monitor:ping {--no-snmp : Lewati pemeriksaan SNMP (data tambahan, tidak memengaruhi status ICMP)}';
 
     protected $description = 'Ping semua device dan update status ke database';
 
     public function handle(DeviceCsvService $source, SnmpInspectionService $snmp)
     {
+        // Kunci bersama dengan network:poll: hanya satu siklus polling berat
+        // yang boleh jalan dalam satu waktu.
+        if (! $this->acquirePollLock()) {
+            return self::SUCCESS;
+        }
+
+        try {
         // Hanya perangkat resmi (devices.csv) yang diping, satu kali per IP.
         $devices = $source->officialDevicesUnique();
 
@@ -80,6 +90,9 @@ class MonitorDevices extends Command
         }
 
         return self::SUCCESS;
+        } finally {
+            $this->releasePollLock();
+        }
     }
 
     protected function pingDevice(Device $device, ?SnmpInspectionService $snmp = null): bool

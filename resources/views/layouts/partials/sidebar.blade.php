@@ -53,10 +53,8 @@
 
                 <ul class="nk-menu">
 
-                    {{-- =================================================
-                        DASHBOARD
-                    ================================================== --}}
-                    <li class="nk-menu-item">
+                    {{-- Dashboard --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.dashboard') }}"
                             class="nk-menu-link"
@@ -130,7 +128,7 @@
                     </li>
 
                     {{-- Log History --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.log*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.log') }}"
                             class="nk-menu-link"
@@ -146,7 +144,7 @@
                     </li>
 
                     {{-- Notifikasi --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.notifikasi*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.notifikasi') }}"
                             class="nk-menu-link"
@@ -172,7 +170,7 @@
                     </li>
 
                     {{-- Kelola Router --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.kelola-router*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.kelola-router') }}"
                             class="nk-menu-link"
@@ -187,40 +185,8 @@
                         </a>
                     </li>
 
-                    {{-- Card Area (POP) --}}
-                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'area' ? 'active' : '' }}">
-                        <a
-                            href="{{ route('admin.monitoring', ['tab' => 'area']) }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-layers"></em>
-                            </span>
-
-                            <span class="nk-menu-text">
-                                Card Area (POP)
-                            </span>
-                        </a>
-                    </li>
-
-                    {{-- Relasi Perangkat --}}
-                    <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'relasi' ? 'active' : '' }}">
-                        <a
-                            href="{{ route('admin.monitoring', ['tab' => 'relasi']) }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-network"></em>
-                            </span>
-
-                            <span class="nk-menu-text">
-                                Relasi Perangkat
-                            </span>
-                        </a>
-                    </li>
-
                     @auth
-                        <li class="nk-menu-item">
+                        <li class="nk-menu-item {{ request()->routeIs('admin.device.notes*') ? 'active' : '' }}">
                             <a
                                 href="{{ route('admin.device.notes.report') }}"
                                 class="nk-menu-link"
@@ -237,7 +203,7 @@
                     @endauth
 
                     {{-- DHCP Lease --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.dhcp-lease*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.dhcp-lease') }}"
                             class="nk-menu-link"
@@ -254,7 +220,7 @@
 
                     {{-- Kelola User (khusus Super Admin) --}}
                     @if(auth()->check() && auth()->user()->role === 'super_admin')
-                        <li class="nk-menu-item">
+                        <li class="nk-menu-item {{ request()->routeIs('admin.kelola-user*') ? 'active' : '' }}">
                             <a
                                 href="{{ route('admin.kelola-user') }}"
                                 class="nk-menu-link"
@@ -274,7 +240,7 @@
                                 ? \App\Models\TelegramUser::where('is_approved', false)->count()
                                 : 0;
                         @endphp
-                        <li class="nk-menu-item">
+                        <li class="nk-menu-item {{ request()->routeIs('admin.telegram-users*') ? 'active' : '' }}">
                             <a
                                 href="{{ route('admin.telegram-users') }}"
                                 class="nk-menu-link"
@@ -305,7 +271,7 @@
                     </li>
 
                     {{-- Laporan & Grafik --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.laporan*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.laporan') }}"
                             class="nk-menu-link"
@@ -321,7 +287,7 @@
                     </li>
 
                     {{-- Network Tools --}}
-                    <li class="nk-menu-item">
+                    <li class="nk-menu-item {{ request()->routeIs('admin.tools*') ? 'active' : '' }}">
                         <a
                             href="{{ route('admin.tools') }}"
                             class="nk-menu-link"
@@ -332,6 +298,54 @@
 
                             <span class="nk-menu-text">
                                 Network Tools
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Speed Test (khusus Super Admin, sama seperti middleware
+                         route admin.speed-test*) --}}
+                    @if(auth()->user()?->isSuperAdmin())
+                        <li class="nk-menu-item {{ request()->routeIs('admin.speed-test*') ? 'active' : '' }}">
+                            <a
+                                href="{{ route('admin.speed-test') }}"
+                                class="nk-menu-link"
+                            >
+                                <span class="nk-menu-icon">
+                                    <em class="icon ni ni-speed"></em>
+                                </span>
+
+                                <span class="nk-menu-text">
+                                    Speed Test
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Menu "Ping Monitor" yang dulu ada di sini sudah dihapus:
+                         tampilan ping monitor (tab Radnet / Luar / Ringkasan)
+                         sekarang menyatu di Network Tools di atas. --}}
+
+                    {{-- =================================================
+                        AKUN
+                    ================================================== --}}
+                    <li class="nk-menu-heading">
+                        <h6 class="overline-title">
+                            Akun
+                        </h6>
+                    </li>
+
+                    {{-- Profil --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.profile*') ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.profile') }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-user"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Profil
                             </span>
                         </a>
                     </li>

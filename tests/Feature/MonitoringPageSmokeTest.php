@@ -4,82 +4,29 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Models\DeviceConnection;
-use App\Models\User;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
+use App\Services\DeviceCsvService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\TestCase;
 
+/**
+ * Smoke test halaman Monitoring.
+ *
+ * Skema diambil dari migration asli lewat RefreshDatabase, bukan tabel yang
+ * ditulis manual: MonitoringController membaca banyak tabel sekaligus
+ * (device, network_areas, map_settings, monitoring_logs, notifikasi) dan
+ * dulu gagal 500 di test karena satu per satu tabelnya kelupaan dibuat.
+ * Dengan migration yang jadi acuan, test ini gagal kalau skema produksi
+ * berubah — bukan kalau ada tabel yang tidak sengaja terlewat.
+ */
 class MonitoringPageSmokeTest extends TestCase
 {
+    use AuthenticatesAdmin;
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (!Schema::hasTable('users')) {
-            Schema::create('users', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->string('email')->unique();
-                $table->string('role')->default('admin');
-                $table->timestamp('email_verified_at')->nullable();
-                $table->string('password');
-                $table->rememberToken();
-                $table->timestamps();
-            });
-        }
-
-        if (!Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
-                $table->string('id')->primary();
-                $table->foreignId('user_id')->nullable()->index();
-                $table->string('ip_address', 45)->nullable();
-                $table->text('user_agent')->nullable();
-                $table->longText('payload');
-                $table->integer('last_activity')->index();
-            });
-        }
-
-        if (!Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->string('type')->default('ICMP');
-                $table->string('ip_address');
-                $table->string('status')->default('up');
-                $table->string('icon_type')->nullable();
-                $table->string('pop_name')->nullable();
-                $table->integer('polls')->default(0);
-                $table->integer('alerts_count')->default(0);
-                $table->timestamps();
-            });
-        }
-
-        if (!Schema::hasTable('device_connections')) {
-            Schema::create('device_connections', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('from_device_id');
-                $table->foreignId('to_device_id');
-                $table->string('connection_type')->default('ethernet');
-                $table->timestamps();
-            });
-        }
-
-        if (!Schema::hasTable('device_notifications')) {
-            Schema::create('device_notifications', function (Blueprint $table) {
-                $table->id();
-                $table->unsignedBigInteger('device_id')->nullable();
-                $table->string('device_name');
-                $table->string('ip_address');
-                $table->string('event_type');
-                $table->string('event');
-                $table->string('status');
-                $table->text('message')->nullable();
-                $table->integer('latency')->nullable();
-                $table->boolean('is_read')->default(false);
-                $table->timestamp('checked_at');
-                $table->timestamps();
-            });
-        }
 
         // Seed device ids yang dipakai topology (sesuai NetworkTopologyService).
         $ids = array_keys([
@@ -113,27 +60,39 @@ class MonitoringPageSmokeTest extends TestCase
             );
         }
 
+        /* DeviceCsvService adalah sumber resmi: Monitoring dan peta hanya
+           menampilkan perangkat yang ada di devices.csv. Supaya test ini
+           tidak bergantung pada isi CSV asli proyek, daftarkan perangkat
+           hasil seed di atas ke CSV sementara yang sama. */
+        $csv = "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\n";
+        foreach ($ids as $id) {
+            $csv .= 'DEV-'.$id.',10.0.0.'.$id.",ICMP,,,up\n";
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'monitoring-').'.csv';
+        file_put_contents($path, $csv);
+        $this->beforeApplicationDestroyed(fn () => is_file($path) && @unlink($path));
+
+        $this->app->singleton(DeviceCsvService::class, fn () => new DeviceCsvService()->usePath($path));
+
         if (DeviceConnection::count() === 0) {
             DeviceConnection::create(['from_device_id' => 11, 'to_device_id' => 10, 'connection_type' => 'ethernet']);
             DeviceConnection::create(['from_device_id' => 11, 'to_device_id' => 43, 'connection_type' => 'ethernet']);
             DeviceConnection::create(['from_device_id' => 28, 'to_device_id' => 29, 'connection_type' => 'ethernet']);
         }
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_monitoring_page_returns_200(): void
     {
-        $user = User::first() ?? User::create([
-            'name'     => 'Smoke',
-            'email'    => 'smoke@example.test',
-            'role'     => 'admin',
-            'password' => bcrypt('password'),
-        ]);
-
-        $this->actingAs($user);
+        // Role harus salah satu dari nilai yang diizinkan enum users
+        // (super_admin / staff) — nilai lain ditolak oleh CHECK constraint.
+        $this->assertTrue($this->adminUser->isSuperAdmin());
 
         $this->get('/admin/monitoring')
             ->assertStatus(200)
-            ->assertSee('RADNET Wireless Network 2025', false);
+            ->assertSee('RADNET Wireless Network 2026', false);
     }
 
     public function test_monitoring_data_is_valid_and_contained(): void

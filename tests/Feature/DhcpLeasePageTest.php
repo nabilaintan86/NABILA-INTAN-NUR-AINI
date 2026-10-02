@@ -7,17 +7,20 @@ use App\Models\DhcpLease;
 use App\Services\DeviceCsvService;
 use App\Services\DhcpImporter;
 use Illuminate\Support\Facades\Config;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\CreatesDhcpTables;
 use Tests\TestCase;
 
 class DhcpLeasePageTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use CreatesDhcpTables;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->createDhcpTables();
+        $this->authenticateAsAdmin();
     }
 
     public function test_dhcp_lease_page_renders_title_kpi_filter_table_and_links(): void

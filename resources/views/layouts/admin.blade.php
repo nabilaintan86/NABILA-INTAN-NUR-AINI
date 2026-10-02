@@ -313,6 +313,48 @@
         .nk-sidebar-brand .logo-wrap { height: auto; overflow: visible; }
         .nk-sidebar-brand .logo-wrap img { display: block; }
         .is-compact:not(:hover) .nk-sidebar-brand .logo-wrap img { display: none; }
+
+        /* ── 7. SKALA BACA GLOBAL ────────────────────────────────
+            Tema dasar memakai .875rem (14px) untuk menu dan .75rem
+            (12px) untuk label/badge, sehingga teks terasa kecil di
+            layar 1366px. Token di bawah menaikkan satu level saja
+            supaya seluruh halaman admin terbaca tanpa menggeser
+            layout, dan otomatis warisi oleh semua view turunan.
+            ------------------------------------------------------- */
+        :root {
+            --nk-text-base: 1rem;      /* isi paragraf / nilai utama   */
+            --nk-text-sm: .875rem;     /* teks pendukung              */
+            --nk-text-xs: .8125rem;   /* label, caption, badge      */
+            --nk-menu-size: .9375rem; /* navigasi sidebar            */
+        }
+
+        /* Sidebar: label menu + judul grup menu */
+        .nk-sidebar .nk-menu-link { font-size: var(--nk-menu-size); }
+        .nk-sidebar .nk-menu-heading {
+            font-size: var(--nk-text-xs);
+            letter-spacing: .04em;
+        }
+
+        /* Konten: paragraf, label form, isi tabel, badge, breadcrumb */
+        .nk-body p,
+        .nk-body label,
+        .nk-body td,
+        .nk-body .form-control,
+        .nk-body .form-select,
+        .nk-body .input-group-text,
+        .nk-body .table { font-size: var(--nk-text-base); }
+
+        .nk-body th {
+            font-size: var(--nk-text-sm);
+            letter-spacing: .02em;
+        }
+
+        .nk-body .badge,
+        .nk-body .form-check-label,
+        .nk-body .text-muted,
+        .nk-body .form-text,
+        .nk-body .breadcrumb-item,
+        .nk-body small { font-size: var(--nk-text-xs); }
     </style>
 
     @stack('styles')

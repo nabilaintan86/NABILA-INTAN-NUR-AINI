@@ -373,13 +373,13 @@
         border-radius: 12px;
         border: 1px solid #eef2f7;
     }
-    .kpi-table { width: 100%; margin: 0; font-size: 12.5px; }
+    .kpi-table { width: 100%; margin: 0; font-size: 13.5px; }
     .kpi-table thead th {
         position: sticky;
         top: 0;
         background: #f8fafc;
         color: #475569;
-        font-size: 10.5px;
+        font-size: 11.5px;
         font-weight: 800;
         letter-spacing: .5px;
         text-transform: uppercase;

@@ -8,6 +8,7 @@ use App\Services\DeviceStatusNotifier;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
@@ -16,6 +17,7 @@ use Tests\TestCase;
  */
 class DeviceNotificationTransitionTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use InteractsWithDeviceRegistry;
 
     protected function setUp(): void
@@ -72,6 +74,8 @@ class DeviceNotificationTransitionTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        $this->authenticateAsAdmin();
     }
 
     private function device(string $name = 'Router-Transisi', string $ip = '10.10.0.1', string $status = 'up'): Device

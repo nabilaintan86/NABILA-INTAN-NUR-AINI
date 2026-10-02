@@ -93,7 +93,7 @@ class TelegramUserController extends Controller
     {
         $telegramUser->update([
             'is_approved' => true,
-            'role' => $telegramUser->role === 'pending' ? 'admin' : $telegramUser->role,
+            'role' => $telegramUser->role === 'pending' ? 'staff' : $telegramUser->role,
         ]);
 
         $message = "🎉 Akses Telegram RADNET Anda telah disetujui!\n\n".

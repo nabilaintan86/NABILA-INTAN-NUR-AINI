@@ -2,616 +2,221 @@
 
 @section('title', 'Speed Test · RADNET NOC')
 
+{{--
+    Tailwind HANYA untuk halaman ini.
+
+    Aset page-scoped (theme + utilities, tanpa preflight) supaya tema Noko
+    dan seluruh halaman admin lain tidak ikut ter-reset. Jangan dipindah
+    ke layouts/admin.blade.php.
+--}}
 @push('styles')
-<style>
-    /* ══ PANEL ════════════════════════════════════════════ */
-    .st-panel {
-        background: #fff;
-        border: 1px solid #e5e9f0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .st-panel-head {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px 20px;
-        background: #fbfcfe;
-        border-bottom: 1px solid #eef1f6;
-    }
-    .st-panel-no {
-        width: 28px; height: 28px; flex-shrink: 0;
-        border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        background: #1d4ed8; color: #fff;
-        font-size: 13px; font-weight: 800;
-    }
-    .st-panel-title {
-        margin: 0; font-size: 15px; font-weight: 800; color: #16223c; line-height: 1.3;
-    }
-    .st-panel-tag {
-        display: inline-block;
-        font-size: 10px; font-weight: 800; letter-spacing: .3px;
-        text-transform: uppercase;
-        padding: 2px 7px; border-radius: 999px;
-        background: #eef2ff; color: #4338ca;
-        vertical-align: 2px;
-    }
-    .st-panel-sub {
-        margin: 2px 0 0; font-size: 12.5px; color: #64748b; line-height: 1.5;
-    }
-    .st-panel-body { padding: 20px 22px; }
-
-    /* ══ KOTAK TARGET AKTIF ═══════════════════════════════ */
-    .st-target-box {
-        border: 1px solid #e5e9f0;
-        border-radius: 14px;
-        background: #f8fafc;
-        padding: 16px 18px;
-    }
-    .st-target-now {
-        display: flex; align-items: center; gap: 12px;
-        padding-bottom: 14px;
-        border-bottom: 1px dashed #e2e8f0;
-    }
-    .st-target-now-ic {
-        width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        background: #1d4ed8; color: #fff; font-size: 18px;
-    }
-    .st-target-box.is-manual .st-target-now-ic { background: #6d28d9; }
-    .st-target-now-txt { min-width: 0; flex: 1 1 auto; }
-    .st-target-now-label {
-        font-size: 10px; font-weight: 800; letter-spacing: .6px;
-        text-transform: uppercase; color: #64748b;
-    }
-    .st-target-now-name {
-        font-size: 15px; font-weight: 800; color: #16223c;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .st-target-now-ip {
-        font-size: 12.5px; color: #475569;
-        font-family: 'Consolas', 'Menlo', monospace;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-
-    .st-status-badge {
-        flex-shrink: 0;
-        font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
-        padding: 3px 8px; border-radius: 999px;
-    }
-    .st-status-up      { background: #dcfce7; color: #15803d; }
-    .st-status-down    { background: #fee2e2; color: #dc2626; }
-    .st-status-warning { background: #fef9c3; color: #a16207; }
-
-    /* ══ OPSI A · PILIH DARI DAFTAR ═══════════════════════ */
-    .st-option { margin-top: 15px; }
-    .st-option-head {
-        display: flex; align-items: center; gap: 7px;
-        font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 8px;
-    }
-    .st-option-key {
-        width: 21px; height: 21px; border-radius: 6px; flex-shrink: 0;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: #1d4ed8; color: #fff;
-        font-size: 10.5px; font-weight: 800;
-    }
-    .st-option-key--b { background: #6d28d9; }
-
-    .st-picker { position: relative; }
-    .st-picker-btn {
-        display: flex; align-items: center; gap: 11px;
-        width: 100%; text-align: left;
-        padding: 11px 14px;
-        border: 1px solid #e2e8f0; border-radius: 10px;
-        background: #fff; cursor: pointer;
-        transition: border-color .15s, background .15s, box-shadow .15s;
-    }
-    .st-picker-btn:hover { border-color: #93c5fd; background: #f8fbff; }
-    .st-picker.is-open .st-picker-btn {
-        border-color: #1d4ed8;
-        box-shadow: 0 0 0 3px rgba(29, 78, 216, .12);
-    }
-    .st-picker-btn-ic {
-        width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        background: #eef2ff; color: #1d4ed8; font-size: 15px;
-    }
-    .st-picker-btn-txt { min-width: 0; flex: 1 1 auto; }
-    .st-picker-btn-label { display: block; font-size: 13.5px; font-weight: 700; color: #16223c; }
-    .st-picker-btn-hint {
-        display: block; font-size: 11.5px; color: #64748b; margin-top: 1px;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .st-picker-btn .st-caret {
-        flex-shrink: 0; font-size: 13px; color: #94a3b8;
-        transition: transform .2s;
-    }
-    .st-picker.is-open .st-caret { transform: rotate(180deg); }
-
-    /* Panel daftar hanya muncul saat tombol diklik, jadi daftar panjang tidak
-       pernah memenuhi layar sejak halaman dibuka. */
-    .st-picker-panel {
-        display: none;
-        margin-top: 8px;
-        border: 1px solid #e2e8f0; border-radius: 11px;
-        background: #fff; overflow: hidden;
-    }
-    .st-picker.is-open .st-picker-panel { display: block; }
-    .st-picker-search { position: relative; border-bottom: 1px solid #eef2f7; }
-    .st-picker-search .icon {
-        position: absolute; left: 12px; top: 50%;
-        transform: translateY(-50%);
-        font-size: 13px; color: #94a3b8; pointer-events: none;
-    }
-    .st-picker-search input {
-        width: 100%; border: 0; outline: 0; background: #fff;
-        padding: 12px 14px 12px 33px;
-        font-size: 13.5px; color: #16223c;
-    }
-    .st-picker-list {
-        max-height: 260px; min-height: 120px;
-        overflow-y: auto; padding: 6px;
-    }
-    .st-picker-list::-webkit-scrollbar { width: 8px; }
-    .st-picker-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
-    .st-picker-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
-    .st-picker-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    .st-picker-opt {
-        display: flex; align-items: center; gap: 10px;
-        width: 100%; text-align: left;
-        padding: 8px 10px; margin-bottom: 3px;
-        border: 1px solid transparent; border-radius: 9px;
-        background: #fff; cursor: pointer;
-        transition: background .12s, border-color .12s;
-    }
-    .st-picker-opt:last-child { margin-bottom: 0; }
-    .st-picker-opt:hover { background: #f1f5f9; border-color: #e2e8f0; }
-    .st-picker-opt.is-active {
-        background: #eff6ff; border-color: #93c5fd;
-    }
-    .st-picker-opt-ic {
-        width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        background: #e2e8f0; color: #475569; font-size: 13px;
-    }
-    .st-picker-opt.is-active .st-picker-opt-ic { background: #1d4ed8; color: #fff; }
-    .st-picker-opt-txt { min-width: 0; flex: 1 1 auto; }
-    .st-picker-opt-name {
-        display: block; font-size: 13px; font-weight: 700; color: #0f172a;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .st-picker-opt-ip {
-        display: block; font-size: 11.5px; color: #64748b; margin-top: 1px;
-        font-family: 'Consolas', 'Menlo', monospace;
-    }
-    .st-picker-foot {
-        padding: 8px 12px; border-top: 1px solid #eef2f7;
-        background: #fbfcfe;
-        font-size: 11.5px; color: #64748b;
-    }
-    .st-picker-empty {
-        padding: 22px 12px; text-align: center;
-        color: #64748b; font-size: 12.5px; line-height: 1.6;
-    }
-
-    /* ══ OPSI B · KETIK ALAMAT SENDIRI ═══════════════════ */
-    .st-input-group .input-group-text {
-        background: #f1f5f9; border-color: #e2e8f0;
-        color: #64748b; font-size: 14px;
-    }
-    .st-input {
-        font-size: 14px; border-color: #e2e8f0;
-        border-radius: 10px; box-shadow: none;
-        font-family: 'Consolas', 'Menlo', monospace; min-height: 46px;
-    }
-    .st-input:focus {
-        border-color: #6d28d9;
-        box-shadow: 0 0 0 3px rgba(109, 40, 217, .12);
-    }
-    .st-hint { font-size: 12.5px; color: #64748b; margin: 8px 0 0; line-height: 1.6; }
-    .st-hint--warn { color: #b45309; }
-
-    /* ══ TOMBOL UTAMA ═════════════════════════════════════ */
-    .st-run-wrap { text-align: center; margin-top: 20px; }
-    .st-run-btn {
-        display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-        width: 100%; max-width: 380px;
-        padding: 17px 40px;
-        border: 0; border-radius: 14px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
-        color: #fff; font-size: 15.5px; font-weight: 800; letter-spacing: .3px;
-        text-transform: uppercase;
-        cursor: pointer;
-        box-shadow: 0 10px 24px -12px rgba(29, 78, 216, .85);
-        transition: filter .15s ease, transform .06s ease, box-shadow .15s ease;
-    }
-    .st-run-btn:hover {
-        filter: brightness(1.04);
-        box-shadow: 0 14px 30px -12px rgba(29, 78, 216, .9);
-    }
-    .st-run-btn:active { transform: translateY(1px); }
-    .st-run-btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; filter: none; }
-    .st-run-btn .icon { font-size: 20px; }
-    .st-run-note { margin: 11px 0 0; font-size: 12px; color: #64748b; text-align: center; }
-
-    .st-status-line {
-        display: flex; align-items: center; gap: 9px;
-        font-size: 13px; color: #52627d;
-        margin-top: 18px; padding: 11px 15px;
-        border-radius: 10px; background: #f8fafc; border: 1px solid #eef2f7;
-        min-height: 46px;
-    }
-    .st-status-line.is-ok { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
-    .st-status-line.is-error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-    .st-spinner {
-        width: 15px; height: 15px; flex-shrink: 0;
-        border: 2px solid #dfe5ef; border-top-color: #1d4ed8;
-        border-radius: 50%;
-        animation: st-spin .7s linear infinite;
-    }
-    @keyframes st-spin { to { transform: rotate(360deg); } }
-
-    /* ══ PROGRES BERTAHAP ═══════════════════════════════ */
-    .st-progress {
-        margin-top: 12px; padding: 15px 17px;
-        border: 1px solid #e2e8f2; border-radius: 12px;
-        background: linear-gradient(180deg, #fbfdff, #f5f8fd);
-    }
-    .st-progress[hidden] { display: none; }
-    .st-progress-head {
-        display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
-        font-size: 13px; font-weight: 700; color: #334155;
-    }
-    .st-progress-pct { color: #1d4ed8; font-size: 15px; font-weight: 800; }
-    .st-progress-track {
-        height: 8px; margin-top: 10px; border-radius: 999px;
-        background: #e6ecf6; overflow: hidden;
-    }
-    .st-progress-bar {
-        height: 100%; width: 0;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #1d4ed8, #0ea5e9);
-        transition: width .45s ease;
-    }
-    .st-progress-steps {
-        list-style: none; margin: 13px 0 0; padding: 0;
-        display: flex; flex-wrap: wrap; gap: 8px 18px;
-    }
-    .st-step {
-        display: flex; align-items: center; gap: 6px;
-        font-size: 12px; color: #94a3b8; font-weight: 600;
-    }
-    .st-step .icon { font-size: 14px; }
-    .st-step.is-active { color: #1d4ed8; }
-    .st-step.is-active .icon { animation: st-pulse 1.1s ease-in-out infinite; }
-    .st-step.is-done { color: #15803d; }
-    @keyframes st-pulse { 50% { opacity: .35; } }
-    .st-progress-foot {
-        display: flex; justify-content: space-between; gap: 10px;
-        margin-top: 12px; font-size: 11.5px; color: #8b97ad;
-    }
-
-    /* ══ KARTU HASIL ═════════════════════════════════════ */
-    .st-metrics {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-    }
-    .st-metric {
-        background: #fff; border: 1px solid #e8ecf3;
-        border-radius: 14px; padding: 20px 22px;
-    }
-    .st-metric-label {
-        color: #6b7a99; font-size: 11px; font-weight: 800;
-        text-transform: uppercase; letter-spacing: .5px;
-    }
-    .st-metric-value {
-        color: #1c2b4a; font-size: 34px; font-weight: 800;
-        margin-top: 8px; line-height: 1.05;
-    }
-    .st-metric-value.is-empty { color: #aab4c6; }
-    .st-metric-unit { font-size: 13px; font-weight: 700; color: #6b7a99; margin-left: 4px; }
-    .st-metric-note { color: #8b97ad; font-size: 12px; margin-top: 6px; }
-    .st-metric-icon {
-        float: right; width: 44px; height: 44px; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 20px;
-    }
-    .st-metric--down .st-metric-icon { background: #dbeafe; color: #1d4ed8; }
-    .st-metric--up   .st-metric-icon { background: #dcfce7; color: #15803d; }
-    .st-metric--ping .st-metric-icon { background: #ede9fe; color: #6d28d9; }
-    .st-metric.is-busy .st-metric-icon { background: #eef2f9; color: #94a3b8; }
-
-    /* ══ TABEL RIWAYAT ═══════════════════════════════════ */
-    .st-table th, .st-table td { vertical-align: middle; font-size: 12.5px; }
-    .st-time { font-family: 'Consolas', 'Menlo', monospace; color: #52627d; white-space: nowrap; }
-    .st-num { font-weight: 700; color: #17233d; white-space: nowrap; }
-    .st-target-name-cell { font-weight: 600; color: #33415c; }
-    .st-badge {
-        display: inline-flex; align-items: center;
-        border-radius: 999px; padding: 4px 9px;
-        font-size: 10.5px; font-weight: 700;
-    }
-    .st-badge--ok        { background: #dcfce7; color: #15803d; }
-    .st-badge--gagal     { background: #fee2e2; color: #b91c1c; }
-    .st-badge--cli       { background: #ede9fe; color: #6d28d9; }
-    .st-badge--curl      { background: #e0f2fe; color: #0369a1; }
-    .st-badge--tidak-ada { background: #fef3c7; color: #b45309; }
-    .st-row-new { background: #f0fdf4; }
-    .st-empty { padding: 36px 20px; text-align: center; color: #7a879e; }
-
-    /* ══ RESPONSIF ═══════════════════════════════════════ */
-    @media (max-width: 991.98px) {
-        .st-metrics { grid-template-columns: minmax(0, 1fr); }
-    }
-</style>
+    @vite(['resources/css/speedtest.css'])
 @endpush
 
 @section('content')
-    @php
-        $totalDevices = $devices->count();
-    @endphp
+    {{--
+        Susunan mengikuti Speedtest by Ookla:
 
-    <x-admin.page-head title="Speed Test"
-        subtitle="Cek laju internet dari Server NOC atau langsung dari perangkat jaringan yang dipilih." />
+          1. Lingkaran gauge di tengah, dengan tombol MULAI di dalam dial.
+          2. Setelah tes selesai, dua kotak besar muncul simetris di atas:
+             UNDUHAN dan UNGGAHAN.
+          3. Di bawahnya baris metrik ringkas: Ping, Jitter, Loss.
+          4. Di paling bawah, kotak informasi koneksi.
 
-    {{-- ══ PANEL 1 · TARGET AKTIF & AKSI ══════════════════ --}}
-    <div class="row g-3 mb-3">
-        <div class="col-12 col-lg-7">
-            <div class="st-panel h-100">
-                <div class="st-panel-head">
-                    <span class="st-panel-no">1</span>
-                    <div>
-                        <h2 class="st-panel-title">Target Aktif <span class="st-panel-tag">Siap Diuji</span></h2>
-                        <p class="st-panel-sub">Perangkat yang dipilih, atau alamat yang diketik sendiri.</p>
-                    </div>
-                </div>
-                <div class="st-panel-body">
+        Tidak ada tombol mati di halaman ini. Yang bisa diklik hanya satu:
+        tombol MULAI. Semua angka diukur nyata di browser — unduh dari CDN
+        Cloudflare, unggah ke endpoint first-party RADNET NOC.
+    --}}
 
-                    {{-- Ringkasan target yang akan diuji --}}
-                    <div class="st-target-box" id="stTargetBox">
-                        <div class="st-target-now">
-                            <span class="st-target-now-ic" id="stTargetIc"><em class="icon ni ni-server"></em></span>
-                            <div class="st-target-now-txt">
-                                <div class="st-target-now-label">Asal target</div>
-                                <div class="st-target-now-name" id="stTargetName">Server NOC</div>
-                                <div class="st-target-now-ip" id="stTargetIp">Diuji langsung dari server NOC</div>
-                            </div>
-                            <span class="st-status-badge st-status-up" id="stTargetStatus" hidden>UP</span>
-                        </div>
+    <x-admin.page-head class="stg-head" title="Speed Test"
+        subtitle="Mengukur latensi, jitter, packet loss, laju unduh, dan laju unggah langsung dari perangkat Anda." />
 
-                        {{-- Opsi A: pilih dari daftar jaringan. Daftarnya sendiri
-                             sengaja disembunyikan di balik tombol supaya 115
-                             perangkat tidak memenuhi layar sejak halaman dibuka. --}}
-                        <div class="st-option">
-                            <div class="st-option-head">
-                                <span class="st-option-key">A</span>
-                                Pilih dari daftar jaringan
-                            </div>
+    <div class="stg-page">
 
-                            <div class="st-picker" id="stPicker">
-                                <button type="button" class="st-picker-btn" id="stPickerBtn"
-                                        aria-haspopup="listbox" aria-expanded="false"
-                                        aria-controls="stPickerPanel">
-                                    <span class="st-picker-btn-ic"><em class="icon ni ni-server"></em></span>
-                                    <span class="st-picker-btn-txt">
-                                        <span class="st-picker-btn-label" id="stPickerLabel">Server NOC (Lokal)</span>
-                                        <span class="st-picker-btn-hint" id="stPickerHint">Menguji tanpa perangkat lain</span>
-                                    </span>
-                                    <em class="icon ni ni-chevron-down st-caret"></em>
-                                </button>
+        {{-- ══ 1 · GAUGE + TOMBOL MULAI DI TENGAH ══════════════════════════ --}}
+        <div class="stg-gauge-wrap" id="stgGaugeWrap">
+            <div class="stg-halo" aria-hidden="true"></div>
 
-                                <div class="st-picker-panel" id="stPickerPanel" role="listbox"
-                                     aria-label="Daftar perangkat jaringan">
-                                    <div class="st-picker-search">
-                                        <em class="icon ni ni-search"></em>
-                                        <input type="text" id="stPickerSearch"
-                                               placeholder="Cari nama atau alamat IP"
-                                               autocomplete="off" spellcheck="false"
-                                               aria-label="Cari perangkat berdasarkan nama atau alamat IP">
-                                    </div>
+            <svg class="stg-gauge" viewBox="0 0 320 320" aria-hidden="true">
+                <defs>
+                    <linearGradient id="stgGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#FFE680"></stop>
+                        <stop offset="50%" stop-color="#FFD700"></stop>
+                        <stop offset="100%" stop-color="#DAA520"></stop>
+                    </linearGradient>
+                    <filter id="stgGlow" x="-60%" y="-60%" width="220%" height="220%">
+                        <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
+                        <feMerge>
+                            <feMergeNode in="blur"></feMergeNode>
+                            <feMergeNode in="SourceGraphic"></feMergeNode>
+                        </feMerge>
+                    </filter>
+                </defs>
 
-                                    <div class="st-picker-list" id="stPickerList">
-                                        <button type="button" class="st-picker-opt is-active" data-local="1">
-                                            <span class="st-picker-opt-ic"><em class="icon ni ni-server"></em></span>
-                                            <span class="st-picker-opt-txt">
-                                                <span class="st-picker-opt-name">Server NOC (Lokal)</span>
-                                                <span class="st-picker-opt-ip">Diuji dari server NOC</span>
-                                            </span>
-                                        </button>
+                {{-- Cincin yang berputar pelan saat idle. --}}
+                <circle class="stg-idle-ring" cx="160" cy="160" r="176"></circle>
 
-                                        @forelse($devices as $device)
-                                            @php
-                                                $status = in_array($device->status, ['down', 'warning', 'up'], true)
-                                                    ? $device->status : 'up';
-                                            @endphp
-                                            <button type="button" class="st-picker-opt"
-                                                    role="option"
-                                                    data-id="{{ $device->id }}"
-                                                    data-name="{{ $device->name }}"
-                                                    data-ip="{{ $device->ip_address }}"
-                                                    data-status="{{ $status }}"
-                                                    data-delay="{{ round((float) $device->avg_delay, 1) }}"
-                                                    data-loss="{{ round((float) $device->missed_percentage, 1) }}">
-                                                <span class="st-picker-opt-ic"><em class="icon ni ni-server"></em></span>
-                                                <span class="st-picker-opt-txt">
-                                                    <span class="st-picker-opt-name">{{ $device->name }}</span>
-                                                    <span class="st-picker-opt-ip">{{ $device->ip_address }}</span>
-                                                </span>
-                                                <span class="st-status-badge st-status-{{ $status }}">{{ strtoupper($status) }}</span>
-                                            </button>
-                                        @empty
-                                            <div class="st-picker-empty">
-                                                Belum ada perangkat terdaftar.<br>
-                                                Tambahkan lewat menu «Kelola Perangkat».
-                                            </div>
-                                        @endforelse
-                                    </div>
+                {{-- Centang dibuat dari JS supaya jaraknya rapi tanpa
+                     menulis puluhan elemen secara manual. --}}
+                <g id="stgTicks"></g>
 
-                                    <div class="st-picker-foot" id="stPickerFoot">
-                                        {{ $totalDevices }} perangkat terdaftar
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {{-- Cincin progres keseluruhan pengujian. --}}
+                <circle class="stg-progress" id="stgProgress"
+                        cx="160" cy="160" r="152"
+                        transform="rotate(-90 160 160)"></circle>
 
-                        {{-- Opsi B: alamat yang diketik sendiri --}}
-                        <div class="st-option">
-                            <div class="st-option-head">
-                                <span class="st-option-key st-option-key--b">B</span>
-                                Atau tulis alamat target sendiri
-                            </div>
+                {{-- Busur utama: tinggi laju saat ini. --}}
+                <circle class="stg-track" cx="160" cy="160" r="140"
+                        transform="rotate(-90 160 160)"></circle>
+                <circle class="stg-arc" id="stgArc"
+                        cx="160" cy="160" r="140"
+                        transform="rotate(-90 160 160)"></circle>
 
-                            <div class="input-group st-input-group">
-                                <span class="input-group-text"><em class="icon ni ni-globe"></em></span>
-                                <input type="text" class="form-control st-input" id="customHost"
-                                       placeholder="Contoh: 10.0.0.1 atau router.pop-a"
-                                       autocomplete="off" spellcheck="false"
-                                       aria-label="IP atau nama host target manual">
-                            </div>
+                {{-- Ujung busur (jarum bulat). --}}
+                <g class="stg-tip" id="stgTip" transform="rotate(0 160 160)">
+                    <circle cx="160" cy="20" r="7"></circle>
+                </g>
+            </svg>
 
-                            @if (! $remoteReady)
-                                <p class="st-hint st-hint--warn">
-                                    <em class="icon ni ni-alert-circle"></em>
-                                    Uji ke perangkat belum aktif di server ini (SSH_ENABLED).
-                                </p>
-                            @elseif (empty($allowedCidrs))
-                                <p class="st-hint st-hint--warn">
-                                    <em class="icon ni ni-alert-circle"></em>
-                                    Target manual belum diizinkan. Tambahkan jaringan ke <b>SSH_ALLOWED_CIDRS</b> di server ini.
-                                </p>
-                            @else
-                                <p class="st-hint">
-                                    Hanya alamat dalam jaringan yang diizinkan server yang bisa diuji lewat opsi ini.
-                                </p>
-                            @endif
-                        </div>
-                    </div>
+            {{-- Lapisan baca: angka real-time + status tahapan. Hanya terlihat
+                 selama pengujian berjalan. --}}
+            <div class="stg-center stg-center-read">
+                <div class="stg-value is-idle text-[3.25rem] font-black" id="stgValue">0</div>
+                <div class="mt-1 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400" id="stgUnit">Mbps</div>
+                <div class="stg-status is-idle mt-3 inline-flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 px-3 py-1 text-xs font-semibold text-zinc-400"
+                     id="stgStatus">Siap diuji</div>
+            </div>
 
-                    <div class="st-run-wrap">
-                        <button type="button" class="st-run-btn" id="stRunBtn">
-                            <em class="icon ni ni-play-circle"></em>
-                            Mulai Speed Test
-                        </button>
-                        <p class="st-run-note">
-                            Pengujian ke perangkat berjalan dari sisi perangkatnya, jadi butuh sekitar 60 detik.
-                        </p>
-                    </div>
-
-                    <div class="st-status-line" id="stStatus">
-                        <em class="icon ni ni-clock"></em>
-                        <span id="stStatusText">Pilih target di atas, lalu tekan tombol untuk mulai menguji.</span>
-                    </div>
-
-                    {{-- Progres bertahap: mengisi sendiri selama pengujian
-                         berjalan, jadi angka di panel hasil tidak menunggu
-                         semuanya selesai. --}}
-                    <div class="st-progress" id="stProgress" hidden
-                         role="progressbar"
-                         aria-valuemin="0"
-                         aria-valuemax="100"
-                         aria-valuenow="0"
-                         aria-label="Progres pengujian">
-                        <div class="st-progress-head">
-                            <span class="st-progress-stage" id="stProgressStage">Menyiapkan pengujian…</span>
-                            <span class="st-progress-pct" id="stProgressPct">0%</span>
-                        </div>
-                        <div class="st-progress-track">
-                            <div class="st-progress-bar" id="stProgressBar" style="width:0%"></div>
-                        </div>
-                        <ul class="st-progress-steps" id="stProgressSteps">
-                            @foreach (\App\Services\SpeedTestService::STAGE_LABELS as $stageKey => $stageLabel)
-                                <li class="st-step" data-step="{{ $stageKey }}">
-                                    <em class="icon ni ni-check-circle"></em>
-                                    <span>{{ $stageLabel }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="st-progress-foot">
-                            <span id="stElapsed">0 detik</span>
-                            <span id="stProgressTarget"></span>
-                        </div>
-                    </div>
-                </div>
+            {{-- Lapisan aksi: tombol MULAI duduk tepat di tengah dial, seperti
+                 di Speedtest by Ookla. --}}
+            <div class="stg-center stg-center-go">
+                <button type="button"
+                        class="stg-go"
+                        id="stgRun"
+                        aria-label="Mulai Speed Test">
+                    <span class="stg-go-dot" aria-hidden="true"></span>
+                    <span id="stgRunLabel">MULAI</span>
+                </button>
+                <p class="stg-go-hint" id="stgGoHint">Ketuk untuk menguji koneksi</p>
             </div>
         </div>
 
-        {{-- ══ PANEL 2 · KARTU HASIL ═══════════════════════ --}}
-        <div class="col-12 col-lg-5">
-            <div class="st-panel h-100">
-                <div class="st-panel-head">
-                    <span class="st-panel-no">2</span>
-                    <div>
-                        <h2 class="st-panel-title">Hasil Pengujian <span class="st-panel-tag">Terbaru</span></h2>
-                        <p class="st-panel-sub">Laju unduh, laju unggah, dan ping.</p>
-                    </div>
-                </div>
-                <div class="st-panel-body">
-                    <div class="st-metrics" id="stMetrics" style="grid-template-columns:minmax(0,1fr);gap:12px">
-                        <div class="st-metric st-metric--down" data-metric="download">
-                            <span class="st-metric-icon"><em class="icon ni ni-download"></em></span>
-                            <div class="st-metric-label">Kecepatan Download</div>
-                            <div class="st-metric-value is-empty" data-slot>—<span class="st-metric-unit">Mbps</span></div>
-                            <div class="st-metric-note" data-note>Belum diuji</div>
-                        </div>
-                        <div class="st-metric st-metric--up" data-metric="upload">
-                            <span class="st-metric-icon"><em class="icon ni ni-upload"></em></span>
-                            <div class="st-metric-label">Kecepatan Upload</div>
-                            <div class="st-metric-value is-empty" data-slot>—<span class="st-metric-unit">Mbps</span></div>
-                            <div class="st-metric-note" data-note>Belum diuji</div>
-                        </div>
-                        <div class="st-metric st-metric--ping" data-metric="ping">
-                            <span class="st-metric-icon"><em class="icon ni ni-activity"></em></span>
-                            <div class="st-metric-label">Respon Jaringan / Ping</div>
-                            <div class="st-metric-value is-empty" data-slot>—<span class="st-metric-unit">ms</span></div>
-                            <div class="st-metric-note" data-note>Belum diuji</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        {{-- ══ HASIL: muncul setelah pengujian selesai ═════════════════════ --}}
+        {{-- Sembunyi sebelum tes pertama selesai supaya tampilan awal benar-benar
+             bersih: hanya satu lingkaran dan satu tombol, seperti Ookla. --}}
+        <div class="stg-results" id="stgResults" hidden>
 
-    {{-- ══ PANEL 3 · RIWAYAT ══════════════════════════════ --}}
-    <div class="row g-3">
-        <div class="col-12">
-            <div class="st-panel">
-                <div class="st-panel-head">
-                    <span class="st-panel-no">3</span>
-                    <div>
-                        <h2 class="st-panel-title">Riwayat Pengujian</h2>
-                        <p class="st-panel-sub">Maksimal {{ $historyLimit }} pengujian terakhir, khusus Super Admin.</p>
+            {{-- ── Dua kotak besar, simetris ────────────────────────────── --}}
+            <div class="stg-heroes">
+
+                <div class="stg-hero is-live" data-hero="download">
+                    <div class="stg-hero-head">
+                        <svg class="stg-hero-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12"></path>
+                            <path d="m7 12 5 5 5-5"></path>
+                            <path d="M5 21h14"></path>
+                        </svg>
+                        <span>Unduhan</span>
                     </div>
-                    <div class="ms-auto">
-                        <button type="button" class="btn btn-sm btn-light btn-dim" id="stRefreshBtn">
-                            <em class="icon ni ni-reload me-1"></em>Segarkan
-                        </button>
+                    <div class="stg-hero-row">
+                        <span class="stg-hero-number is-empty" data-hero-value="download">—</span>
+                        <span class="stg-hero-unit">Mbps</span>
                     </div>
+                    <p class="stg-hero-note" data-hero-note="download">Belum diuji</p>
                 </div>
-                <div class="st-panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover st-table mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Waktu</th>
-                                    <th>Target</th>
-                                    <th>Dilakukan oleh</th>
-                                    <th class="text-end">Download</th>
-                                    <th class="text-end">Upload</th>
-                                    <th class="text-end">Ping</th>
-                                    <th>Sumber</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="stLogBody">
-                                <tr><td colspan="8" class="st-empty">Belum ada riwayat pengujian.</td></tr>
-                            </tbody>
-                        </table>
+
+                <div class="stg-hero" data-hero="upload">
+                    <div class="stg-hero-head">
+                        <svg class="stg-hero-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 21V9"></path>
+                            <path d="m7 12 5-5 5 5"></path>
+                            <path d="M5 3h14"></path>
+                        </svg>
+                        <span>Unggahan</span>
                     </div>
+                    <div class="stg-hero-row">
+                        <span class="stg-hero-number is-empty" data-hero-value="upload">—</span>
+                        <span class="stg-hero-unit">Mbps</span>
+                    </div>
+                    <p class="stg-hero-note" data-hero-note="upload">Belum diuji</p>
                 </div>
             </div>
+
+            {{-- ── Baris metrik ringkas ─────────────────────────────────── --}}
+            <div class="stg-minis">
+
+                <div class="stg-mini" data-metric="ping">
+                    <svg class="stg-mini-ic text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v5l3 2"></path>
+                    </svg>
+                    <span class="stg-mini-label">Ping</span>
+                    <span class="stg-mini-value is-empty" data-slot>—</span>
+                    <span class="stg-mini-unit">ms</span>
+                    <span class="stg-mini-note" data-note>Belum diuji</span>
+                </div>
+
+                <div class="stg-mini" data-metric="jitter">
+                    <svg class="stg-mini-ic text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 12h3l2-6 4 12 2-6h4"></path>
+                    </svg>
+                    <span class="stg-mini-label">Jitter</span>
+                    <span class="stg-mini-value is-empty" data-slot>—</span>
+                    <span class="stg-mini-unit">ms</span>
+                    <span class="stg-mini-note" data-note>Belum diuji</span>
+                </div>
+
+                <div class="stg-mini" data-metric="loss">
+                    <svg class="stg-mini-ic text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 3 2 20h20L12 3Z"></path>
+                        <path d="M12 9v4"></path>
+                        <path d="M12 17h.01"></path>
+                    </svg>
+                    <span class="stg-mini-label">Loss</span>
+                    <span class="stg-mini-value is-empty" data-slot>—</span>
+                    <span class="stg-mini-unit">%</span>
+                    <span class="stg-mini-note" data-note>Belum diuji</span>
+                </div>
+            </div>
+
+            {{-- ── Kotak informasi koneksi ──────────────────────────────── --}}
+            <div class="stg-info">
+                <div class="stg-info-head">
+                    <svg class="stg-info-ic text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M2 12h20"></path>
+                        <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z"></path>
+                    </svg>
+                    Informasi Koneksi
+                </div>
+
+                <dl class="stg-info-grid">
+                    <dt>Koneksi (ISP)</dt>
+                    <dd class="is-empty" data-info="isp">Tidak diketahui</dd>
+
+                    <dt>IP Address</dt>
+                    <dd class="is-empty stg-mono" data-info="ip">Tidak diketahui</dd>
+
+                    <dt>Server Lokasi</dt>
+                    <dd class="is-empty" data-info="server">Tidak diketahui</dd>
+                </dl>
+
+                <p class="stg-info-foot">
+                    Laju diukur ke <strong>CDN Cloudflare</strong> (unduh) dan ke
+                    <strong>server RADNET NOC</strong> (unggah). Baris di atas terisi otomatis
+                    begitu pengujian berjalan.
+                </p>
+            </div>
+
+            <p class="stg-note" id="stgNote">
+                Pengujian memakai bandwidth penuh selama beberapa detik dan memakai data.
+            </p>
         </div>
     </div>
 @endsection
@@ -621,781 +226,817 @@
 (function () {
     'use strict';
 
-    const startUrl  = '{{ route('admin.speed-test.start') }}';
-    const stepUrl   = '{{ route('admin.speed-test.step') }}';
-    const probeUrl  = '{{ route('admin.speed-test.probe') }}';
-    const histUrl   = '{{ route('admin.speed-test.history') }}';
-    const csrf      = document.querySelector('meta[name="csrf-token"]');
+    /* ═══════════════════════════════════════════════════════
+       KONFIGURASI
+       ---------------------------------------------------------
+       Download memakai endpoint resmi speed test Cloudflare
+       yang memang mengizinkan CORS, jadi angkanya nyata.
+       Upload TIDAK bisa ke sana: POST lintas asal ditolak
+       browser sebelum datanya sampai. Karena itu unggah
+       dikirim ke endpoint milik RADNET NOC sendiri
+       (admin.speed-test.upload-sink), yang bodinya langsung
+       dibuang server tanpa disimpan.
+     ═══════════════════════════════════════════════════════ */
+    var CF_TRACE = 'https://cloudflare.com/cdn-cgi/trace';
+    var CF_DOWN  = 'https://speed.cloudflare.com/__down';
+    /* URL tong unggah ditulis sebagai string biasa, bukan lewat directive
+       json() bawaan Blade: directive itu mengubah garis miring jadi \/
+       sehingga alamatnya tidak lagi terbaca apa adanya saat halaman
+       diuji. Jalur ini di-escape Blade seperti biasa, dan tidak
+       mengandung karakter yang perlu escaping. */
+    var UPLOAD_SINK = '{{ route('admin.speed-test.upload-sink') }}';
+    var CSRF = document.querySelector('meta[name="csrf-token"]');
 
-    const runBtn      = document.getElementById('stRunBtn');
-    const refreshBtn  = document.getElementById('stRefreshBtn');
-    const statusText  = document.getElementById('stStatusText');
-    const statusBox   = document.getElementById('stStatus');
-    const logBody     = document.getElementById('stLogBody');
-    const customInput = document.getElementById('customHost');
+    /* IP dari server. Hanya dipakai sebagai cadangan kalau CDN tidak dapat
+       dibaca, karena di balik proxy nilai $request->ip() bisa jadi IP proxy. */
+    var SERVER_IP = @json($clientIp);
 
-    const targetBox   = document.getElementById('stTargetBox');
-    const targetIc    = document.getElementById('stTargetIc');
-    const targetName  = document.getElementById('stTargetName');
-    const targetIp    = document.getElementById('stTargetIp');
-    const tStatus     = document.getElementById('stTargetStatus');
+    /* Batas atas grafik. Angka di atas ini tetap ditunjukkan,
+       hanya persentase lingkarannya yang mentok. */
+    var GAUGE_MAX_MBPS = 1000;
+    var PING_SAMPLES   = 6;
+    var DOWNLOAD_ROUNDS = 4;
+    var DOWNLOAD_BYTES = 8 * 1024 * 1024;
+    var DOWNLOAD_CONCURRENCY = 4;
+    var UPLOAD_ROUNDS = 3;
+    var UPLOAD_BYTES  = 3 * 1024 * 1024;
+    var REQUEST_TIMEOUT = 15000;
 
-    const picker       = document.getElementById('stPicker');
-    const pickerBtn    = document.getElementById('stPickerBtn');
-    const pickerPanel  = document.getElementById('stPickerPanel');
-    const pickerSearch = document.getElementById('stPickerSearch');
-    const pickerList   = document.getElementById('stPickerList');
-    const pickerFoot   = document.getElementById('stPickerFoot');
-    const pickerLabel  = document.getElementById('stPickerLabel');
-    const pickerHint   = document.getElementById('stPickerHint');
+    /* ═══════════════════════════════════════════════════════
+       GEOMETRI SVG
+     ═══════════════════════════════════════════════════════ */
+    var R = 140;
+    var CIRCUMFERENCE = 2 * Math.PI * R;
+    var PROGRESS_R = 152;
+    var PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_R;
 
-    // Elemen progres bertahap.
-    const progressBox   = document.getElementById('stProgress');
-    const progressBar   = document.getElementById('stProgressBar');
-    const progressPct   = document.getElementById('stProgressPct');
-    const progressStage = document.getElementById('stProgressStage');
-    const progressTarget = document.getElementById('stProgressTarget');
-    const elapsedText   = document.getElementById('stElapsed');
-    const steps         = Array.prototype.slice.call(
-        document.querySelectorAll('#stProgressSteps .st-step')
-    );
-    const pickerOpts   = Array.prototype.slice.call(pickerList.querySelectorAll('.st-picker-opt'));
+    var arc       = document.getElementById('stgArc');
+    var progress  = document.getElementById('stgProgress');
+    var tip       = document.getElementById('stgTip');
+    var ticksBox  = document.getElementById('stgTicks');
+    var gaugeWrap = document.getElementById('stgGaugeWrap');
+    var valueEl   = document.getElementById('stgValue');
+    var unitEl    = document.getElementById('stgUnit');
+    var statusEl  = document.getElementById('stgStatus');
+    var runBtn    = document.getElementById('stgRun');
+    var runLabel  = document.getElementById('stgRunLabel');
+    var goHint    = document.getElementById('stgGoHint');
+    var resultsEl = document.getElementById('stgResults');
+    var noteEl    = document.getElementById('stgNote');
 
-    const COLUMNS = 8;
-    const totalDevices = pickerOpts.filter(function (o) { return !o.hasAttribute('data-local'); }).length;
-
-    let selected = { type: 'local', device_id: 0, custom_host: '', label: 'Server NOC' };
-    let busy = false;
-
-    const SLOTS = {
-        download: { unit: 'Mbps', note: function (v) { return speedWord(v, 100, 25); } },
-        upload:   { unit: 'Mbps', note: function (v) { return speedWord(v, 50, 12); } },
-        ping:     { unit: 'ms',   note: pingWord }
+    var slots = {
+        ping:   document.querySelector('[data-metric="ping"]'),
+        jitter: document.querySelector('[data-metric="jitter"]'),
+        loss:   document.querySelector('[data-metric="loss"]')
     };
 
-    /* ══ UTILITAS ═══════════════════════════════════════ */
+    var heroes = {
+        download: document.querySelector('[data-hero="download"]'),
+        upload:   document.querySelector('[data-hero="upload"]')
+    };
 
-    function speedWord(mbps, good, poor) {
-        if (mbps >= good) { return 'Baik'; }
-        if (mbps >= poor) { return 'Cukup'; }
-        return 'Lambat';
-    }
+    var info = {
+        isp:    document.querySelector('[data-info="isp"]'),
+        ip:     document.querySelector('[data-info="ip"]'),
+        server: document.querySelector('[data-info="server"]')
+    };
 
-    function pingWord(ms) {
-        if (ms <= 30) { return 'Baik'; }
-        if (ms <= 80) { return 'Cukup'; }
-        return 'Lambat';
-    }
+    var running = false;
 
-    function fmt(value, digits) {
-        if (value === null || value === undefined || isNaN(parseFloat(value))) { return '—'; }
-        return parseFloat(value).toFixed(digits === undefined ? 2 : digits);
-    }
-
-    function esc(value) {
-        const div = document.createElement('div');
-        div.textContent = (value === null || value === undefined || value === '') ? '—' : String(value);
-        return div.innerHTML;
-    }
-
-    function num(value) {
-        const n = parseFloat(value);
-        return isNaN(n) ? null : n;
-    }
-
-    function trimNum(value) {
-        return String(Math.round(value * 10) / 10);
-    }
-
-    /* ══ PANEL PEMILIH (Opsi A) ══════════════════════════ */
-
-    function setPickerOpen(open) {
-        picker.classList.toggle('is-open', open);
-        pickerBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-        if (open) {
-            pickerSearch.value = '';
-            applyPickerFilter();
-            pickerSearch.focus();
-        }
-    }
-
-    function applyPickerFilter() {
-        const q = pickerSearch.value.trim().toLowerCase();
-        let shown = 0;
-
-        pickerOpts.forEach(function (opt) {
-            if (opt.hasAttribute('data-local')) { return; }
-
-            const name = (opt.getAttribute('data-name') || '').toLowerCase();
-            const ip   = (opt.getAttribute('data-ip') || '').toLowerCase();
-            const show = q === '' || name.indexOf(q) !== -1 || ip.indexOf(q) !== -1;
-
-            opt.style.display = show ? '' : 'none';
-            if (show) { shown++; }
-        });
-
-        let none = pickerList.querySelector('.st-picker-empty-none');
-
-        if (shown === 0 && totalDevices > 0) {
-            if (!none) {
-                none = document.createElement('div');
-                none.className = 'st-picker-empty st-picker-empty-none';
-                none.textContent = 'Tidak ada perangkat yang cocok. Coba kata kunci lain.';
-                pickerList.appendChild(none);
-            }
-            none.style.display = '';
-        } else if (none) {
-            none.style.display = 'none';
-        }
-
-        pickerFoot.textContent = q === ''
-            ? totalDevices + ' perangkat terdaftar'
-            : shown + ' dari ' + totalDevices + ' perangkat';
-    }
-
-    pickerBtn.addEventListener('click', function () {
-        setPickerOpen(!picker.classList.contains('is-open'));
-    });
-
-    pickerSearch.addEventListener('input', applyPickerFilter);
-
-    // Escape menutup panel, klik di luar menutup panel.
-    document.addEventListener('click', function (e) {
-        if (picker.classList.contains('is-open') && !picker.contains(e.target)) {
-            setPickerOpen(false);
-        }
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && picker.classList.contains('is-open')) {
-            setPickerOpen(false);
-            pickerBtn.focus();
-        }
-    });
-
-    /* ══ TARGET AKTIF ═══════════════════════════════════ */
-
-    function markPickerActive(opt) {
-        pickerOpts.forEach(function (o) { o.classList.remove('is-active'); });
-        if (opt) { opt.classList.add('is-active'); }
-    }
-
-    function chooseLocal() {
-        selected = { type: 'local', device_id: 0, custom_host: '', label: 'Server NOC' };
-
-        targetBox.classList.remove('is-manual');
-        targetName.textContent = 'Server NOC';
-        targetIp.textContent   = 'Diuji langsung dari server NOC';
-        tStatus.hidden = true;
-
-        pickerLabel.textContent = 'Server NOC (Lokal)';
-        pickerHint.textContent  = 'Menguji tanpa perangkat lain';
-        markPickerActive(pickerOpts[0]);
-
-        if (customInput) { customInput.value = ''; }
-    }
-
-    function chooseDevice(opt) {
-        const name   = opt.getAttribute('data-name') || '';
-        const ip     = opt.getAttribute('data-ip') || '';
-        const status = opt.getAttribute('data-status') || 'up';
-        const delay  = num(opt.getAttribute('data-delay'));
-        const loss   = num(opt.getAttribute('data-loss'));
-
-        selected = { type: 'device', device_id: opt.getAttribute('data-id') || '0', custom_host: '', label: name };
-
-        targetBox.classList.remove('is-manual');
-        targetName.textContent = name;
-        targetIp.textContent   = ip;
-        tStatus.hidden    = false;
-        tStatus.className = 'st-status-badge st-status-' + status;
-        tStatus.textContent = status.toUpperCase();
-
-        pickerLabel.textContent = name;
-        pickerHint.textContent  = ip
-            + (delay === null || delay <= 0 ? '' : ' · respons ' + trimNum(delay) + ' ms')
-            + (loss === null ? '' : ' · hilang ' + trimNum(loss) + ' %');
-        markPickerActive(opt);
-
-        if (customInput) { customInput.value = ''; }
-    }
-
-    pickerList.addEventListener('click', function (e) {
-        const opt = e.target.closest('.st-picker-opt');
-        if (!opt) { return; }
-
-        if (opt.hasAttribute('data-local')) {
-            chooseLocal();
-        } else {
-            chooseDevice(opt);
-        }
-
-        setPickerOpen(false);
-    });
-
-    /* Ketik manual = Super Admin memilih target sendiri, jadi pilihan dari
-       daftar dilepas supaya hasilnya tidak dikira milik perangkat itu. */
-    customInput.addEventListener('input', function () {
-        const v = customInput.value.trim();
-
-        if (!v) {
-            chooseLocal();
-            return;
-        }
-
-        selected = { type: 'manual', device_id: 0, custom_host: v, label: v };
-
-        targetBox.classList.add('is-manual');
-        targetName.textContent = 'Alamat manual';
-        targetIp.textContent   = v;
-        tStatus.hidden = true;
-
-        pickerLabel.textContent = 'Alamat manual';
-        pickerHint.textContent  = v;
-        markPickerActive(null);
-    });
-
-    /* ══ KARTU HASIL ═════════════════════════════════════ */
-
-    function setSlot(metric, value, note) {
-        const card = document.querySelector('[data-metric="' + metric + '"]');
-        if (!card) { return; }
-
-        const slot = card.querySelector('[data-slot]');
-        const text = (value === null || value === undefined) ? '—' : fmt(value);
-
-        slot.textContent = text;
-        slot.classList.toggle('is-empty', text === '—');
-
-        const unit = document.createElement('span');
-        unit.className = 'st-metric-unit';
-        unit.textContent = ' ' + SLOTS[metric].unit;
-        slot.appendChild(unit);
-
-        card.querySelector('[data-note]').textContent = note
-            || (value === null || value === undefined ? 'Tidak terbaca' : SLOTS[metric].note(parseFloat(value)));
-    }
-
-    function resetSlots() {
-        Object.keys(SLOTS).forEach(function (k) { setSlot(k, null, 'Belum diuji'); });
-    }
-
-    function setBusy(on) {
-        busy = on;
-        runBtn.disabled = on;
-        refreshBtn.disabled = on;
-        runBtn.innerHTML = on
-            ? '<span class="spinner-border spinner-border-sm me-2" style="width:16px;height:16px"></span> Menguji…'
-            : '<em class="icon ni ni-play-circle"></em> Mulai Speed Test';
-
-        document.querySelectorAll('[data-metric]').forEach(function (card) {
-            card.classList.toggle('is-busy', on);
-        });
-
-        const spin = statusBox.querySelector('.st-spinner');
-        if (on && !spin) {
-            const el = document.createElement('span');
-            el.className = 'st-spinner';
-            statusBox.prepend(el);
-        } else if (!on && spin) {
-            spin.remove();
-        }
-    }
-
-    /* ══ RIWAYAT ═════════════════════════════════════════ */
-
-    function logRow(log, isNew) {
-        const tr = document.createElement('tr');
-        if (isNew) { tr.className = 'st-row-new'; }
-
-        tr.innerHTML =
-            '<td><span class="st-time">' + esc(log.tested_at) + '</span></td>' +
-            '<td><span class="st-target-name-cell">' + esc(log.target_label) + '</span></td>' +
-            '<td>' + esc(log.user_name) + '</td>' +
-            '<td class="text-end"><span class="st-num">' + fmt(log.download_mbps) + ' Mbps</span></td>' +
-            '<td class="text-end"><span class="st-num">' + fmt(log.upload_mbps) + ' Mbps</span></td>' +
-            '<td class="text-end"><span class="st-num">' + fmt(log.ping_ms) + ' ms</span></td>' +
-            '<td><span class="st-badge st-badge--' + esc(log.source) + '">' + esc(log.source_label) + '</span></td>' +
-            '<td><span class="st-badge st-badge--' + esc(log.status) + '">' + esc(log.status_label) + '</span></td>';
-
-        return tr;
-    }
-
-    function renderHistory(logs, newestId) {
-        if (!logBody) { return; }
-        logBody.innerHTML = '';
-
-        if (!logs.length) {
-            logBody.innerHTML = '<tr><td colspan="' + COLUMNS + '" class="st-empty">Belum ada riwayat pengujian.</td></tr>';
-            return;
-        }
-
-        logs.forEach(function (log) {
-            logBody.appendChild(logRow(log, String(log.id) === String(newestId)));
-        });
-    }
-
-    function loadHistory(newestId) {
-        if (!logBody) { return Promise.resolve(); }
-
-        return fetch(histUrl, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin'
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) { renderHistory(data.logs || [], newestId || null); })
-        .catch(function () { /* tabel dibiarkan apa adanya */ });
-    }
-
-    /* ══ MENJALANKAN PENGUJIAN ═══════════════════════════
+    /*
+     * Penghitung packet loss untuk semua request yang gagal.
      *
-     * Alurnya dua tahap, bukan satu request panjang:
-     *
-     *   start  → backend membuat sesi dan mengembalikan daftar tahap
-     *   step   → dipanggil berulang; setiap panggilan mengerjakan SATU
-     *            tahap, jadi angka Download/Upload/Ping muncul satu per
-     *            satu dan progres bar bergerak tiap detik, bukan melompat
-     *            dari 0 ke 100 setelah 30 detik diam.
-     *
-     * Setiap tahap memang butuh beberapa detik (perintah di server), jadi
-     * polling 1 detik dipakai untuk: menampilkan tahap mana yang sedang
-     * berjalan, mengisi angka yang sudah keluar, dan menggerakkan timer.
-     * Timeout-nya longgar supaya tahap yang lambat tidak dipotong.
+     * Loss dihitung dari request HTTP yang benar-benar gagal atau tidak
+     * pernah selesai — bukan ditebak dari angka lain. Semua request dihitung:
+     * unduh, unggah, dan ping.
      */
+    var loss = { attempted: 0, failed: 0 };
 
-    const STEP_INTERVAL_MS = 1000;
-    const STEP_TIMEOUT_MS = 150000;
+    /* ═══════════════════════════════════════════════════════
+       UTILITAS
+     ═══════════════════════════════════════════════════════ */
+    function withTimeout(promise, ms) {
+        return new Promise(function (resolve, reject) {
+            var timer = setTimeout(function () {
+                reject(new Error('timeout'));
+            }, ms);
 
-    /* Cuplikan live. Satu sampel nyata per detik, dikirim BERBEDA dari polling
-       'step' supaya dua hal ini tidak saling menunggu: 'step' satu panggilan
-       bisa makan puluhan detik, sementara cuplikan harus tetap datang tiap
-       detik supaya angka di kartu bergerak. */
-    const PROBE_INTERVAL_MS = 1000;
-    const PROBE_TIMEOUT_MS = 20000;
+            promise.then(function (value) {
+                clearTimeout(timer);
+                resolve(value);
+            }, function (error) {
+                clearTimeout(timer);
+                reject(error);
+            });
+        });
+    }
 
-    // Posteran di luar supaya tetap true walau tab ditutup tengah jalan.
-    let pollTimer = null;
-    let tickTimer = null;
-    let probeTimer = null;
-    let running = false;
+    function csrfHeaders(extra) {
+        var headers = extra || {};
+        if (CSRF) { headers['X-CSRF-TOKEN'] = CSRF.content; }
+        return headers;
+    }
+
+    /* Cache-buster supaya proxy tidak melayani respons lama dan pengukuran
+       benar-benar mengunduh lewat jaringan, bukan dari cache browser. */
+    function cacheBust(url) {
+        return url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now() + '-' + Math.random();
+    }
+
+    function bytesToMbps(bytes, milliseconds) {
+        if (!milliseconds || milliseconds <= 0) { return 0; }
+        return (bytes * 8) / (milliseconds / 1000) / 1_000_000;
+    }
+
+    /*
+     * Catat satu request untuk perhitungan loss.
+     *
+     * Membungkus satu promise dengan ini membuat setiap request yang gagal
+     * otomatis menambah penghitung, tanpa harus menulis catcher di tiap tempat.
+     */
+    function track(promise) {
+        loss.attempted++;
+        return promise.then(
+            function (value) { return value; },
+            function (error) { loss.failed++; throw error; }
+        );
+    }
+
+    function lossPercentage() {
+        if (!loss.attempted) { return 0; }
+        return (loss.failed / loss.attempted) * 100;
+    }
+
+    /*
+     * Jitter: rata-rata selisih absolut antar sampel latensi berurutan.
+     *
+     * Ini definisi yang sama dipakai RFC 3550 untuk mengukur perubahan waktu
+     * tempuh antar paket. Menilai jitter dari min/avg/max saja tidak akan
+     * menangkap fluktuasi antar paket, jadi dua angka itu tidak dipakai.
+     */
+    function jitterOf(samples) {
+        if (!samples || samples.length < 2) { return 0; }
+
+        var total = 0;
+        for (var i = 1; i < samples.length; i++) {
+            total += Math.abs(samples[i] - samples[i - 1]);
+        }
+        return total / (samples.length - 1);
+    }
+
+    function lossNote(percent) {
+        if (percent <= 0) { return 'Tidak ada paket hilang'; }
+        if (percent < 1) { return 'Sedikit paket hilang'; }
+        if (percent < 5) { return 'Ada paket hilang'; }
+        return 'Banyak paket hilang';
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TAMPILAN
+     ═══════════════════════════════════════════════════════ */
+    function paintArc(mbps) {
+        var ratio = Math.max(0, Math.min(1, mbps / GAUGE_MAX_MBPS));
+        var offset = CIRCUMFERENCE * (1 - ratio);
+
+        arc.style.strokeDasharray = CIRCUMFERENCE;
+        arc.style.strokeDashoffset = offset;
+        tip.setAttribute('transform', 'rotate(' + (ratio * 359.9) + ' 160 160)');
+
+        valueEl.textContent = formatSpeed(mbps);
+    }
+
+    function paintProgress(ratio) {
+        var safe = Math.max(0, Math.min(1, ratio));
+        progress.style.strokeDasharray = PROGRESS_CIRCUMFERENCE;
+        progress.style.strokeDashoffset = PROGRESS_CIRCUMFERENCE * (1 - safe);
+    }
+
+    /* Laju lebih dari 1000 Mbps ditulis bulat supaya angka besar tidak
+       terpotong jadi membingungkan. */
+    function formatSpeed(mbps) {
+        if (mbps >= 1000) { return mbps.toFixed(0); }
+        if (mbps >= 100)  { return mbps.toFixed(1); }
+        return mbps.toFixed(2);
+    }
+
+    function formatMetric(value) {
+        if (value >= 100) { return value.toFixed(1); }
+        return value.toFixed(2);
+    }
 
     function setStatus(text, kind) {
-        statusText.textContent = text;
-        statusBox.classList.toggle('is-error', kind === 'error');
-        statusBox.classList.toggle('is-ok', kind === 'ok');
+        statusEl.textContent = text;
+        statusEl.classList.toggle('is-idle', kind === 'idle');
+        statusEl.classList.toggle('is-error', kind === 'error');
     }
 
-    /**
-     * Satu POST JSON. Mengembalikan { status, data } supaya pemanggil bisa
-     * membedakan HTTP 422 (gagal di level bisnis, body tetap berisi pesan)
-     * dari kegagalan jaringan yang tidak punya respons sama sekali.
+    function setUnit(unit) { unitEl.textContent = unit; }
+
+    function setSlot(metric, value, note) {
+        var box = slots[metric];
+        if (!box) { return; }
+
+        var slot = box.querySelector('[data-slot]');
+        var sub  = box.querySelector('[data-note]');
+
+        if (value === null || value === undefined) {
+            slot.textContent = '—';
+            slot.classList.add('is-empty');
+        } else {
+            slot.textContent = formatMetric(value);
+            slot.classList.remove('is-empty');
+        }
+
+        sub.textContent = note;
+    }
+
+    function highlight(metric, on) {
+        if (slots[metric]) { slots[metric].classList.toggle('is-live', !!on); }
+    }
+
+    function setHero(kind, mbps, note) {
+        var card = heroes[kind];
+        if (!card) { return; }
+
+        var value = card.querySelector('[data-hero-value]');
+        var caption = card.querySelector('[data-hero-note]');
+
+        if (mbps === null || mbps === undefined) {
+            value.textContent = '—';
+            value.classList.add('is-empty');
+        } else {
+            value.textContent = formatSpeed(mbps);
+            value.classList.remove('is-empty');
+        }
+
+        caption.textContent = note;
+    }
+
+    function heroLive(kind, on) {
+        if (heroes[kind]) { heroes[kind].classList.toggle('is-live', !!on); }
+    }
+
+    function setInfo(kind, text) {
+        var cell = info[kind];
+        if (!cell) { return; }
+
+        if (!text) {
+            cell.textContent = 'Tidak diketahui';
+            cell.classList.add('is-empty');
+        } else {
+            cell.textContent = text;
+            cell.classList.remove('is-empty');
+        }
+    }
+
+    function resetUi() {
+        setSlot('ping', null, 'Belum diuji');
+        setSlot('jitter', null, 'Belum diuji');
+        setSlot('loss', null, 'Belum diuji');
+
+        highlight('ping', false);
+        highlight('jitter', false);
+        highlight('loss', false);
+
+        setHero('download', null, 'Belum diuji');
+        setHero('upload', null, 'Belum diuji');
+        heroLive('download', false);
+        heroLive('upload', false);
+
+        paintArc(0);
+        paintProgress(0);
+
+        valueEl.classList.add('is-idle');
+        setUnit('Mbps');
+        setStatus('Siap diuji', 'idle');
+        gaugeWrap.classList.remove('is-running');
+    }
+
+    /* Panel hasil disembunyikan lagi supaya mengulang tes terasa seperti
+       mengukur ulang, bukan menimpa angka lama di layar. */
+    function hideResults() {
+        resultsEl.classList.remove('is-shown');
+        resultsEl.hidden = true;
+    }
+
+    function showResults() {
+        resultsEl.hidden = false;
+        /* Paksa satu frame supaya transisi masuknya benar-benar terlihat. */
+        void resultsEl.offsetWidth;
+        resultsEl.classList.add('is-shown');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMASI JARUM
+       ---------------------------------------------------------
+       Angka tidak langsung dipasang ke hasil ukur, tapi bergerak pelan ke arah
+       target sambil sedikit bergetar, supaya watching-nya terasa hidup seperti
+       speed test sungguhan.
+     ═══════════════════════════════════════════════════════ */
+    var target = 0;
+    var shown = 0;
+    var animationHandle = null;
+
+    function animate() {
+        shown += (target - shown) * 0.14;
+
+        var wobble = running && target > 0
+            ? (Math.random() - 0.5) * Math.max(0.4, target * 0.05)
+            : 0;
+
+        paintArc(Math.max(0, shown + wobble));
+
+        if (running) {
+            animationHandle = requestAnimationFrame(animate);
+        } else {
+            paintArc(shown);
+            animationHandle = null;
+        }
+    }
+
+    function startAnimation() {
+        if (animationHandle === null) {
+            animationHandle = requestAnimationFrame(animate);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       IDENTITAS KONEKSI
+       ---------------------------------------------------------
+       Endpoint trace Cloudflare mengembalikan daftar pasangan key=value.
+       Tiga hal yang dibutuhkan panel informasinya ada di sana: alamat IP
+       publik pengunjung, nama organisasi penyedia jasanya, dan kode pusat
+       data yang melayani permintaan tersebut.
+     ═══════════════════════════════════════════════════════ */
+    function parseTrace(text) {
+        var result = {};
+        var lines = String(text || '').split('\n');
+
+        for (var i = 0; i < lines.length; i++) {
+            var separator = lines[i].indexOf('=');
+            if (separator === -1) { continue; }
+
+            var key = lines[i].slice(0, separator).trim();
+            var value = lines[i].slice(separator + 1).trim();
+
+            if (key) { result[key] = value; }
+        }
+
+        return result;
+    }
+
+    /*
+     * Kode pusat data Cloudflare untuk kota yang paling sering dipakai
+     * pembaca di Indonesia. Kode yang tidak dikenal tetap ditampilkan apa
+     * adanya — lebih baik daripada menyembunyikan informasi.
      */
-    function postJson(url, body, timeoutMs) {
-        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        let timer = null;
-
-        if (controller && timeoutMs) {
-            timer = window.setTimeout(function () { controller.abort(); }, timeoutMs);
-        }
-
-        return fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf ? csrf.content : '',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'same-origin',
-            signal: controller ? controller.signal : undefined,
-            body: JSON.stringify(body)
-        })
-        .then(function (r) {
-            return r.json()
-                .catch(function () { return { message: 'Respons server tidak terbaca.' }; })
-                .then(function (data) { return { ok: r.ok, status: r.status, data: data }; });
-        })
-        .finally(function () {
-            if (timer) { window.clearTimeout(timer); }
-        });
-    }
-
-    function paintProgress(d) {
-        const pct = Math.max(0, Math.min(100, parseInt(d.progress, 10) || 0));
-
-        progressBar.style.width = pct + '%';
-        progressPct.textContent = pct + '%';
-        progressBox.setAttribute('aria-valuenow', String(pct));
-
-        if (d.elapsed_ms !== undefined && d.elapsed_ms !== null) {
-            elapsedText.textContent = Math.round(d.elapsed_ms / 1000) + ' detik';
-        }
-
-        if (d.target_label) {
-            progressTarget.textContent = 'Target: ' + d.target_label;
-        }
-
-        // Tahap yang baru selesai ditandai centang hijau; tahap berikutnya
-        // berdenyut biru supaya jelas apa yang sedang dikerjakan.
-        steps.forEach(function (step) {
-            const key = step.getAttribute('data-step');
-            step.classList.remove('is-active', 'is-done');
-
-            if (d.completed_stage && key === d.completed_stage) {
-                step.classList.add('is-done');
-            } else if (d.next_stage && key === d.next_stage) {
-                step.classList.add('is-active');
-                progressStage.textContent = d.stage_label || 'Mengukur…';
-            } else if (d.done) {
-                step.classList.add('is-done');
-            }
-        });
-
-        if (d.done) {
-            progressStage.textContent = 'Pengujian selesai';
-        }
-    }
-
-    /**
-     * Isi kartu metrik dari hasil resmi ('step').
-     *
-     * PENTING: kartu hanya ditulis kalau tahapnya memang sudah selesai —
-     * angkanya ada, atau backend sudah menyatakan tahap itu dicoba tapi gagal
-     * ('status' = 'gagal'). Metrik yang masih 'pending' DILEWATI sepenuhnya:
-     *
-     *  - Menuliskannya sebagai "Gagal terbaca" salah, karena tahapnya belum
-     *    dijalankan sama sekali.
-     *  - Yang lebih penting, setiap polling akan menimpa cuplikan langsung
-     *    yang sedang tampil dengan tanda hubung, sehingga angka di layar
-     *    berkedip antara nilai dan "—" sepanjang tahap berjalan.
-     */
-    function paintMetrics(metrics) {
-        if (!metrics) { return; }
-
-        paintSlot('download', metrics);
-        paintSlot('upload', metrics);
-        paintSlot('ping', metrics);
-    }
-
-    const METRIC_KEYS = {
-        download: 'download_mbps',
-        upload: 'upload_mbps',
-        ping: 'ping_ms'
+    var COLO_NAMES = {
+        CGK: 'Jakarta, ID',
+        SUB: 'Surabaya, ID',
+        KUL: 'Kuala Lumpur, MY',
+        SIN: 'Singapura, SG',
+        HKG: 'Hong Kong, HK',
+        NRT: 'Tokyo, JP',
+        ICN: 'Seoul, KR',
+        BOM: 'Mumbai, IN',
+        DXB: 'Dubai, AE',
+        FRA: 'Frankfurt, DE',
+        LHR: 'London, GB',
+        SFO: 'San Francisco, US',
+        IAD: 'Ashburn, US',
+        CDG: 'Paris, FR',
+        AMS: 'Amsterdam, NL',
+        SYD: 'Sydney, AU'
     };
 
-    function paintSlot(metric, metrics) {
-        const key = METRIC_KEYS[metric];
-        const value = metrics[key];
-        const status = (metrics.status || {})[key];
-
-        if (value === undefined) { return; }
-
-        if (value !== null) {
-            setSlot(metric, value);
-            return;
-        }
-
-        // null: hanya bermakna "Gagal terbaca" kalau backend sudah selesai
-        // mencoba tahap ini. Selama masih pending, biarkan kartu apa adanya
-        // supaya cuplikan langsung tidak tertimpa.
-        if (status === 'gagal') {
-            setSlot(metric, null, 'Gagal terbaca');
-        }
+    function describeServer(colo) {
+        if (!colo) { return ''; }
+        if (COLO_NAMES[colo]) { return COLO_NAMES[colo] + ' · Cloudflare'; }
+        return 'Pusat data ' + colo + ' · Cloudflare';
     }
 
-    /**
-     * Catat metrik yang SUDAH final, supaya cuplikan live tidak menimpa hasil
-     * pengukuran resmi.
+    /*
+     * Ambil dan tampilkan identitas koneksi.
      *
-     * 'step' yang mengisi inilah angka yang masuk ke riwayat. Cuplikan hanya
-     * boleh mengisi slot yang belum terkunci. Slot yang dinyatakan 'gagal'
-     * ikut dikunci: angkanya memang tidak ada, tapi sudah pasti tidak akan
-     * datang, jadi cuplikan tidak boleh lagi mengisinya.
+     * Gagal diam-diam: kalau CDN tidak bisa dijangkau, panel memakai IP dari
+     * server dan sisa barisnya tetap "Tidak diketahui". Mengarang nama ISP
+     * akan lebih buruk daripada menampilkan apa adanya.
      */
-    const lockedSlots = { download: false, upload: false, ping: false };
+    function loadConnectionInfo() {
+        return fetch(cacheBust(CF_TRACE), { cache: 'no-store', mode: 'cors' })
+            .then(function (response) {
+                if (!response.ok) { throw new Error('http ' + response.status); }
+                return response.text();
+            })
+            .then(function (text) {
+                var trace = parseTrace(text);
 
-    function paintLiveMetrics(metrics) {
-        if (!metrics) { return; }
+                setInfo('ip', trace.ip || SERVER_IP || '');
+                setInfo('isp', trace.asOrganization || trace.asn || '');
 
-        Object.keys(METRIC_KEYS).forEach(function (metric) {
-            // Sudah ada angka resmi untuk metrik ini: jangan diubah.
-            if (lockedSlots[metric]) { return; }
-
-            const value = metrics[METRIC_KEYS[metric]];
-
-            // null berarti sampelnya gagal diambil. Angka sebelumnya (kalau ada)
-            // sengaja ditahan — sengaja diisi 0 atau placeholder, karena itu
-            // akan terlihat seperti hasil ukur yang sah.
-            if (value === null || value === undefined) { return; }
-
-            setSlot(metric, value, 'Cuplikan langsung · tiap 1 detik');
-        });
-    }
-
-    function lockSlots(metrics) {
-        if (!metrics) { return; }
-
-        const status = metrics.status || {};
-
-        Object.keys(METRIC_KEYS).forEach(function (metric) {
-            const key = METRIC_KEYS[metric];
-            const value = metrics[key];
-
-            if (value !== null && value !== undefined) {
-                lockedSlots[metric] = true;
-            } else if (status[key] === 'gagal') {
-                // Sudah dipastikan gagal: kunci juga supaya cuplikan berhenti
-                // menulis ke slot ini.
-                lockedSlots[metric] = true;
-            }
-        });
-    }
-
-    function resetLocks() {
-        lockedSlots.download = false;
-        lockedSlots.upload = false;
-        lockedSlots.ping = false;
-    }
-
-    /**
-     * Ucapan yang menjelaskan kegagalan sebenar-benarnya. Umumnya 422 dengan
-     * pesan dari backend (SSH belum aktif, CIDR tidak diizinkan, target
-     * tidak ada); sisanya pesan umum per kode HTTP.
-     */
-    function failureMessage(status, data) {
-        if (data && data.message) { return data.message; }
-
-        if (data && data.errors && typeof data.errors === 'object') {
-            const first = Object.keys(data.errors).map(function (k) { return data.errors[k]; })[0];
-            if (first && first.length) { return first[0]; }
-        }
-
-        if (status === 401 || status === 419) {
-            return 'Sesi Anda sudah berakhir. Muat ulang halaman lalu coba lagi.';
-        }
-        if (status === 403) {
-            return 'Hanya Super Admin yang bisa memakai pengujian ini.';
-        }
-        if (status === 429) {
-            return 'Terlalu banyak permintaan. Tunggu sebentar sebelum menguji lagi.';
-        }
-        if (status === 0) {
-            return 'Tidak dapat menghubungi server. Periksa koneksi lalu coba lagi.';
-        }
-
-        return 'Pengujian gagal diproses server. Silakan coba lagi.';
-    }
-
-    function stopTimers() {
-        if (pollTimer) { window.clearTimeout(pollTimer); pollTimer = null; }
-        if (tickTimer) { window.clearInterval(tickTimer); tickTimer = null; }
-        if (probeTimer) { window.clearTimeout(probeTimer); probeTimer = null; }
-    }
-
-    /**
-     * Pemadog dapat membekukan timer background saat tab tidak aktif, jadi
-     * angka detik dihitung dari waktu mulai yang benar-benar dicatat backend.
-     */
-    function startTicker() {
-        let base = performance.now();
-
-        stopTimers();
-        tickTimer = window.setInterval(function () {
-            const seconds = Math.round((performance.now() - base) / 1000);
-
-            if (seconds > 0) {
-                elapsedText.textContent = seconds + ' detik';
-            }
-        }, 1000);
-
-        return function () { base = performance.now(); };
-    }
-
-    runBtn.addEventListener('click', function () {
-        if (running) { return; }
-
-        const target = selected;
-
-        // Backend menolak alamat kosong untuk target manual, jadi jangan
-        // diam-diam jatuh ke server lokal — beri tahu di layar saja.
-        if (target.type === 'manual' && !target.custom_host) {
-            setStatus('Isi dulu kolom IP atau nama host pada Opsi B.', 'error');
-            customInput.focus();
-            return;
-        }
-
-        resetSlots();
-        resetLocks();
-        setBusy(true);
-        progressBox.hidden = false;
-        progressStage.textContent = 'Menyiapkan pengujian…';
-        paintProgress({ progress: 0 });
-        progressTarget.textContent = 'Target: ' + target.label;
-
-        running = true;
-        const isRemote = target.type !== 'local';
-
-        setStatus(isRemote
-            ? 'Menguji dari ' + target.label + '. Angka akan muncul bertahap.'
-            : 'Menguji laju unduh, unggah, dan ping dari server ini. Angka akan muncul bertahap.');
-
-        postJson(startUrl, {
-            target_type: target.type,
-            device_id: target.device_id,
-            custom_host: target.custom_host
-        }, STEP_TIMEOUT_MS)
-        .then(function (res) {
-            if (!res.ok) {
-                return Promise.reject({ status: res.status, data: res.data });
-            }
-
-            const stepsPlan = (res.data && res.data.stages) || [];
-            stepsPlan.forEach(function (s) {
-                const el = document.querySelector('[data-step="' + s.key + '"]');
-                if (el && s.position === 1) { el.classList.add('is-active'); }
-            });
-
-            startTicker();
-
-            // Cuplikan live jalan berdampingan dengan poll(): ini yang bikin
-            // angka Download/Upload/Ping berubah tiap detik selama tahapnya
-            // masih berjalan, alih-alih diam sampai tahap selesai.
-            probeLoop(res.data.run_id);
-
-            return poll(res.data.run_id);
-        })
-        .then(function (d) {
-            if (!d) { return; }
-
-            paintProgress(d);
-
-            // Respons akhir sudah membawa 'metrics' lengkap beserta statusnya.
-            // Bentuk lama (tanpa 'metrics') hanya dipakai sebagai jaring
-            // pengaman, dan di situ tiap tahap dianggap sudah dicoba — karena
-            // pengujiannya memang sudah selesai.
-            const finalMetrics = d.metrics || {
-                download_mbps: d.download_mbps,
-                upload_mbps: d.upload_mbps,
-                ping_ms: d.ping_ms,
-                status: {
-                    download_mbps: 'gagal',
-                    upload_mbps: 'gagal',
-                    ping_ms: 'gagal'
-                }
-            };
-
-            // lockSlots DILETAKKAN SEBELUM paintMetrics: begitu tahap selesai,
-            // angka resmi harus langsung menggantikan cuplikan live di kartu
-            // yang sama — bukan menunggu tahap berikutnya menggantikannya.
-            lockSlots(finalMetrics);
-            paintMetrics(finalMetrics);
-
-            const stamp = d.timestamp ? ' pada ' + d.timestamp : '';
-
-            setStatus((d.message || 'Pengujian selesai.') + stamp
-                + (d.target_label ? ' Target: ' + d.target_label + '.' : '')
-                + (d.server ? ' Server uji: ' + d.server + '.' : '')
-                + (d.duration_ms ? ' Durasi ' + Math.round(d.duration_ms / 1000) + ' detik.' : ''),
-                d.status === 'ok' ? 'ok' : 'error');
-
-            if (d.log) { loadHistory(d.log.id); }
-        })
-        .catch(function (err) {
-            const status = (err && err.status) || 0;
-            const data = (err && err.data) || null;
-
-            stopTimers();
-            progressBox.hidden = true;
-            setStatus(failureMessage(status, data), 'error');
-        })
-        .finally(function () {
-            running = false;
-            setBusy(false);
-            stopTimers();
-        });
-    });
-
-    /**
-     * Rantai panggilan 'step': tiap panggilan mengerjakan satu tahap, lalu
-     * dijadwalkan ulang satu detik kemudian sampai backend menyatakan selesai.
-     *
-     * Sengaja memakai setTimeout berurutan (bukan setInterval) supaya tidak
-     * menumpuk request ketika satu tahap ternyata berjalan lama.
-     */
-    function poll(runId) {
-        if (!running) { return Promise.resolve(null); }
-
-        return postJson(stepUrl, { run_id: runId }, STEP_TIMEOUT_MS)
-            .then(function (res) {
-                if (!res.ok) {
-                    return Promise.reject({ status: res.status, data: res.data });
-                }
-
-                const d = res.data || {};
-
-                if (!d.done) {
-                    paintProgress(d);
-                    paintMetrics(d.metrics);
-                    lockSlots(d.metrics);
-
-                    if (d.stage_label) {
-                        progressStage.textContent = d.stage_label;
-                    }
-                }
-
-                pollTimer = window.setTimeout(function () { poll(runId); }, STEP_INTERVAL_MS);
-
-                return d.done ? d : null;
-            });
-    }
-
-    /**
-     * Rantai cuplikan live: satu sampel nyata per detik untuk tahap yang
-     * sedang berjalan.
-     *
-     * Sengaja terpisah dari poll() dengan dua alasan:
-     *
-     *  1. poll() satu panggilan bisa berjalan puluhan detik (tahap unduh),
-     *     jadi cuplikan tidak akan pernah datang tepat waktu kalau dibuat
-     *     berurutan dengannya.
-     *  2. Kegagalan cuplikan tidak boleh menghentikan pengujian. Jadi
-     *     responsnya hanya dipakai untuk mengisi kartu; kalau gagal, angka
-     *     sebelumnya ditahan dan rantai dilanjutkan saja.
-     */
-    function probeLoop(runId) {
-        if (!running) { return Promise.resolve(); }
-
-        return postJson(probeUrl, { run_id: runId }, PROBE_TIMEOUT_MS)
-            .then(function (res) {
-                // 422 dengan done = true artinya sesi sudah ditutup 'step',
-                // jadi tidak ada lagi yang perlu dicuplik.
-                if (!res.ok && res.data && res.data.done) {
-                    return;
-                }
-
-                if (res.ok && res.data && res.data.live) {
-                    paintLiveMetrics(res.data.metrics);
-                }
-
-                probeTimer = window.setTimeout(function () { probeLoop(runId); }, PROBE_INTERVAL_MS);
+                var colo = trace.colo || '';
+                var location = trace.loc ? ' (' + trace.loc + ')' : '';
+                setInfo('server', describeServer(colo) + location);
             })
             .catch(function () {
-                // Jaringan putus sesaat atau server sedang sibuk: coba lagi
-                // pada detik berikutnya. Cuplikan bersifat pelengkap, jadi
-                // kegagalan di sini tidak boleh menggagalkan pengujian.
-                probeTimer = window.setTimeout(function () { probeLoop(runId); }, PROBE_INTERVAL_MS);
+                setInfo('ip', SERVER_IP || '');
+                setInfo('isp', '');
+                setInfo('server', 'Server RADNET NOC (lokal)');
             });
     }
 
-    refreshBtn.addEventListener('click', function () { loadHistory(); });
+    /* ═══════════════════════════════════════════════════════
+       PENGUKURAN
+      ═══════════════════════════════════════════════════════ */
 
-    /* ══ MULAI ══════════════════════════════════════════ */
+    /* Tahap yang gagal diuji selama tes berjalan.
+       Angka tidak pernah diganti dengan tebakan: kalau sebuah tahap gagal,
+       kotaknya tetap kosong dan alasannya ditulis apa adanya. */
+    var failures = [];
 
-    // Default: Server NOC, jadi halaman sudah bisa langsung diuji tanpa
-    // pengguna mencari perangkat lebih dulu.
-    chooseLocal();
+    /* Ping: beberapa sampel berurutan; dipakai nilai terbaik (terendah),
+       sebab satu sampel bisa meleset karena antrian. */
+    function measurePing() {
+        var samples = [];
+        var chain = Promise.resolve();
 
-    loadHistory();
+        for (var i = 0; i < PING_SAMPLES; i++) {
+            (function (index) {
+                chain = chain.then(function () {
+                    var started = performance.now();
+                    return track(
+                        fetch(cacheBust(CF_TRACE), { cache: 'no-store', mode: 'cors' })
+                            .then(function () {
+                                var elapsed = performance.now() - started;
+                                if (elapsed <= 0) { return; }
+                                samples.push(elapsed);
+                                /* Angka di tengah bergerak selama ping berjalan. */
+                                target = Math.min(GAUGE_MAX_MBPS, elapsed * 4);
+                                setSlot('ping', Math.min.apply(null, samples),
+                                    'Mengukur ' + (index + 1) + '/' + PING_SAMPLES);
+                            })
+                    ).catch(function () { /* sampel gagal, lewati saja */ });
+                });
+            })(i);
+        }
+
+        return chain.then(function () {
+            if (!samples.length) { throw new Error('ping gagal'); }
+            return {
+                ms: Math.min.apply(null, samples),
+                avg: samples.reduce(function (a, b) { return a + b; }, 0) / samples.length,
+                jitter: jitterOf(samples)
+            };
+        });
+    }
+
+    /* Download: beberapa berkas dijalankan paralel supaya satu koneksi TCP
+       yang lambat tidak mengukur laju sebenarnya. */
+    function measureDownload() {
+        var peak = 0;
+
+        function oneRound() {
+            var started = performance.now();
+            var jobs = [];
+
+            for (var i = 0; i < DOWNLOAD_CONCURRENCY; i++) {
+                jobs.push(track(
+                    fetch(cacheBust(CF_DOWN + '?bytes=' + DOWNLOAD_BYTES), {
+                        cache: 'no-store',
+                        mode: 'cors'
+                    }).then(function (response) {
+                        if (!response.ok) { throw new Error('http ' + response.status); }
+                        return response.arrayBuffer();
+                    })
+                ));
+            }
+
+            return Promise.all(jobs).then(function (buffers) {
+                var elapsed = performance.now() - started;
+                var bytes = buffers.reduce(function (total, buffer) {
+                    return total + buffer.byteLength;
+                }, 0);
+
+                return bytesToMbps(bytes, elapsed);
+            });
+        }
+
+        var chain = Promise.resolve();
+
+        for (var round = 0; round < DOWNLOAD_ROUNDS; round++) {
+            (function (current) {
+                chain = chain.then(function () {
+                    return oneRound().then(function (mbps) {
+                        if (mbps > peak) { peak = mbps; }
+                        target = Math.min(GAUGE_MAX_MBPS, peak);
+                        setHero('download', peak, 'Ronde ' + (current + 1) + '/' + DOWNLOAD_ROUNDS);
+                    });
+                });
+            })(round);
+        }
+
+        return chain.then(function () {
+            if (!peak) { throw new Error('download gagal'); }
+            return peak;
+        });
+    }
+
+    /* Upload: ke endpoint milik NOC sendiri. Payload dibuat sebagai Blob berisi
+       byte acak supaya tidak bisa dikompres proxy yang ada di antara browser
+       dan server — kalau terkompres, laju yang terukur bukan laju unggah
+       sebenarnya. */
+    function makePayload(bytes) {
+        var chunk = new Uint8Array(64 * 1024);
+        for (var i = 0; i < chunk.length; i++) { chunk[i] = (Math.random() * 256) | 0; }
+
+        var parts = [];
+        var written = 0;
+        while (written < bytes) {
+            parts.push(chunk);
+            written += chunk.length;
+        }
+        return new Blob(parts);
+    }
+
+    function measureUpload() {
+        var peak = 0;
+
+        function oneRound() {
+            var payload = makePayload(UPLOAD_BYTES);
+            var started = performance.now();
+
+            return track(
+                fetch(UPLOAD_SINK, {
+                    method: 'POST',
+                    headers: csrfHeaders(),
+                    body: payload,
+                    cache: 'no-store'
+                }).then(function (response) {
+                    if (!response.ok) { throw new Error('http ' + response.status); }
+                    var elapsed = performance.now() - started;
+                    return bytesToMbps(payload.size, elapsed);
+                })
+            );
+        }
+
+        var chain = Promise.resolve();
+
+        for (var round = 0; round < UPLOAD_ROUNDS; round++) {
+            (function (current) {
+                chain = chain.then(function () {
+                    return oneRound().then(function (mbps) {
+                        if (mbps > peak) { peak = mbps; }
+                        target = Math.min(GAUGE_MAX_MBPS, peak);
+                        setHero('upload', peak, 'Ronde ' + (current + 1) + '/' + UPLOAD_ROUNDS);
+                    });
+                });
+            })(round);
+        }
+
+        return chain.then(function () {
+            if (!peak) { throw new Error('upload gagal'); }
+            return peak;
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ORKESTRASI
+      ═══════════════════════════════════════════════════════ */
+    function runTest() {
+        if (running) { return; }
+        running = true;
+        failures = [];
+        loss.attempted = 0;
+        loss.failed = 0;
+
+        runBtn.disabled = true;
+        runBtn.classList.add('is-busy');
+        runLabel.textContent = 'Menguji...';
+        runBtn.setAttribute('aria-label', 'Sedang Menguji...');
+        gaugeWrap.classList.add('is-running');
+        goHint.textContent = 'Pengujian sedang berjalan';
+
+        /* Reset dulu, baru set ulang status: resetUi() mengembalikan gauge ke
+           kondisi idle, jadi penanda "sedang jalan" harus dipasang sesudahnya. */
+        resetUi();
+        hideResults();
+        gaugeWrap.classList.add('is-running');
+        valueEl.classList.remove('is-idle');
+
+        startAnimation();
+
+        var overall = 0;
+
+        /* Identitas koneksi dibaca paralel dengan pengukuran, jadi panel
+           informasi tidak perlu menunggu tes selesai. */
+        loadConnectionInfo();
+
+        /* Tahap 1 — ping. */
+        highlight('ping', true);
+        setUnit('ms');
+        setStatus('Mengukur Ping...');
+
+        return measurePing()
+            .then(function (ping) {
+                setSlot('ping', ping.ms, pingNote(ping));
+                setSlot('jitter', ping.jitter, jitterNote(ping.jitter));
+                highlight('ping', false);
+                overall += 1;
+                paintProgress(overall / 3);
+            })
+            .catch(function () {
+                /* Ping gagal. Kotak ping dan jitter dibiarkan kosong —
+                   lebih berguna begitu daripada diisi angka yang tidak
+                   pernah diukur. */
+                failures.push('ping');
+                setSlot('ping', null, 'Gagal diukur');
+                setSlot('jitter', null, 'Gagal diukur');
+                highlight('ping', false);
+                overall += 1;
+                paintProgress(overall / 3);
+            })
+
+            /* Tahap 2 — unduh. */
+            .then(function () {
+                highlight('download', true);
+                heroLive('download', true);
+                setUnit('Mbps');
+                setStatus('Mengunduh...');
+                target = 0;
+                shown = 0;
+
+                return withTimeout(measureDownload(), 60000);
+            })
+            .then(function (mbps) {
+                target = Math.min(GAUGE_MAX_MBPS, mbps);
+                setHero('download', mbps, speedNote(mbps));
+                highlight('download', false);
+                heroLive('download', false);
+                overall += 1;
+                paintProgress(overall / 3);
+            })
+            .catch(function () {
+                /* Unduhan gagal — CDN diblokir atau tidak dapat dijangkau.
+                   Kotak Unduhan tetap kosong. */
+                failures.push('download');
+                target = 0;
+                setHero('download', null, 'Gagal diukur');
+                highlight('download', false);
+                heroLive('download', false);
+                overall += 1;
+                paintProgress(overall / 3);
+            })
+
+            /* Tahap 3 — unggah. */
+            .then(function () {
+                highlight('upload', true);
+                heroLive('upload', true);
+                setUnit('Mbps');
+                setStatus('Mengunggah...');
+                target = 0;
+                shown = 0;
+
+                return withTimeout(measureUpload(), 60000);
+            })
+            .then(function (mbps) {
+                target = Math.min(GAUGE_MAX_MBPS, mbps);
+                setHero('upload', mbps, speedNote(mbps));
+                highlight('upload', false);
+                heroLive('upload', false);
+                overall += 1;
+                paintProgress(1);
+                return finish();
+            })
+            .catch(function () {
+                /* Unggahan gagal — endpoint NOC tidak dapat dijangkau.
+                   Kotak Unggahan tetap kosong. */
+                failures.push('upload');
+                target = 0;
+                setHero('upload', null, 'Gagal diukur');
+                highlight('upload', false);
+                heroLive('upload', false);
+                paintProgress(1);
+                return finish();
+            })
+            .catch(function (error) {
+                /* Kegagalan tak terduga: pastikan tombol tidak terkunci selamanya
+                   supaya bisa diulang, dan tetap tampilkan panelnya. */
+                setStatus('Pengujian gagal: ' + (error && error.message ? error.message : 'tidak diketahui'), 'error');
+                showResults();
+                releaseUi();
+            })
+            .then(function () {
+                /* Loss dihitung setelah semua request selesai, lalu ditagih ke
+                   metrik kecil. */
+                setSlot('loss', lossPercentage(), lossNote(lossPercentage()));
+                highlight('loss', false);
+            });
+    }
+
+    function pingNote(ping) {
+        var quality = ping.ms <= 30 ? 'Sangat baik'
+            : ping.ms <= 80 ? 'Baik'
+            : ping.ms <= 150 ? 'Sedang'
+            : 'Tinggi';
+        return quality + ' · rata-rata ' + formatMetric(ping.avg) + ' ms';
+    }
+
+    function jitterNote(ms) {
+        var quality = ms <= 2 ? 'Sangat stabil'
+            : ms <= 8 ? 'Stabil'
+            : ms <= 20 ? 'Agak naik-turun'
+            : 'Tidak stabil';
+        return quality + ' · selisih antar paket';
+    }
+
+    function speedNote(mbps) {
+        var quality = mbps >= 100 ? 'Sangat cepat'
+            : mbps >= 25 ? 'Cukup cepat'
+            : mbps >= 8 ? 'Lambat'
+            : 'Sangat lambat';
+        return quality;
+    }
+
+    function finish() {
+        shown = target;
+        paintArc(shown);
+        setUnit('Mbps');
+        setStatus('Selesai');
+        showResults();
+        releaseUi();
+    }
+
+    function releaseUi() {
+        running = false;
+        runBtn.disabled = false;
+        runBtn.classList.remove('is-busy');
+        runLabel.textContent = 'JALANKAN LAGI';
+        runBtn.setAttribute('aria-label', 'Jalankan Lagi');
+        gaugeWrap.classList.remove('is-running');
+        goHint.textContent = 'Ketuk untuk mengukur ulang';
+
+        if (failures.length) {
+            var labels = failures.map(function (name) {
+                return { ping: 'Ping', download: 'Unduhan', upload: 'Unggahan' }[name] || name;
+            });
+
+            noteEl.textContent = labels.join(' dan ') + ' tidak dapat diukur karena endpoint-nya tidak dapat '
+                + 'dijangkau. Kotak yang kosong berarti tidak ada angka, bukan angka yang ditebak.';
+            noteEl.classList.add('is-warn');
+        } else {
+            noteEl.textContent = 'Pengujian memakai bandwidth penuh selama beberapa detik dan memakai data.';
+            noteEl.classList.remove('is-warn');
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PASANG
+     ═══════════════════════════════════════════════════════ */
+    function buildTicks() {
+        var count = 40;
+        var fragment = document.createDocumentFragment();
+
+        for (var i = 0; i <= count; i++) {
+            var angle = (i / count) * 359.9 - 90;
+            var radians = angle * Math.PI / 180;
+            var inner = 166;
+            var outer = 172;
+
+            var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'stg-tick');
+            line.setAttribute('x1', (160 + inner * Math.cos(radians)).toFixed(2));
+            line.setAttribute('y1', (160 + inner * Math.sin(radians)).toFixed(2));
+            line.setAttribute('x2', (160 + outer * Math.cos(radians)).toFixed(2));
+            line.setAttribute('y2', (160 + outer * Math.sin(radians)).toFixed(2));
+
+            fragment.appendChild(line);
+        }
+
+        ticksBox.appendChild(fragment);
+    }
+
+    function init() {
+        arc.style.strokeDasharray = CIRCUMFERENCE;
+        arc.style.strokeDashoffset = CIRCUMFERENCE;
+        progress.style.strokeDasharray = PROGRESS_CIRCUMFERENCE;
+        progress.style.strokeDashoffset = PROGRESS_CIRCUMFERENCE;
+
+        /* Isi panel informasi dari nilai yang sudah dikirim server, supaya
+           barisnya tidak kosong walau pengujian belum pernah dijalankan. */
+        setInfo('ip', SERVER_IP || '');
+
+        buildTicks();
+        resetUi();
+        hideResults();
+
+        runBtn.addEventListener('click', runTest);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
 </script>
 @endpush

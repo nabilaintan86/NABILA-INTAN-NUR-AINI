@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Device;
 use App\Models\DhcpLease;
 use App\Services\DeviceCsvService;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\CreatesDeviceTables;
 use Tests\Feature\Concerns\CreatesDhcpTables;
 use Tests\TestCase;
@@ -16,6 +17,7 @@ use Tests\TestCase;
  */
 class DhcpLeaseInfoPopupTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use CreatesDeviceTables;
     use CreatesDhcpTables;
 
@@ -53,6 +55,8 @@ class DhcpLeaseInfoPopupTest extends TestCase
         $this->beforeApplicationDestroyed(fn () => is_file($path) && @unlink($path));
 
         $this->app->singleton(DeviceCsvService::class, fn () => new DeviceCsvService()->usePath($path));
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_top_actions_are_real_buttons_that_open_the_popup(): void

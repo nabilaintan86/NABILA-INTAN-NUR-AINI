@@ -14,14 +14,6 @@
         margin-bottom: 16px;
     }
 
-    .wug-page-title {
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-
     .wug-btn-group .btn {
         font-size: 13px;
         font-weight: 600;
@@ -99,35 +91,39 @@
         $activeTab = 'topview';
     }
 @endphp
-<div class="nk-block-head nk-block-head-sm pb-1">
-    <div class="wug-nav-bar">
-        <h2 class="wug-page-title">Map: RADNET Wireless Network 2026</h2>
-        <div class="btn-group wug-btn-group shadow-sm" role="tablist">
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'topview' ? 'active' : '' }}" id="tabBtnTopView" onclick="switchWugTab('topview')">
-                <em class="icon ni ni-map"></em> Top View (2026)
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'summary' ? 'active' : '' }}" id="tabBtnSummary" onclick="switchWugTab('summary')">
-                <em class="icon ni ni-grid-alt"></em> Summary View
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'logs' ? 'active' : '' }}" id="tabBtnLogs" onclick="switchWugTab('logs')">
-                <em class="icon ni ni-histroy"></em> Log View
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'outage' ? 'active' : '' }}" id="tabBtnOutage" onclick="switchWugTab('outage')">
-                <em class="icon ni ni-alert"></em> Outage Report
-                @if($totalDown > 0)
-                    <span class="badge bg-danger ms-1">{{ $totalDown }}</span>
-                @endif
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'stats' ? 'active' : '' }}" id="tabBtnStats" onclick="switchWugTab('stats')">
-                <em class="icon ni ni-activity-round"></em> Statistics Report
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'relasi' ? 'active' : '' }}" id="tabBtnRelasi" onclick="switchWugTab('relasi')">
-                <em class="icon ni ni-network"></em> Tabel Relasi ({{ count($connections) }})
-            </button>
-            <button type="button" class="btn btn-outline-primary {{ $activeTab === 'area' ? 'active' : '' }}" id="tabBtnArea" onclick="switchWugTab('area')">
-                <em class="icon ni ni-layers"></em> Kelola Card Area ({{ count($networkAreas) }})
-            </button>
-        </div>
+<x-admin.page-head
+    title="Monitoring Jaringan"
+    subtitle="Peta topologi, log, dan laporan perangkat Radnet dalam satu layar." />
+
+{{-- Baris tab (Top View / Summary / Log / Outage / ...) sengaja DI BAWAH
+     page head, bukan di kolom action: tujuh tombol tidak muat di kanan
+     judul tanpa membuat judul terpotong di layar 1366px. --}}
+<div class="wug-nav-bar">
+    <div class="btn-group wug-btn-group shadow-sm" role="tablist">
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'topview' ? 'active' : '' }}" id="tabBtnTopView" onclick="switchWugTab('topview')">
+            <em class="icon ni ni-map"></em> Top View (2026)
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'summary' ? 'active' : '' }}" id="tabBtnSummary" onclick="switchWugTab('summary')">
+            <em class="icon ni ni-grid-alt"></em> Summary View
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'logs' ? 'active' : '' }}" id="tabBtnLogs" onclick="switchWugTab('logs')">
+            <em class="icon ni ni-histroy"></em> Log View
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'outage' ? 'active' : '' }}" id="tabBtnOutage" onclick="switchWugTab('outage')">
+            <em class="icon ni ni-alert"></em> Outage Report
+            @if($totalDown > 0)
+                <span class="badge bg-danger ms-1">{{ $totalDown }}</span>
+            @endif
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'stats' ? 'active' : '' }}" id="tabBtnStats" onclick="switchWugTab('stats')">
+            <em class="icon ni ni-activity-round"></em> Statistics Report
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'relasi' ? 'active' : '' }}" id="tabBtnRelasi" onclick="switchWugTab('relasi')">
+            <em class="icon ni ni-network"></em> Tabel Relasi ({{ count($connections) }})
+        </button>
+        <button type="button" class="btn btn-outline-primary {{ $activeTab === 'area' ? 'active' : '' }}" id="tabBtnArea" onclick="switchWugTab('area')">
+            <em class="icon ni ni-layers"></em> Kelola Card Area ({{ count($networkAreas) }})
+        </button>
     </div>
 </div>
 

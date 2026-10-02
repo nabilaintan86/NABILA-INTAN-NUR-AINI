@@ -7,11 +7,13 @@ use App\Models\DeviceNotification;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
 class NotifikasiPageTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use InteractsWithDeviceRegistry;
 
     protected function setUp(): void
@@ -55,6 +57,8 @@ class NotifikasiPageTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_notifikasi_page_renders_device_notifications(): void

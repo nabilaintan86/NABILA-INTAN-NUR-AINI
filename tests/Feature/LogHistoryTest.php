@@ -6,10 +6,12 @@ use App\Models\LogArchive;
 use App\Models\MonitoringLog;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\TestCase;
 
 class LogHistoryTest extends TestCase
 {
+    use AuthenticatesAdmin;
     protected function setUp(): void
     {
         parent::setUp();
@@ -66,6 +68,8 @@ class LogHistoryTest extends TestCase
             'response_time' => null,
             'checked_at'    => '2026-09-10 08:00:00',
         ]);
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_archive_tab_merges_monitoring_logs_and_log_archives(): void

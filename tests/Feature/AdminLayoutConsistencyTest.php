@@ -10,6 +10,7 @@ use DOMElement;
 use DOMXPath;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\CreatesNetworkAreaTables;
 use Tests\TestCase;
 
 /**
@@ -26,6 +27,11 @@ use Tests\TestCase;
  */
 class AdminLayoutConsistencyTest extends TestCase
 {
+    /* Halaman admin.monitoring membaca network_areas + map_settings, jadi
+       keduanya harus ada di skema test — kalau tidak,route-nya 500 dan
+       standar layout-nya sendiri tidak sempat diuji. */
+    use CreatesNetworkAreaTables;
+
     /** @var array<string, array{0: string, 1: string}> route => [label, pageTitle] */
     private const PAGES = [
         'admin.dashboard'          => ['Dashboard', 'Dashboard'],
@@ -46,6 +52,7 @@ class AdminLayoutConsistencyTest extends TestCase
     {
         parent::setUp();
         $this->createSchema();
+        $this->createNetworkAreaTables();
     }
 
     public function test_every_admin_page_uses_the_same_global_layout(): void
@@ -395,7 +402,7 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->id();
                 $table->string('name');
                 $table->string('email')->unique();
-                $table->string('role')->default('admin');
+                $table->string('role')->default('super_admin');
                 $table->timestamp('email_verified_at')->nullable();
                 $table->string('password');
                 $table->unsignedBigInteger('telegram_chat_id')->nullable();
