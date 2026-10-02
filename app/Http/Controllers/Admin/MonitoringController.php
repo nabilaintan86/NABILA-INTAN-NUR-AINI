@@ -9,13 +9,39 @@ use App\Models\MapSetting;
 use App\Models\MonitoringLog;
 use App\Models\NetworkArea;
 use App\Services\DeviceCsvService;
+use App\Services\DeviceRegistrar;
 use App\Services\NetworkTopologyService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class MonitoringController extends Controller
 {
-    public function __construct(private NetworkTopologyService $topologyService)
+    public function __construct(
+        private NetworkTopologyService $topologyService,
+        private DeviceRegistrar $deviceRegistrar,
+    ) {
+    }
+
+    /**
+     * Gate konfigurasi topology.
+     *
+     * Semua endpoint yang MENGUBAH map (posisi device, relasi, area, device
+     * itu sendiri) hanya boleh dipakai Super Admin. Admin/Staff tetap dapat
+     * melihat map, membuka detail device, dan memakai seluruh fitur monitoring
+     * (status UP/DOWN, log, refresh) karena endpoint-nya tidak memakai gate ini.
+     *
+     * Mengembalikan 403 JSON agar pesan error bisa ditampilkan di halaman.
+     */
+    private function guardSuperAdmin(string $message): ?Response
     {
+        if (auth()->check() && auth()->user()->role === 'super_admin') {
+            return null;
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], 403);
     }
 
     public function index(DeviceCsvService $source)
@@ -63,12 +89,31 @@ class MonitoringController extends Controller
         ) + [
             'deviceSource' => $source->officialSummary(),
             'topology'     => $this->topologyService->build(),
+            // Panel "Daftar Device" (kiri map) + form tambah/edit device.
+            'deviceList'   => $this->topologyService->deviceList(),
+            'deviceTypes'  => \App\Helpers\DeviceType::types(),
+            'protocols'    => \App\Helpers\DeviceType::protocols(),
         ]);
     }
 
     public function data()
     {
         return response()->json($this->topologyService->build());
+    }
+
+    /**
+     * JSON daftar device untuk panel "Daftar Device".
+     *
+     * Dipanggil panel kiri map agar device baru yang dibuat dari halaman ini
+     * (atau dari Kelola Router) langsung muncul tanpa reload penuh, dan agar
+     * status UP/DOWN pada panel selalu sinkron dengan hasil monitoring.
+     */
+    public function devices()
+    {
+        return response()->json([
+            'success' => true,
+            'devices' => $this->topologyService->deviceList(),
+        ]);
     }
 
     /**
@@ -83,26 +128,130 @@ class MonitoringController extends Controller
     }
 
     /**
+     * Tambah perangkat baru langsung dari workspace Map (Super Admin).
+     *
+     * Memakai DeviceRegistrar yang sama dengan halaman Kelola Router, jadi
+     * record `device` yang dihasilkan identik dan otomatis ikut monitoring.
+     * Balasana JSON karena pemanggilnya panel Device (bukan form biasa).
+     */
+    public function storeDevice(Request $request)
+    {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menambah perangkat baru.')) {
+            return $forbidden;
+        }
+
+        $device = $this->deviceRegistrar->store($request);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => "Perangkat {$device->name} berhasil ditambahkan.",
+            'device'    => $this->payloadForDevice($device),
+            'devices'   => $this->topologyService->deviceList(),
+            'topology'  => $this->topologyService->build(),
+        ], 201);
+    }
+
+    /**
+     * Edit perangkat yang sudah ada dari workspace Map (Super Admin).
+     *
+     * Meng-update record device yang SAMA (route model binding) — tidak pernah
+     * membuat device baru/duplikat.
+     */
+    public function updateDevice(Request $request, Device $device)
+    {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengubah data perangkat.')) {
+            return $forbidden;
+        }
+
+        $this->deviceRegistrar->update($request, $device);
+        $device->refresh();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "Data perangkat {$device->name} berhasil diperbarui.",
+            'device'   => $this->payloadForDevice($device),
+            'devices'  => $this->topologyService->deviceList(),
+            'topology' => $this->topologyService->build(),
+        ]);
+    }
+
+    /**
+     * Hapus perangkat beserta relasinya (Super Admin).
+     *
+     * Relasi ikut terhapus lewat cascade FK `device_connections`, sehingga
+     * tidak ada edge yatim yang menggantung di map.
+     */
+    public function destroyDevice(Device $device)
+    {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus perangkat.')) {
+            return $forbidden;
+        }
+
+        $name = $device->name;
+        $device->delete();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "Perangkat {$name} berhasil dihapus.",
+            'devices'  => $this->topologyService->deviceList(),
+            'topology' => $this->topologyService->build(),
+        ]);
+    }
+
+    /**
      * Simpan koordinat posisi perangkat hasil drag-and-drop.
+     *
+     * `network_area_id` bersifat opsional: ketika Super Admin meletakkan device
+     * (drag dari panel Daftar Device, atau drag node yang sebelumnya di luar
+     * area), area/POP tempat device itu diletakkan ikut disimpan memakai kolom
+     * `device.network_area_id` yang sudah dipakai NetworkTopologyService untuk
+     * pengelompokan panel.
      */
     public function updatePosition(Request $request, Device $device)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengatur posisi perangkat pada map.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'pos_x' => 'required|numeric',
             'pos_y' => 'required|numeric',
+            'network_area_id' => 'nullable|integer|exists:network_areas,id',
         ]);
 
-        $device->update([
+        $data = [
             'pos_x'          => (int) round($validated['pos_x']),
             'pos_y'          => (int) round($validated['pos_y']),
             'map_positioned' => true,
-        ]);
+        ];
+
+        $assignedArea = null;
+
+        if (array_key_exists('network_area_id', $validated)) {
+            $area = $validated['network_area_id']
+                ? NetworkArea::find($validated['network_area_id'])
+                : null;
+
+            if ($area) {
+                $data['network_area_id'] = $area->id;
+                $assignedArea = $area->name;
+            } elseif ($device->network_area_id) {
+                // Device dilepas dari area (ditarik keluar kotak POP).
+                $data['network_area_id'] = null;
+                $assignedArea = null;
+            }
+        }
+
+        $device->update($data);
 
         return response()->json([
-            'success' => true,
-            'message' => "Posisi perangkat {$device->name} berhasil diperbarui.",
-            'pos_x'   => $device->pos_x,
-            'pos_y'   => $device->pos_y,
+            'success'       => true,
+            'message'       => "Posisi perangkat {$device->name} berhasil diperbarui.",
+            'pos_x'         => $device->pos_x,
+            'pos_y'         => $device->pos_y,
+            'network_area_id' => $device->network_area_id,
+            'area'          => $assignedArea,
+            'devices'       => $this->topologyService->deviceList(),
         ]);
     }
 
@@ -111,6 +260,10 @@ class MonitoringController extends Controller
      */
     public function resetPositions()
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mereset posisi perangkat.')) {
+            return $forbidden;
+        }
+
         Device::query()->update([
             'pos_x'          => null,
             'pos_y'          => null,
@@ -120,6 +273,7 @@ class MonitoringController extends Controller
         return response()->json([
             'success'  => true,
             'message'  => 'Semua posisi perangkat berhasil dikembalikan ke default.',
+            'devices'  => $this->topologyService->deviceList(),
             'topology' => $this->topologyService->build(),
         ]);
     }
@@ -129,6 +283,10 @@ class MonitoringController extends Controller
      */
     public function updateDirection(Request $request, DeviceConnection $connection)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengubah arah panah relasi.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'direction' => 'required|string|in:forward,reverse,bidirectional,none',
         ]);
@@ -152,11 +310,8 @@ class MonitoringController extends Controller
      */
     public function saveMapLayout(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'super_admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hanya Super Admin yang memiliki hak akses untuk menyimpan kustomisasi layout map.',
-            ], 403);
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang memiliki hak akses untuk menyimpan kustomisasi layout map.')) {
+            return $forbidden;
         }
 
         $validated = $request->validate([
@@ -224,6 +379,10 @@ class MonitoringController extends Controller
      */
     public function storeArea(Request $request)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menambah Card Area / POP.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'name'         => 'required|string|max:100|unique:network_areas,name',
             'code'         => 'nullable|string|max:50',
@@ -270,6 +429,10 @@ class MonitoringController extends Controller
      */
     public function updateArea(Request $request, NetworkArea $area)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengubah Card Area / POP.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'name'         => 'required|string|max:100|unique:network_areas,name,' . $area->id,
             'code'         => 'nullable|string|max:50',
@@ -315,6 +478,10 @@ class MonitoringController extends Controller
      */
     public function destroyArea(Request $request, NetworkArea $area)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus Card Area / POP.')) {
+            return $forbidden;
+        }
+
         $name = $area->name;
         // Lepaskan relasi perangkat
         Device::where('network_area_id', $area->id)->update(['network_area_id' => null]);
@@ -336,6 +503,10 @@ class MonitoringController extends Controller
      */
     public function updateAreaBounds(Request $request, NetworkArea $area)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengubah ukuran / posisi area map.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'pos_x'  => 'nullable|numeric',
             'pos_y'  => 'nullable|numeric',
@@ -365,11 +536,8 @@ class MonitoringController extends Controller
      */
     public function resetMapLayout(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'super_admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hanya Super Admin yang berhak mereset layout map.',
-            ], 403);
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang berhak mereset layout map.')) {
+            return $forbidden;
         }
 
         MapSetting::where('key', 'topology_2026_layout')->delete();
@@ -389,9 +557,17 @@ class MonitoringController extends Controller
 
     /**
      * Tambah relasi koneksi baru antar-perangkat.
+     *
+     * Dipakai oleh panel Relasi Device (tab Relasi) maupun oleh mode
+     * "Hubungkan" di map: klik perangkat sumber lalu perangkat tujuan. Keduanya
+     * menulis ke tabel `device_connections` yang sama.
      */
     public function storeConnection(Request $request)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menambah relasi perangkat.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'from_device_id'  => 'required|exists:device,id',
             'to_device_id'    => 'required|exists:device,id|different:from_device_id',
@@ -427,6 +603,10 @@ class MonitoringController extends Controller
      */
     public function updateConnection(Request $request, DeviceConnection $connection)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat mengubah relasi perangkat.')) {
+            return $forbidden;
+        }
+
         $validated = $request->validate([
             'from_device_id'  => 'required|exists:device,id',
             'to_device_id'    => 'required|exists:device,id|different:from_device_id',
@@ -458,6 +638,10 @@ class MonitoringController extends Controller
      */
     public function destroyConnection(Request $request, DeviceConnection $connection)
     {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus relasi perangkat.')) {
+            return $forbidden;
+        }
+
         $connection->delete();
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -469,5 +653,37 @@ class MonitoringController extends Controller
         }
 
         return redirect()->route('admin.monitoring')->with('success', 'Relasi koneksi berhasil dihapus.');
+    }
+
+    /**
+     * Ringkasan satu device untuk panel Daftar Device / popup detail.
+     */
+    private function payloadForDevice(Device $device): array
+    {
+        $areas = NetworkArea::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->pluck('name', 'id');
+
+        return [
+            'id'             => (int) $device->id,
+            'name'           => $device->name,
+            'ip'             => $device->ip_address,
+            'icon'           => $device->icon_key,
+            'type'           => $device->display_type,
+            'protocol'       => $device->display_protocol,
+            'status'         => $device->status,
+            'router_version' => $device->router_version,
+            'pop'            => $device->pop_name ?: ($areas[$device->network_area_id] ?? 'Belum ditempatkan'),
+            'area_id'        => $device->network_area_id ? (int) $device->network_area_id : null,
+            'area'           => $areas[$device->network_area_id] ?? null,
+            'placed'         => (bool) $device->map_positioned
+                && $device->pos_x !== null
+                && $device->pos_y !== null,
+            'pos_x'          => $device->pos_x !== null ? (int) $device->pos_x : null,
+            'pos_y'          => $device->pos_y !== null ? (int) $device->pos_y : null,
+            'links'          => $device->outboundConnections()->count()
+                + $device->inboundConnections()->count(),
+        ];
     }
 }

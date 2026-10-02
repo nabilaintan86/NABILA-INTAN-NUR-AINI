@@ -6,6 +6,7 @@
     - Jarak jarum dan ukuran panah bisa diperbesar / diperkecil live
     - Simpan kustomisasi permanen ke database oleh Super Admin
     - Fullscreen 1-layar & responsive zoom/pan
+    - Panel kiri daftar device + tombol Tambah Device & Hubungkan (Super Admin)
 --}}
 @php
     $topology            = $topology ?? null;
@@ -18,15 +19,24 @@
     $resetLayoutEndpoint = $resetLayoutEndpoint ?? route('admin.monitoring.map-layout.reset');
     $isSuperAdmin        = $isSuperAdmin ?? (auth()->check() && auth()->user()->role === 'super_admin');
     $title               = $title ?? 'Map: RADNET Wireless Network 2026';
+    $deviceList          = $deviceList  ?? [];
+    $deviceTypes         = $deviceTypes ?? [];
+    $protocols           = $protocols   ?? [];
 @endphp
 
 <style>
     /* ===========================================================
        WHATSUP GOLD NETWORK MAP 2026 STYLING
        =========================================================== */
+        .wug-map-body {
+        display: flex;
+        gap: 0;
+        align-items: stretch;
+    }
 
     .wug-map-container {
         position: relative;
+        flex: 1 1 auto;
         background: #cbd5e1;
         border: 2px solid #2563eb;
         border-radius: 8px;
@@ -111,6 +121,47 @@
         background: #059669 !important;
     }
 
+    /* Tombol Tambah Device & Hubungkan */
+    .wug-btn-hdr.btn-add-device {
+        background: #10b981 !important;
+        border-color: #059669 !important;
+        font-weight: 700;
+    }
+    .wug-btn-hdr.btn-add-device:hover { background: #059669 !important; }
+    .wug-btn-hdr.btn-connect-mode.active {
+        background: #f59e0b !important;
+        color: #000 !important;
+        border-color: #d97706 !important;
+        animation: pulse-connect 1.4s infinite;
+    }
+    @keyframes pulse-connect {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+        50%      { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
+
+    /* Connect Hint */
+    .connect-hint {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f59e0b;
+        color: #000;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        z-index: 100;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5);
+        display: none;
+    }
+    .connect-hint.active { display: block; }
+
+    /* Node source highlight saat connect mode */
+    .topo-node.connect-source image {
+        filter: brightness(1.3) drop-shadow(0 0 12px #f59e0b);
+    }
+
     /* Canvas Map Viewport */
     .wug-canvas-viewport {
         position: relative;
@@ -167,7 +218,6 @@
         pointer-events: none;
     }
 
-    /* Resize Handle di Sudut Kanan-Bawah Pembatas Area (Stabil & Smooth, Tanpa Flicker) */
     .topo-area-resize-handle {
         cursor: nwse-resize;
         fill: #2563eb;
@@ -183,7 +233,7 @@
         stroke-width: 3.5;
     }
 
-    /* Directed Arrows (Jarum Panah Relasi) */
+    /* Directed Arrows */
     .topo-edge-line {
         fill: none;
         stroke-linecap: round;
@@ -304,7 +354,7 @@
         gap: 6px;
     }
 
-    /* DRAWER / PANEL KUSTOMISASI LIVE (SUPER ADMIN) */
+    /* DRAWER KUSTOMISASI */
     .wug-custom-drawer {
         position: absolute;
         top: 0;
@@ -351,7 +401,7 @@
         margin-bottom: 4px;
     }
 
-    /* Popup & Tooltip */
+    /* Tooltip */
     .wug-tooltip {
         position: absolute;
         display: none;
@@ -458,167 +508,192 @@
     }
 </style>
 
-{{-- WHATSUP GOLD MAP CONTAINER --}}
-<div class="wug-map-container" id="wugMapWrapper">
-    {{-- Header Bar --}}
-    <div class="wug-map-header">
-        <div class="wug-map-title">
-            <em class="icon ni ni-map-pin"></em>
-            <span>{{ $title }}</span>
-            <span class="badge bg-light text-dark fs-11px ms-1">WhatsUp Gold Standard</span>
-            @if($isSuperAdmin)
-                <span class="badge bg-warning text-dark fs-11px fw-bold" id="badgeLayoutStatus">
-                    <em class="icon ni ni-shield-check me-1"></em>Super Admin (Full Custom)
-                </span>
-            @endif
-        </div>
-        <div class="wug-header-actions">
-            {{-- Tombol Buka Panel Kustomisasi --}}
-            <button type="button" class="wug-btn-hdr btn-custom-toggle" id="btnToggleCustomDrawer" title="Atur Ukuran Pembatas Router & Jarak Jarum Panah">
-                <em class="icon ni ni-sliders"></em>
-                <span>Kustomisasi Map</span>
-            </button>
+{{-- WRAPPER: Panel kiri + Map container --}}
+<div class="wug-map-body">
 
-            @if($isSuperAdmin)
-                {{-- Tombol Simpan Layout Permanen (Khusus Super Admin) --}}
-                <button type="button" class="wug-btn-hdr btn-save-layout" id="btnSaveFullLayout" title="Simpan Permanen Seluruh Ukuran Pembatas, Posisi Router & Jarak Jarum ke Database">
-                    <em class="icon ni ni-save"></em>
-                    <span>Simpan Layout</span>
-                </button>
-                <button type="button" class="wug-btn-hdr" id="btnResetFullLayout" title="Kembalikan Layout Map ke Default Pabrik RADNET 2026">
-                    <em class="icon ni ni-undo"></em>
-                    <span>Reset 2026</span>
-                </button>
-            @endif
+    {{-- Panel kiri: daftar device + modal CRUD --}}
+    @include('admin.components.topology-device-panel', [
+        'deviceList'  => $deviceList,
+        'deviceTypes' => $deviceTypes,
+        'protocols'   => $protocols,
+    ])
 
-            <button type="button" class="wug-btn-hdr" id="btnFitScreen" title="Reset Zoom / Pas ke Layar">
-                <em class="icon ni ni-crop"></em>
-                <span>Fit Screen</span>
-            </button>
-            <button type="button" class="wug-btn-hdr" id="btnToggleFs" title="Bisa Full Screen atau Windowed (Tekan F)">
-                <em class="icon ni ni-expand" id="iconFs"></em>
-                <span id="labelFs">Fullscreen</span>
-            </button>
-            <button type="button" class="wug-btn-hdr" id="btnMapHelp" title="Panduan & Legenda">
-                <em class="icon ni ni-help-fill"></em>
-                <span>Help</span>
-            </button>
-        </div>
-    </div>
-
-    {{-- Canvas Viewport --}}
-    <div class="wug-canvas-viewport" id="wugViewport">
-        {{-- Floating Exit Fullscreen Button --}}
-        <button type="button" class="wug-floating-exit-fs" id="btnFloatingExitFs">
-            <em class="icon ni ni-shrink"></em> Exit Fullscreen (Esc)
-        </button>
-
-        {{-- DRAWER KUSTOMISASI LIVE (JARAK JARUM & UKURAN PEMBATAS) --}}
-        <div class="wug-custom-drawer" id="wugCustomDrawer">
-            <div class="wug-drawer-header">
-                <div class="fw-bold"><em class="icon ni ni-sliders me-1"></em> Pengaturan Map 2026</div>
-                <button type="button" class="btn btn-sm btn-icon text-white" id="btnCloseCustomDrawer">&times;</button>
-            </div>
-            <div class="wug-drawer-body">
-                <div class="alert alert-primary-dim p-2 small mb-3">
-                    <em class="icon ni ni-info-fill me-1"></em> Geser slider di bawah untuk mengatur <strong>jarak jarum</strong> dan <strong>ukuran pembatas router</strong> secara live.
-                </div>
-
-                <h6 class="text-primary fw-bold fs-13px text-uppercase mb-2">1. Jarak & Ukuran Jarum Panah</h6>
-
-                <div class="wug-slider-group">
-                    <label>
-                        <span>Jarak Jarum (Clearance)</span>
-                        <span id="valNeedleClearance" class="text-primary">28 px</span>
-                    </label>
-                    <input type="range" class="form-range" id="rangeNeedleClearance" min="10" max="65" step="1" value="28">
-                    <small class="text-muted d-block" style="font-size: 11px;">Jarak renggang antara ujung jarum panah dengan ikon router.</small>
-                </div>
-
-                <div class="wug-slider-group">
-                    <label>
-                        <span>Ukuran Kepala Jarum</span>
-                        <span id="valNeedleSize" class="text-primary">7 px</span>
-                    </label>
-                    <input type="range" class="form-range" id="rangeNeedleSize" min="4" max="16" step="1" value="7">
-                    <small class="text-muted d-block" style="font-size: 11px;">Besar kecilnya mata panah jarum.</small>
-                </div>
-
-                <div class="wug-slider-group">
-                    <label>
-                        <span>Tebal Garis Jarum</span>
-                        <span id="valNeedleWidth" class="text-primary">2.2 px</span>
-                    </label>
-                    <input type="range" class="form-range" id="rangeNeedleWidth" min="1.0" max="5.5" step="0.2" value="2.2">
-                    <small class="text-muted d-block" style="font-size: 11px;">Ketebalan jalur kabel panah.</small>
-                </div>
-
-                <h6 class="text-primary fw-bold fs-13px text-uppercase mb-2 mt-4">2. Pembatas Router (Area Box)</h6>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold mb-1">Pilih Area Pembatas:</label>
-                    <select class="form-select form-select-sm" id="selectCustomArea">
-                        <option value="">-- Pilih Area Pembatas --</option>
-                    </select>
-                </div>
-
-                <div class="row g-2 mb-2" id="boxAreaSizeControls" style="display: none;">
-                    <div class="col-6">
-                        <label class="small fw-bold">Lebar (W px):</label>
-                        <div class="input-group input-group-sm">
-                            <input type="number" class="form-control" id="inputAreaW" min="80" step="10">
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <label class="small fw-bold">Tinggi (H px):</label>
-                        <div class="input-group input-group-sm">
-                            <input type="number" class="form-control" id="inputAreaH" min="80" step="10">
-                        </div>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <small class="text-muted d-block">Tip: Anda juga bisa menarik langsung icon resize di pojok kanan-bawah kotak area pada canvas!</small>
-                    </div>
-                </div>
-
+    {{-- WHATSUP GOLD MAP CONTAINER --}}
+    <div class="wug-map-container" id="wugMapWrapper">
+        {{-- Header Bar --}}
+        <div class="wug-map-header">
+            <div class="wug-map-title">
+                <em class="icon ni ni-map-pin"></em>
+                <span>{{ $title }}</span>
+                <span class="badge bg-light text-dark fs-11px ms-1">WhatsUp Gold Standard</span>
                 @if($isSuperAdmin)
-                    <div class="mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-success btn-sm w-100 fw-bold py-2 shadow-sm" onclick="triggerSaveFullLayout()">
-                            <em class="icon ni ni-save me-1"></em> Simpan Seluruh Kustomisasi
-                        </button>
-                    </div>
-                @else
-                    <div class="alert alert-warning p-2 small mt-3">
-                        <em class="icon ni ni-lock me-1"></em> Anda login sebagai staf (read-only). Hanya Super Admin yang berhak menyimpan perubahan ke database.
-                    </div>
+                    <span class="badge bg-warning text-dark fs-11px fw-bold" id="badgeLayoutStatus">
+                        <em class="icon ni ni-shield-check me-1"></em>Super Admin (Full Custom)
+                    </span>
                 @endif
             </div>
+            <div class="wug-header-actions">
+                @if($isSuperAdmin)
+                    <button type="button" class="wug-btn-hdr btn-add-device" id="btnAddDevice" title="Tambah Perangkat Baru">
+                        <em class="icon ni ni-plus"></em>
+                        <span>Tambah Device</span>
+                    </button>
+                    <button type="button" class="wug-btn-hdr btn-connect-mode" id="btnConnectMode" title="Hubungkan 2 device">
+                        <em class="icon ni ni-share"></em>
+                        <span>Hubungkan</span>
+                    </button>
+                @endif
+
+                {{-- Tombol Buka Panel Kustomisasi --}}
+                <button type="button" class="wug-btn-hdr btn-custom-toggle" id="btnToggleCustomDrawer" title="Atur Ukuran Pembatas Router & Jarak Jarum Panah">
+                    <em class="icon ni ni-sliders"></em>
+                    <span>Kustomisasi Map</span>
+                </button>
+
+                @if($isSuperAdmin)
+                    <button type="button" class="wug-btn-hdr btn-save-layout" id="btnSaveFullLayout" title="Simpan Permanen Seluruh Ukuran Pembatas, Posisi Router & Jarak Jarum ke Database">
+                        <em class="icon ni ni-save"></em>
+                        <span>Simpan Layout</span>
+                    </button>
+                    <button type="button" class="wug-btn-hdr" id="btnResetFullLayout" title="Kembalikan Layout Map ke Default Pabrik RADNET 2026">
+                        <em class="icon ni ni-undo"></em>
+                        <span>Reset 2026</span>
+                    </button>
+                @endif
+
+                <button type="button" class="wug-btn-hdr" id="btnFitScreen" title="Reset Zoom / Pas ke Layar">
+                    <em class="icon ni ni-crop"></em>
+                    <span>Fit Screen</span>
+                </button>
+                <button type="button" class="wug-btn-hdr" id="btnToggleFs" title="Bisa Full Screen atau Windowed (Tekan F)">
+                    <em class="icon ni ni-expand" id="iconFs"></em>
+                    <span id="labelFs">Fullscreen</span>
+                </button>
+                <button type="button" class="wug-btn-hdr" id="btnMapHelp" title="Panduan & Legenda">
+                    <em class="icon ni ni-help-fill"></em>
+                    <span>Help</span>
+                </button>
+            </div>
         </div>
 
-        {{-- SVG Element --}}
-        <svg id="topo" class="topo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1348 1118" preserveAspectRatio="xMidYMid meet">
-            <defs id="topoDefs"></defs>
-            <g id="topoTransformGroup"></g>
-        </svg>
+        {{-- Canvas Viewport --}}
+        <div class="wug-canvas-viewport" id="wugViewport">
+            <div class="connect-hint" id="connectHint">
+                <em class="icon ni ni-info"></em> Klik device sumber, lalu device tujuan. Tekan ESC untuk batal.
+            </div>
 
-        {{-- Floating Zoom / Pan Toolbar --}}
-        <div class="wug-floating-controls">
-            <button type="button" class="wug-btn-icon" id="btnZoomIn" title="Perbesar (+)">
-                <em class="icon ni ni-plus"></em>
+            {{-- Floating Exit Fullscreen Button --}}
+            <button type="button" class="wug-floating-exit-fs" id="btnFloatingExitFs">
+                <em class="icon ni ni-shrink"></em> Exit Fullscreen (Esc)
             </button>
-            <button type="button" class="wug-btn-icon" id="btnZoomOut" title="Perkecil (-)">
-                <em class="icon ni ni-minus"></em>
-            </button>
-            <button type="button" class="wug-btn-icon" id="btnZoomReset" title="Reset View">
-                <em class="icon ni ni-reload"></em>
-            </button>
+
+            {{-- DRAWER KUSTOMISASI LIVE --}}
+            <div class="wug-custom-drawer" id="wugCustomDrawer">
+                <div class="wug-drawer-header">
+                    <div class="fw-bold"><em class="icon ni ni-sliders me-1"></em> Pengaturan Map 2026</div>
+                    <button type="button" class="btn btn-sm btn-icon text-white" id="btnCloseCustomDrawer">&times;</button>
+                </div>
+                <div class="wug-drawer-body">
+                    <div class="alert alert-primary-dim p-2 small mb-3">
+                        <em class="icon ni ni-info-fill me-1"></em> Geser slider di bawah untuk mengatur <strong>jarak jarum</strong> dan <strong>ukuran pembatas router</strong> secara live.
+                    </div>
+
+                    <h6 class="text-primary fw-bold fs-13px text-uppercase mb-2">1. Jarak & Ukuran Jarum Panah</h6>
+
+                    <div class="wug-slider-group">
+                        <label>
+                            <span>Jarak Jarum (Clearance)</span>
+                            <span id="valNeedleClearance" class="text-primary">28 px</span>
+                        </label>
+                        <input type="range" class="form-range" id="rangeNeedleClearance" min="10" max="65" step="1" value="28">
+                        <small class="text-muted d-block" style="font-size: 11px;">Jarak renggang antara ujung jarum panah dengan ikon router.</small>
+                    </div>
+
+                    <div class="wug-slider-group">
+                        <label>
+                            <span>Ukuran Kepala Jarum</span>
+                            <span id="valNeedleSize" class="text-primary">7 px</span>
+                        </label>
+                        <input type="range" class="form-range" id="rangeNeedleSize" min="4" max="16" step="1" value="7">
+                        <small class="text-muted d-block" style="font-size: 11px;">Besar kecilnya mata panah jarum.</small>
+                    </div>
+
+                    <div class="wug-slider-group">
+                        <label>
+                            <span>Tebal Garis Jarum</span>
+                            <span id="valNeedleWidth" class="text-primary">2.2 px</span>
+                        </label>
+                        <input type="range" class="form-range" id="rangeNeedleWidth" min="1.0" max="5.5" step="0.2" value="2.2">
+                        <small class="text-muted d-block" style="font-size: 11px;">Ketebalan jalur kabel panah.</small>
+                    </div>
+
+                    <h6 class="text-primary fw-bold fs-13px text-uppercase mb-2 mt-4">2. Pembatas Router (Area Box)</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-1">Pilih Area Pembatas:</label>
+                        <select class="form-select form-select-sm" id="selectCustomArea">
+                            <option value="">-- Pilih Area Pembatas --</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-2" id="boxAreaSizeControls" style="display: none;">
+                        <div class="col-6">
+                            <label class="small fw-bold">Lebar (W px):</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="inputAreaW" min="80" step="10">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Tinggi (H px):</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="inputAreaH" min="80" step="10">
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <small class="text-muted d-block">Tip: Anda juga bisa menarik langsung icon resize di pojok kanan-bawah kotak area pada canvas!</small>
+                        </div>
+                    </div>
+
+                    @if($isSuperAdmin)
+                        <div class="mt-4 pt-3 border-top">
+                            <button type="button" class="btn btn-success btn-sm w-100 fw-bold py-2 shadow-sm" onclick="triggerSaveFullLayout()">
+                                <em class="icon ni ni-save me-1"></em> Simpan Seluruh Kustomisasi
+                            </button>
+                        </div>
+                    @else
+                        <div class="alert alert-warning p-2 small mt-3">
+                            <em class="icon ni ni-lock me-1"></em> Anda login sebagai staf (read-only). Hanya Super Admin yang berhak menyimpan perubahan ke database.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- SVG Element --}}
+            <svg id="topo" class="topo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1348 1118" preserveAspectRatio="xMidYMid meet">
+                <defs id="topoDefs"></defs>
+                <g id="topoTransformGroup"></g>
+            </svg>
+
+            {{-- Floating Zoom / Pan Toolbar --}}
+            <div class="wug-floating-controls">
+                <button type="button" class="wug-btn-icon" id="btnZoomIn" title="Perbesar (+)">
+                    <em class="icon ni ni-plus"></em>
+                </button>
+                <button type="button" class="wug-btn-icon" id="btnZoomOut" title="Perkecil (-)">
+                    <em class="icon ni ni-minus"></em>
+                </button>
+                <button type="button" class="wug-btn-icon" id="btnZoomReset" title="Reset View">
+                    <em class="icon ni ni-reload"></em>
+                </button>
+            </div>
+
+            {{-- Tooltip for Hover --}}
+            <div class="wug-tooltip" id="wugTooltip"></div>
         </div>
+    </div>{{-- /.wug-map-container --}}
+</div>{{-- /.wug-map-body --}}
 
-        {{-- Tooltip for Hover --}}
-        <div class="wug-tooltip" id="wugTooltip"></div>
-    </div>
-</div>
-
-{{-- MODAL GANTI ARAH PANAH (DIKLIK PADA GARIS PANAH) --}}
+{{-- MODAL GANTI ARAH PANAH --}}
 <div class="modal fade" id="modalEdgeDirection" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -688,7 +763,6 @@
                     <span class="nm-info-value" id="detailLastPoll">-</span>
                 </div>
 
-                {{-- Statistics --}}
                 <h6 class="mt-3 mb-1 text-uppercase fw-bold text-muted small">Statistics</h6>
                 <table class="nm-stat-table">
                     <thead>
@@ -721,7 +795,6 @@
                     </tbody>
                 </table>
 
-                {{-- Recent Log Extract --}}
                 <h6 class="mt-3 mb-1 text-uppercase fw-bold text-muted small">Recent Log Extract</h6>
                 <div class="nm-log-list" id="detailLogs">Belum ada riwayat log.</div>
             </div>
@@ -777,7 +850,6 @@
 
     var ICON = 44;
 
-    // Current State
     var currentTopo = initialTopo;
     var currentArrowSettings = (initialTopo && initialTopo.arrowSettings) ? initialTopo.arrowSettings : {
         clearance: 28,
@@ -790,14 +862,12 @@
     var nodeMap = {};
     var activeEdgeConnection = null;
 
-    // Pan & Zoom
     var scale = 1.0;
     var panX = 0;
     var panY = 0;
     var isPanning = false;
     var startX = 0, startY = 0;
 
-    // SVG Coordinate Converter via Screen CTM Inverse (100% presisi bebas zoom/pan)
     function getSvgPoint(evt) {
         var pt = svg.createSVGPoint();
         pt.x = evt.clientX;
@@ -805,7 +875,6 @@
         return pt.matrixTransform(gRoot.getScreenCTM().inverse());
     }
 
-    // Dragging Node (Router) State
     var isDraggingNode = false;
     var draggedNode = null;
     var draggedEl = null;
@@ -813,19 +882,16 @@
     var dragNodeInitialPos = { x: 0, y: 0 };
     var hasDraggedNode = false;
 
-    // Dragging Area Box State (Kotak POP)
     var isDraggingArea = false;
     var draggedArea = null;
     var dragAreaOffset = { x: 0, y: 0 };
     var dragAreaInitialPos = { x: 0, y: 0 };
     var dragAreaInitialNodePos = {};
 
-    // Resizing Area Box State (Handle Pembatas)
     var isResizingArea = false;
     var resizedArea = null;
     var resizeStart = { x: 0, y: 0, initialW: 0, initialH: 0 };
 
-    // Signature Area Colors
     var areaColors = {
         'Plaza BRI':    { border: '#8b1e1e', title: '#8b1e1e', bg: '#f8fafc' },
         'Bumi Mandiri': { border: '#0033cc', title: '#0033cc', bg: '#f8fafc' },
@@ -911,12 +977,10 @@
         }, 3000);
     }
 
-    // Dynamic Arrow Needles Defs
     function setupDefs() {
         defs.innerHTML = '';
         var nSize = currentArrowSettings.needle_size || 7;
 
-        // Up Markers (Green)
         var mEndUp = createSvgEl('marker', {
             id: 'topoEdgeArrow', viewBox: '0 0 14 14',
             refX: '12', refY: '7',
@@ -935,7 +999,6 @@
         mStartUp.appendChild(createSvgEl('path', { d: 'M 13 2 L 1 7 L 13 12 z', fill: '#16a34a' }));
         defs.appendChild(mStartUp);
 
-        // Down Markers (Red)
         var mEndDown = createSvgEl('marker', {
             id: 'topoEdgeArrowDown', viewBox: '0 0 14 14',
             refX: '12', refY: '7',
@@ -955,7 +1018,6 @@
         defs.appendChild(mStartDown);
     }
 
-    // Hitung path jarum panah dengan clearance dinamis
     function computeEdgePath(a, b, clearance) {
         var dx = b.x - a.x;
         var dy = b.y - a.y;
@@ -972,7 +1034,6 @@
         return 'M ' + a.x + ' ' + a.y + ' L ' + b.x + ' ' + b.y;
     }
 
-    // Update seluruh edges yang terhubung saat router atau area digeser
     function updateEdgesForNode(nodeId) {
         if (!currentTopo || !Array.isArray(currentTopo.edges)) return;
         currentTopo.edges.forEach(function (c) {
@@ -988,7 +1049,6 @@
         });
     }
 
-    // Render Topology
     function render(payload) {
         if (!payload || !Array.isArray(payload.areas) || !payload.areas.length) return;
         currentTopo = payload;
@@ -1007,7 +1067,6 @@
         nodeMap = {};
         currentAreas = payload.areas;
 
-        // Populate Area Selector di Drawer
         var selectAreaEl = document.getElementById('selectCustomArea');
         if (selectAreaEl) {
             var prevVal = selectAreaEl.value;
@@ -1028,7 +1087,6 @@
             });
         });
 
-        // 1. Draw Area Boxes (Pembatas Router WhatsUp Gold 2026)
         payload.areas.forEach(function (area) {
             var cfg = areaColors[area.name] || { border: '#1a8024', title: '#1a8024', bg: '#f8fafc' };
             var borderColor = area.border_color || cfg.border;
@@ -1042,7 +1100,6 @@
                 'class': 'topo-area-group'
             });
 
-            // Main Area Box Rect
             var rect = createSvgEl('rect', {
                 id: 'area-rect-' + safeName,
                 x: area.x,
@@ -1056,7 +1113,6 @@
             });
             areaGroup.appendChild(rect);
 
-            // Drag Header Bar (area atas untuk drag-and-drop seluruh kotak POP)
             var dragBar = createSvgEl('rect', {
                 id: 'area-header-' + safeName,
                 x: area.x,
@@ -1070,7 +1126,6 @@
             });
             dragBar.appendChild(createSvgEl('title', null, 'Klik & seret untuk memindahkan seluruh area ' + area.name + ' dan seluruh routernya'));
 
-            // Event mousedown untuk geser seluruh card area beserta router di dalamnya
             dragBar.addEventListener('mousedown', function (e) {
                 if (e.button !== 0) return;
                 e.stopPropagation();
@@ -1090,7 +1145,6 @@
             });
             areaGroup.appendChild(dragBar);
 
-            // Title Area POP
             var titleText = createSvgEl('text', {
                 id: 'area-title-' + safeName,
                 x: area.x + 14,
@@ -1100,7 +1154,6 @@
             }, area.name);
             areaGroup.appendChild(titleText);
 
-            // RESIZE HANDLE di pojok kanan bawah (Pembatas Router bisa diperbesar & diperkecil bebas)
             var resizeHandle = createSvgEl('circle', {
                 id: 'area-resize-' + safeName,
                 cx: area.x + area.w - 6,
@@ -1109,7 +1162,6 @@
                 'class': 'topo-area-resize-handle'
             });
 
-            // Hitbox transparan agar kursor mouse nyaman dan tidak ketip-ketip
             var resizeHitbox = createSvgEl('circle', {
                 id: 'area-resize-hitbox-' + safeName,
                 cx: area.x + area.w - 6,
@@ -1155,7 +1207,6 @@
             gRoot.appendChild(areaGroup);
         });
 
-        // 2. Draw Edges with Directional Arrows
         (payload.edges || []).forEach(function (c) {
             var a = currentPos[c.from], b = currentPos[c.to];
             if (!a || !b) return;
@@ -1215,7 +1266,6 @@
             gRoot.appendChild(path);
         });
 
-        // 3. Draw Nodes (Router / Devices)
         payload.areas.forEach(function (area) {
             (area.nodes || []).forEach(function (n) {
                 var g = createSvgEl('g', {
@@ -1224,13 +1274,11 @@
                     transform: 'translate(' + n.x + ',' + n.y + ')'
                 });
 
-                // Hitbox
                 g.appendChild(createSvgEl('rect', {
                     x: -36, y: -36, width: 72, height: 80,
                     fill: '#000', 'fill-opacity': 0, 'pointer-events': 'all'
                 }));
 
-                // Starburst Down Outage
                 if (n.status === 'down') {
                     var blast = createSvgEl('path', {
                         d: starburstPath(0, -2, 28, 16, 16),
@@ -1245,7 +1293,6 @@
                     g.appendChild(innerBlast);
                 }
 
-                // Device PNG Icon
                 var img = createSvgEl('image', {
                     href: iconBase + '/' + getIconFile(n.icon),
                     x: -ICON / 2, y: -ICON / 2 - 2,
@@ -1253,7 +1300,6 @@
                 });
                 g.appendChild(img);
 
-                // Small Status Dot if Up
                 if (n.status !== 'down') {
                     var dotColor = n.status === 'up' ? '#22c55e' : (n.status === 'warning' ? '#f59e0b' : '#94a3b8');
                     g.appendChild(createSvgEl('circle', {
@@ -1262,7 +1308,6 @@
                     }));
                 }
 
-                // Name Badge
                 var labelName = String(n.name || '');
                 var textW = Math.max(labelName.length * 6.5 + 12, 48);
                 var labelY = ICON / 2 + 8;
@@ -1277,7 +1322,6 @@
                     x: 0, y: labelY + 1, 'class': 'topo-node-name-text'
                 }, labelName));
 
-                // IP Label
                 if (n.ip) {
                     g.appendChild(createSvgEl('text', {
                         x: 0, y: labelY + 15, 'class': 'topo-node-ip-text'
@@ -1286,7 +1330,6 @@
 
                 g.appendChild(createSvgEl('title', null, n.name + ' (' + (n.ip || '-') + ')\nStatus: ' + n.status.toUpperCase() + '\n(Drag untuk atur posisi)'));
 
-                // Mouse down for Drag and Drop Router (100% presisi CTM)
                 g.addEventListener('mousedown', function (e) {
                     if (e.button !== 0) return;
                     e.stopPropagation();
@@ -1314,7 +1357,6 @@
         });
     }
 
-    // Modal Edit Arah Panah
     function openEdgeModal(edge, devA, devB, pathEl, isOutage) {
         activeEdgeConnection = edge;
         activeEdgeConnection._pathEl = pathEl;
@@ -1375,7 +1417,6 @@
         });
     };
 
-    // Transform Pan & Zoom
     function applyTransform() {
         gRoot.setAttribute('transform', 'translate(' + panX.toFixed(1) + ',' + panY.toFixed(1) + ') scale(' + scale.toFixed(3) + ')');
     }
@@ -1385,7 +1426,6 @@
         applyTransform();
     }
 
-    // Viewport Wheel & Pan Listeners
     viewport.addEventListener('wheel', function (e) {
         e.preventDefault();
         var factor = e.deltaY < 0 ? 1.12 : 0.89;
@@ -1410,7 +1450,6 @@
     });
 
     window.addEventListener('mousemove', function (e) {
-        // 1. Dragging Node (Router)
         if (isDraggingNode && draggedNode && draggedEl) {
             var pt = getSvgPoint(e);
             var curX = Math.round(pt.x - dragNodeOffset.x);
@@ -1427,7 +1466,6 @@
             return;
         }
 
-        // 2. Dragging Area Box (Card POP WhatsUp Gold)
         if (isDraggingArea && draggedArea) {
             var pt = getSvgPoint(e);
             var newAx = Math.round(pt.x - dragAreaOffset.x);
@@ -1448,7 +1486,6 @@
             if (rHdl) { rHdl.setAttribute('cx', newAx + draggedArea.w - 6); rHdl.setAttribute('cy', newAy + draggedArea.h - 6); }
             if (rHdlHitbox) { rHdlHitbox.setAttribute('cx', newAx + draggedArea.w - 6); rHdlHitbox.setAttribute('cy', newAy + draggedArea.h - 6); }
 
-            // Geser seluruh router yang ada di dalam area ini bersama kotaknya secara mulus
             (draggedArea.nodes || []).forEach(function (n) {
                 var nInit = dragAreaInitialNodePos[n.id];
                 if (nInit) {
@@ -1467,7 +1504,6 @@
             return;
         }
 
-        // 3. Resizing Area Box (Handle Pembatas Router)
         if (isResizingArea && resizedArea) {
             var pt = getSvgPoint(e);
             var dw = pt.x - resizeStart.x;
@@ -1488,7 +1524,6 @@
             if (rHdl) { rHdl.setAttribute('cx', resizedArea.x + newW - 6); rHdl.setAttribute('cy', resizedArea.y + newH - 6); }
             if (rHdlHitbox) { rHdlHitbox.setAttribute('cx', resizedArea.x + newW - 6); rHdlHitbox.setAttribute('cy', resizedArea.y + newH - 6); }
 
-            // Sync input drawer jika area ini sedang dipilih
             var sel = document.getElementById('selectCustomArea');
             if (sel && sel.value === resizedArea.name) {
                 document.getElementById('inputAreaW').value = newW;
@@ -1504,7 +1539,6 @@
     });
 
     window.addEventListener('mouseup', function () {
-        // Selesai Drag Router
         if (isDraggingNode && draggedNode) {
             if (draggedEl) draggedEl.classList.remove('is-dragging');
             if (hasDraggedNode) {
@@ -1531,13 +1565,11 @@
             return;
         }
 
-        // Selesai Drag Area Box (POP)
         if (isDraggingArea) {
             isDraggingArea = false;
             var ar = draggedArea;
             draggedArea = null;
             if (ar) {
-                // Auto-save koordinat area ke tabel network_areas
                 if (ar.id) {
                     var boundsUrl = areaBoundsUrlTemplate.replace('__AREA_ID__', ar.id);
                     fetch(boundsUrl, {
@@ -1546,7 +1578,6 @@
                         body: JSON.stringify({ pos_x: ar.x, pos_y: ar.y, width: ar.w, height: ar.h })
                     }).catch(function () {});
                 }
-                // Auto-save router-router yang ikut bergeser
                 (ar.nodes || []).forEach(function (n) {
                     var saveUrl = positionUrlTemplate.replace('__DEVICE_ID__', n.id);
                     fetch(saveUrl, {
@@ -1560,7 +1591,6 @@
             return;
         }
 
-        // Selesai Resize Area Box
         if (isResizingArea) {
             isResizingArea = false;
             var rar = resizedArea;
@@ -1570,7 +1600,6 @@
                 var rHdl = document.getElementById('area-resize-' + sName);
                 if (rHdl) rHdl.classList.remove('active-hover');
 
-                // Auto-save ukuran area ke database
                 if (rar.id) {
                     var boundsUrl = areaBoundsUrlTemplate.replace('__AREA_ID__', rar.id);
                     fetch(boundsUrl, {
@@ -1587,7 +1616,6 @@
         isPanning = false;
     });
 
-    // Zoom Buttons
     document.getElementById('btnZoomIn').addEventListener('click', function () {
         scale = Math.min(scale * 1.25, 4.5);
         applyTransform();
@@ -1599,7 +1627,6 @@
     document.getElementById('btnZoomReset').addEventListener('click', resetView);
     document.getElementById('btnFitScreen').addEventListener('click', resetView);
 
-    // Fullscreen Controls
     var btnToggleFs = document.getElementById('btnToggleFs');
     var btnFloatingExitFs = document.getElementById('btnFloatingExitFs');
     var iconFs = document.getElementById('iconFs');
@@ -1636,7 +1663,6 @@
     btnToggleFs.addEventListener('click', toggleFullscreen);
     btnFloatingExitFs.addEventListener('click', toggleFullscreen);
 
-    // Keyboard shortcut F for fullscreen
     document.addEventListener('keydown', function (e) {
         if (e.key === 'f' || e.key === 'F') {
             if (!document.activeElement || (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA')) {
@@ -1645,7 +1671,6 @@
         }
     });
 
-    // DRAWER KUSTOMISASI TOGGLE & SLIDERS
     var customDrawer = document.getElementById('wugCustomDrawer');
     var btnToggleCustomDrawer = document.getElementById('btnToggleCustomDrawer');
     var btnCloseCustomDrawer = document.getElementById('btnCloseCustomDrawer');
@@ -1673,13 +1698,11 @@
         document.getElementById('valNeedleWidth').textContent = wt + ' px';
     }
 
-    // Live Slider: Jarak Jarum Panah (Clearance)
     document.getElementById('rangeNeedleClearance').addEventListener('input', function (e) {
         var val = parseInt(e.target.value) || 28;
         currentArrowSettings.clearance = val;
         document.getElementById('valNeedleClearance').textContent = val + ' px';
 
-        // Update all paths live
         if (currentTopo && Array.isArray(currentTopo.edges)) {
             currentTopo.edges.forEach(function (c) {
                 var p = document.getElementById('edge-path-' + (c.id || (c.from + '-' + c.to)));
@@ -1691,7 +1714,6 @@
         }
     });
 
-    // Live Slider: Ukuran Kepala Jarum
     document.getElementById('rangeNeedleSize').addEventListener('input', function (e) {
         var val = parseInt(e.target.value) || 7;
         currentArrowSettings.needle_size = val;
@@ -1699,7 +1721,6 @@
         setupDefs();
     });
 
-    // Live Slider: Tebal Garis Jarum
     document.getElementById('rangeNeedleWidth').addEventListener('input', function (e) {
         var val = parseFloat(e.target.value) || 2.2;
         currentArrowSettings.stroke_width = val;
@@ -1713,7 +1734,6 @@
         }
     });
 
-    // Selector & Inputs Pembatas Router (Area Size)
     var selectArea = document.getElementById('selectCustomArea');
     var boxAreaSizeControls = document.getElementById('boxAreaSizeControls');
     var inputAreaW = document.getElementById('inputAreaW');
@@ -1794,7 +1814,6 @@
         if (targetArea) autoSaveAreaBoundsFromDrawer(targetArea);
     });
 
-    // SIMPAN LAYOUT LENGKAP OLEH SUPER ADMIN (FULL CUSTOM)
     window.triggerSaveFullLayout = function () {
         if (!isSuperAdmin) {
             alert('Hanya Super Admin yang berhak menyimpan konfigurasi layout map.');
@@ -1807,12 +1826,10 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
         }
 
-        // Kumpulkan data area
         var areasPayload = currentAreas.map(function (ar) {
             return { name: ar.name, x: ar.x, y: ar.y, w: ar.w, h: ar.h };
         });
 
-        // Kumpulkan data router
         var devicesPayload = [];
         for (var dId in currentPos) {
             var dev = nodeMap[dId];
@@ -1864,7 +1881,6 @@
     var btnSaveLayoutEl = document.getElementById('btnSaveFullLayout');
     if (btnSaveLayoutEl) btnSaveLayoutEl.addEventListener('click', triggerSaveFullLayout);
 
-    // RESET LAYOUT MAP KE DEFAULT PABRIK 2026
     var btnResetFullLayoutEl = document.getElementById('btnResetFullLayout');
     if (btnResetFullLayoutEl) {
         btnResetFullLayoutEl.addEventListener('click', function () {
@@ -1890,13 +1906,11 @@
         });
     }
 
-    // Help Modal
     document.getElementById('btnMapHelp').addEventListener('click', function () {
         var modal = new bootstrap.Modal(document.getElementById('modalWugHelp'));
         modal.show();
     });
 
-    // Detail Device Modal
     var detailOverlay = document.getElementById('detailOverlay');
     var detailLoading = document.getElementById('detailLoading');
     var detailContent = document.getElementById('detailContent');
@@ -1975,23 +1989,46 @@
         if (e.key === 'Escape') detailOverlay.classList.remove('active');
     });
 
-    // Initial render
     if (initialTopo) render(initialTopo);
 
-    // Auto-refresh endpoint polling (tiap 30 detik)
     if (refreshUrl) {
         setInterval(function () {
-            // Hindari me-replace layout jika sedang di-drag
             if (isDraggingNode || isDraggingArea || isResizingArea) return;
             fetch(refreshUrl, { headers: { 'Accept': 'application/json' } })
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
-                    // Update status node tanpa me-reset posisi jika user sedang kustom
                     render(data);
                 })
                 .catch(function () {});
         }, 30000);
     }
+
+    // ══════ Expose global untuk panel CRUD & Connect Mode ══════
+    window.WugRender       = render;
+    window.WugOpenDetail   = openDeviceDetail;
+    window.WugIsSuperAdmin = isSuperAdmin;
+    window.WugCsrfToken    = csrfToken;
+    window.WugDeviceList   = @json($deviceList);
+    window.WugRoutes = {
+        deviceStore:     "{{ route('admin.monitoring.device.store') }}",
+        deviceUpdate:    "{{ url('admin/monitoring/device') }}/__ID__",
+        deviceDestroy:   "{{ url('admin/monitoring/device') }}/__ID__",
+        connectionStore: "{{ route('admin.monitoring.connection.store') }}"
+    };
+    window.WugToast = showToast;
+
+    // Patch openDeviceDetail: handle connect mode + inject tombol Edit/Hapus
+    var _origOpenDetail = openDeviceDetail;
+    window.openDeviceDetail = openDeviceDetail = function (id, fallback) {
+        if (window.__wugConnectMode && window.WugHandleConnect) {
+            window.WugHandleConnect(id, 'node-g-' + id);
+            return;
+        }
+        _origOpenDetail(id, fallback);
+        setTimeout(function () {
+            if (window.WugInjectDetailButtons) window.WugInjectDetailButtons(id);
+        }, 80);
+    };
 
     window.openWugDeviceModal = openDeviceDetail;
 })();

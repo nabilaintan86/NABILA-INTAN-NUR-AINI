@@ -83,6 +83,11 @@ Route::prefix('admin')
         Route::get('/monitoring/data', [MonitoringController::class, 'data'])
             ->name('monitoring.data');
 
+
+        // JSON daftar device untuk panel kiri workspace Map.
+        Route::get('/monitoring/devices', [MonitoringController::class, 'devices'])
+            ->name('monitoring.devices');
+
         // Detail satu device (popup MAP RADNET) - read-only, tanpa ping.
         Route::get('/monitoring/device/{device}', [MonitoringController::class, 'device'])
             ->name('monitoring.device');
@@ -233,6 +238,15 @@ Route::prefix('admin')
         // Upload devices.csv lewat halaman (drag & drop / pilih file)
         Route::post('/dhcp-lease/upload', [DhcpLeaseController::class, 'upload'])
             ->name('dhcp-lease.upload');
+
+
+        // CRUD Device langsung dari workspace Map (Super Admin)
+        Route::post('/monitoring/device', [MonitoringController::class, 'storeDevice'])
+            ->name('monitoring.device.store');
+        Route::put('/monitoring/device/{device}', [MonitoringController::class, 'updateDevice'])
+            ->name('monitoring.device.update');
+        Route::delete('/monitoring/device/{device}', [MonitoringController::class, 'destroyDevice'])
+            ->name('monitoring.device.destroy');
 
         // Import devices.csv dari path default (tombol "Import Sekarang" di empty state)
         Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])

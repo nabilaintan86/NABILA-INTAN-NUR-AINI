@@ -1,0 +1,625 @@
+{{--
+    PANEL KIRI: Daftar Device + Modal Form Tambah/Edit Device
+    Dipakai oleh network-topology.blade.php (halaman /admin/monitoring)
+    Hanya Super Admin yang bisa CRUD device.
+--}}
+
+
+{{-- Icon URL map untuk JS --}}
+<script>
+window.WugIconMap = {
+    @foreach(\App\Helpers\DeviceType::types() as $typeName)
+        '{{ strtolower($typeName) }}': '{{ \App\Helpers\DeviceType::iconUrl($typeName) }}',
+    @endforeach
+};
+window.WugIconFallback = '{{ \App\Helpers\DeviceType::iconUrl("Other") }}';
+</script>
+
+<style>
+        .dvl-panel {
+        width: 280px;
+        min-width: 280px;
+        background: #ffffff;
+        border: 2px solid #2563eb;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        max-height: 900px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .dvl-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f1f5f9;
+    }
+    .dvl-title {
+        font-weight: 800;
+        font-size: 14px;
+        color: #1e293b;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dvl-count {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 600;
+        background: #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    .dvl-search { margin-top: 8px; }
+    .dvl-search input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 12px;
+        outline: none;
+    }
+    .dvl-search input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+    .dvl-filter { margin-top: 6px; }
+    .dvl-filter select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 12px;
+        background: #ffffff;
+    }
+    .dvl-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+        background: #f8fafc;
+    }
+    .dvl-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        margin-bottom: 4px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all .15s;
+        user-select: none;
+    }
+    .dvl-item:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        transform: translateX(2px);
+    }
+    .dvl-item.on-map {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+    .dvl-item[draggable="true"] { cursor: grab; }
+    .dvl-item[draggable="true"]:active { cursor: grabbing; }
+
+    .dvl-icon-wrap {
+        position: relative;
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .dvl-icon-wrap img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+    .dvl-status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    }
+    .dvl-status-dot.up      { background: #22c55e; }
+    .dvl-status-dot.down    { background: #ef4444; }
+    .dvl-status-dot.warning { background: #f59e0b; }
+    .dvl-info { flex: 1; min-width: 0; }
+    .dvl-name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .dvl-meta {
+        font-size: 10px;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .dvl-badge {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+    .dvl-badge.map {
+        background: #dcfce7;
+        color: #166534;
+    }
+</style>
+
+<div class="dvl-panel" id="dvlPanel">
+    <div class="dvl-head">
+        <div class="dvl-title">
+            <span><em class="icon ni ni-list"></em> Daftar Device</span>
+            <span class="dvl-count" id="dvlCount">0 / 0</span>
+        </div>
+        <div class="dvl-search">
+            <input type="text" id="dvlSearch" placeholder="Cari nama / IP device...">
+        </div>
+        <div class="dvl-filter">
+            <select id="dvlFilter">
+                <option value="">Semua POP / Area</option>
+            </select>
+        </div>
+    </div>
+    <div class="dvl-list" id="dvlList"></div>
+</div>
+
+{{-- MODAL FORM DEVICE --}}
+<div class="modal fade" id="modalDeviceForm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white" id="modalDeviceFormTitle">Tambah Perangkat Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="formDeviceId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nama Perangkat <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="formDeviceName" placeholder="Contoh: POP Gresik" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tipe Perangkat <span class="text-danger">*</span></label>
+                    <select class="form-select" id="formDeviceType" required>
+                        @foreach($deviceTypes as $key => $label)
+                            <option value="{{ is_array($label) ? ($label['value'] ?? $key) : $key }}">
+                                {{ is_array($label) ? ($label['label'] ?? $key) : $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Metode Monitoring <span class="text-danger">*</span></label>
+                    <select class="form-select" id="formDeviceProtocol" required>
+                        @foreach($protocols as $key => $label)
+                            <option value="{{ is_array($label) ? ($label['value'] ?? $key) : $key }}">
+                                {{ is_array($label) ? ($label['label'] ?? $key) : $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">IP Address <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="formDeviceIp" placeholder="Contoh: 202.154.4.254" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Router Version</label>
+                    <input type="text" class="form-control" id="formDeviceVersion" placeholder="Contoh: IOS-XE 17.3.1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSaveDevice">
+                    <em class="icon ni ni-save me-1"></em> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.WugDevicePanel = (function () {
+    var inited = false;
+
+    function init() {
+        if (inited) return;
+        inited = true;
+
+        // Render panel pertama kali
+        render(window.WugDeviceList || []);
+
+        // Search & filter
+        var searchEl = document.getElementById('dvlSearch');
+        var filterEl = document.getElementById('dvlFilter');
+        if (searchEl) searchEl.addEventListener('input', function () { render(); });
+        if (filterEl) filterEl.addEventListener('change', function () { render(); });
+
+        // Tombol Tambah Device di header map
+        var btnAdd = document.getElementById('btnAddDevice');
+        if (btnAdd) btnAdd.addEventListener('click', openAdd);
+
+        // Tombol Save di modal
+        var btnSave = document.getElementById('btnSaveDevice');
+        if (btnSave) btnSave.addEventListener('click', submitForm);
+
+        // Tombol Hubungkan
+        var btnConnect = document.getElementById('btnConnectMode');
+        var hint = document.getElementById('connectHint');
+        if (btnConnect) {
+            btnConnect.addEventListener('click', function () {
+                var active = btnConnect.classList.toggle('active');
+                if (hint) hint.classList.toggle('active', active);
+                window.__wugConnectMode = active;
+                window.__wugConnectSource = null;
+                document.querySelectorAll('.topo-node.connect-source').forEach(function (n) {
+                    n.classList.remove('connect-source');
+                });
+                if (active) {
+                    if (window.WugToast) window.WugToast('Mode hubungkan aktif. Klik device sumber.', false);
+                } else {
+                    if (window.WugToast) window.WugToast('Mode hubungkan dimatikan.', false);
+                }
+            });
+        }
+
+        // ESC untuk batal connect
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && window.__wugConnectMode) {
+                if (btnConnect) btnConnect.classList.remove('active');
+                if (hint) hint.classList.remove('active');
+                window.__wugConnectMode = false;
+                window.__wugConnectSource = null;
+                document.querySelectorAll('.topo-node.connect-source').forEach(function (n) {
+                    n.classList.remove('connect-source');
+                });
+            }
+        });
+
+        // Update panel kalau ada event dari luar
+        window.addEventListener('devices-updated', function (e) {
+            render(e.detail || []);
+        });
+    }
+
+        // ─── Cari icon URL berdasarkan tipe device ───
+    function getIconUrl(type) {
+        var key = String(type || 'other').toLowerCase().trim();
+        if (window.WugIconMap && window.WugIconMap[key]) return window.WugIconMap[key];
+        if (window.WugIconMap) {
+            for (var k in window.WugIconMap) {
+                if (k === key) return window.WugIconMap[k];
+            }
+        }
+        return window.WugIconFallback || '/images/devices/server.png';
+    }
+    
+    function render(list) {
+        var el = document.getElementById('dvlList');
+        var countEl = document.getElementById('dvlCount');
+        if (!el) return;
+
+        var data = list || window.WugDeviceList || [];
+        window.WugDeviceList = data;
+
+        // Populate filter dropdown
+        var filterEl = document.getElementById('dvlFilter');
+        if (filterEl && filterEl.options.length <= 1) {
+            var pops = {};
+            data.forEach(function (d) { if (d.pop_name) pops[d.pop_name] = 1; });
+            Object.keys(pops).sort().forEach(function (p) {
+                var opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                filterEl.appendChild(opt);
+            });
+        }
+
+        var search = ((document.getElementById('dvlSearch') || {}).value || '').toLowerCase().trim();
+        var filterPop = (document.getElementById('dvlFilter') || {}).value || '';
+
+        var filtered = data.filter(function (d) {
+            var name = (d.name || '').toLowerCase();
+            var ip = (d.ip_address || '').toLowerCase();
+            if (search && name.indexOf(search) === -1 && ip.indexOf(search) === -1) return false;
+            if (filterPop && (d.pop_name || '') !== filterPop) return false;
+            return true;
+        });
+
+        var onMapCount = data.filter(function (d) { return d.map_positioned; }).length;
+        if (countEl) countEl.textContent = onMapCount + ' / ' + data.length;
+
+        if (!filtered.length) {
+            el.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px;">Tidak ada device.</div>';
+            return;
+        }
+
+        var isSuper = !!window.WugIsSuperAdmin;
+        var html = '';
+
+                filtered.forEach(function (d) {
+            var status = (d.status || 'up').toLowerCase();
+            var onMap = d.map_positioned;
+            var badge = onMap ? '<span class="dvl-badge map">MAP</span>' : '';
+            var drag = isSuper && !onMap ? ' draggable="true"' : '';
+            var iconUrl = getIconUrl(d.type);
+
+            html += '<div class="dvl-item' + (onMap ? ' on-map' : '') + '" data-id="' + d.id + '"' + drag + '>';
+            html +=   '<div class="dvl-icon-wrap">';
+            html +=     '<img src="' + iconUrl + '" alt="' + esc(d.type || '') + '" onerror="this.src=\'' + (window.WugIconFallback || '/images/devices/server.png') + '\'">';
+            html +=     '<span class="dvl-status-dot ' + status + '"></span>';
+            html +=   '</div>';
+            html +=   '<div class="dvl-info">';
+            html +=     '<div class="dvl-name">' + esc(d.name || '') + '</div>';
+            html +=     '<div class="dvl-meta">' + esc(d.ip_address || '') + (d.pop_name ? ' · ' + esc(d.pop_name) : '') + '</div>';
+            html +=   '</div>';
+            html +=   badge;
+            html += '</div>';
+        });
+
+        el.innerHTML = html;
+
+        // Click item → buka detail device
+        el.querySelectorAll('.dvl-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                if (window.__wugConnectMode) return;
+                var id = item.getAttribute('data-id');
+                if (window.WugOpenDetail) window.WugOpenDetail(id);
+            });
+        });
+
+        // Drag start dari panel
+        if (isSuper) {
+            el.querySelectorAll('.dvl-item[draggable="true"]').forEach(function (item) {
+                item.addEventListener('dragstart', function (e) {
+                    e.dataTransfer.setData('text/plain', item.getAttribute('data-id'));
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+            });
+        }
+    }
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+    }
+
+    // ─── Modal: Tambah device ───
+    function openAdd() {
+        document.getElementById('modalDeviceFormTitle').textContent = 'Tambah Perangkat Baru';
+        document.getElementById('formDeviceId').value = '';
+        document.getElementById('formDeviceName').value = '';
+        document.getElementById('formDeviceIp').value = '';
+        document.getElementById('formDeviceVersion').value = '';
+        new bootstrap.Modal(document.getElementById('modalDeviceForm')).show();
+    }
+
+    // ─── Modal: Edit device ───
+    function openEdit(id) {
+        var data = window.WugDeviceList || [];
+        var dev = data.find(function (d) { return String(d.id) === String(id); });
+        if (!dev) return;
+
+        document.getElementById('modalDeviceFormTitle').textContent = 'Edit Perangkat: ' + (dev.name || '');
+        document.getElementById('formDeviceId').value = dev.id;
+        document.getElementById('formDeviceName').value = dev.name || '';
+        document.getElementById('formDeviceIp').value = dev.ip_address || '';
+        document.getElementById('formDeviceVersion').value = dev.router_version || '';
+        selectByValue('formDeviceType', dev.type);
+        selectByValue('formDeviceProtocol', dev.protocol);
+
+        new bootstrap.Modal(document.getElementById('modalDeviceForm')).show();
+    }
+
+    function selectByValue(selId, value) {
+        if (!value) return;
+        var sel = document.getElementById(selId);
+        if (!sel) return;
+        var v = String(value).toLowerCase();
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value.toLowerCase() === v) {
+                sel.selectedIndex = i;
+                return;
+            }
+        }
+    }
+
+    // ─── Submit form (CREATE atau EDIT) ───
+    function submitForm() {
+        var id    = document.getElementById('formDeviceId').value;
+        var name  = document.getElementById('formDeviceName').value.trim();
+        var type  = document.getElementById('formDeviceType').value;
+        var proto = document.getElementById('formDeviceProtocol').value;
+        var ip    = document.getElementById('formDeviceIp').value.trim();
+        var ver   = document.getElementById('formDeviceVersion').value.trim();
+
+        if (!name || !ip) {
+            alert('Nama dan IP wajib diisi.');
+            return;
+        }
+
+        var btn = document.getElementById('btnSaveDevice');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+
+        var url = id
+            ? window.WugRoutes.deviceUpdate.replace('__ID__', id)
+            : window.WugRoutes.deviceStore;
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.WugCsrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                type: type,
+                protocol: proto,
+                ip_address: ip,
+                router_version: ver
+            })
+        })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+        .then(function (res) {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan';
+
+            if (!res.ok || !res.body.success) {
+                alert(res.body.message || 'Gagal menyimpan device.');
+                return;
+            }
+
+            if (window.WugToast) window.WugToast(res.body.message || 'Berhasil disimpan.', false);
+            bootstrap.Modal.getInstance(document.getElementById('modalDeviceForm')).hide();
+
+            if (res.body.topology && window.WugRender) window.WugRender(res.body.topology);
+            if (res.body.devices) render(res.body.devices);
+        })
+        .catch(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan';
+            alert('Error: ' + err.message);
+        });
+    }
+
+    // ─── Inject tombol Edit/Hapus di overlay detail (dipanggil network-topology) ───
+    window.WugInjectDetailButtons = function (id) {
+        if (!window.WugIsSuperAdmin) return;
+        var head = document.querySelector('.nm-detail-head');
+        if (!head) return;
+
+        var old = head.querySelector('.nm-detail-actions');
+        if (old) old.remove();
+
+        var actions = document.createElement('div');
+        actions.className = 'nm-detail-actions';
+        actions.innerHTML =
+            '<button class="nm-btn-action nm-btn-edit" id="btnEditDevice" style="padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:#fff;background:#3b82f6;">' +
+                '<em class="icon ni ni-edit"></em> Edit' +
+            '</button>' +
+            '<button class="nm-btn-action nm-btn-delete" id="btnDeleteDevice" style="padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:#fff;background:#ef4444;">' +
+                '<em class="icon ni ni-trash"></em> Hapus' +
+            '</button>';
+        var closeBtn = head.querySelector('.nm-detail-close');
+        head.insertBefore(actions, closeBtn || head.lastChild);
+
+        document.getElementById('btnEditDevice').onclick = function () {
+            document.getElementById('detailOverlay').classList.remove('active');
+            openEdit(id);
+        };
+
+        document.getElementById('btnDeleteDevice').onclick = function () {
+            var data = window.WugDeviceList || [];
+            var dev = data.find(function (d) { return String(d.id) === String(id); });
+            var nm = dev ? dev.name : id;
+            if (!confirm('Yakin hapus device "' + nm + '"?\nRelasi ke device ini akan ikut terhapus.')) return;
+
+            fetch(window.WugRoutes.deviceDestroy.replace('__ID__', id), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': window.WugCsrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.success) {
+                    if (window.WugToast) window.WugToast(res.message, false);
+                    document.getElementById('detailOverlay').classList.remove('active');
+                    if (res.topology && window.WugRender) window.WugRender(res.topology);
+                    if (res.devices) render(res.devices);
+                } else {
+                    alert(res.message || 'Gagal menghapus.');
+                }
+            })
+            .catch(function (err) { alert('Error: ' + err.message); });
+        };
+    };
+
+    // ─── Handle node click saat mode connect aktif (dipanggil network-topology) ───
+    window.WugHandleConnect = function (nodeId, nodeElId) {
+        var nodeEl = document.getElementById(nodeElId);
+
+        if (!window.__wugConnectSource) {
+            window.__wugConnectSource = nodeId;
+            if (nodeEl) nodeEl.classList.add('connect-source');
+            if (window.WugToast) window.WugToast('Sumber: ' + nodeId + '. Sekarang klik device tujuan.', false);
+            return;
+        }
+
+        if (window.__wugConnectSource === nodeId) {
+            window.__wugConnectSource = null;
+            if (nodeEl) nodeEl.classList.remove('connect-source');
+            if (window.WugToast) window.WugToast('Dibatalkan.', false);
+            return;
+        }
+
+        // Kirim ke server
+        fetch(window.WugRoutes.connectionStore, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.WugCsrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                from_device_id: parseInt(window.__wugConnectSource),
+                to_device_id: parseInt(nodeId),
+                direction: 'forward',
+                connection_type: 'ethernet'
+            })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.success) {
+                if (window.WugToast) window.WugToast('Relasi berhasil dibuat.', false);
+                if (res.topology && window.WugRender) window.WugRender(res.topology);
+
+                // Reset connect mode
+                window.__wugConnectMode = false;
+                window.__wugConnectSource = null;
+                var btn = document.getElementById('btnConnectMode');
+                var hint = document.getElementById('connectHint');
+                if (btn) btn.classList.remove('active');
+                if (hint) hint.classList.remove('active');
+                document.querySelectorAll('.topo-node.connect-source').forEach(function (n) {
+                    n.classList.remove('connect-source');
+                });
+            } else {
+                alert(res.message || 'Gagal membuat relasi.');
+            }
+        })
+        .catch(function (err) { alert('Error: ' + err.message); });
+    };
+
+    return {
+        init: init,
+        render: render,
+        openAdd: openAdd,
+        openEdit: openEdit
+    };
+})();
+
+// Auto-init setelah DOM ready
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+        if (window.WugDevicePanel) window.WugDevicePanel.init();
+    }, 300);
+});
+</script>

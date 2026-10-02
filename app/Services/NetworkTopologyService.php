@@ -696,6 +696,65 @@ class NetworkTopologyService
     }
 
     /**
+     * Daftar device untuk panel "Daftar Device" di workspace Map.
+     *
+     * Sumber data tetap tabel `device` (TIDAK data dummy), dengan urutan yang
+     * sama seperti map: dikelompokkan per area/POP, lalu nama. Device yang
+     * belum punya area tetap ikut tampil dengan label "Belum ditempatkan"
+     * supaya bisa langsung di-drag ke map oleh Super Admin.
+     *
+     * Field `placed` menandai device yang sudah punya koordinat map
+     * (`map_positioned` + `pos_x`/`pos_y`) — inilah yang membedakan device
+     * yang sudah berada di kanvas dengan device yang baru didaftarkan.
+     */
+    public function deviceList(): array
+    {
+        $areasById = NetworkArea::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->pluck('name', 'id');
+
+        $degree = DeviceConnection::selectRaw('from_device_id as device_id, count(*) as c')
+            ->groupBy('from_device_id')
+            ->pluck('c', 'device_id');
+
+        $degreeTo = DeviceConnection::selectRaw('to_device_id as device_id, count(*) as c')
+            ->groupBy('to_device_id')
+            ->pluck('c', 'device_id');
+
+        return Device::query()
+            ->orderByRaw('COALESCE(network_area_id, 999999) asc')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Device $device) use ($areasById, $degree, $degreeTo) {
+                $areaName = $areasById[$device->network_area_id] ?? null;
+                $placed = (bool) $device->map_positioned
+                    && $device->pos_x !== null
+                    && $device->pos_y !== null;
+
+                return [
+                    'id'             => (int) $device->id,
+                    'name'           => $device->name,
+                    'ip'             => $device->ip_address,
+                    'icon'           => $device->icon_key,
+                    'type'           => $device->display_type,
+                    'protocol'       => $device->display_protocol,
+                    'status'         => $device->status,
+                    'router_version' => $device->router_version,
+                    'pop'            => $device->pop_name ?: ($areaName ?: 'Belum ditempatkan'),
+                    'area_id'        => $device->network_area_id ? (int) $device->network_area_id : null,
+                    'area'           => $areaName,
+                    'placed'         => $placed,
+                    'pos_x'          => $device->pos_x !== null ? (int) $device->pos_x : null,
+                    'pos_y'          => $device->pos_y !== null ? (int) $device->pos_y : null,
+                    'links'          => (int) (($degree[$device->id] ?? 0) + ($degreeTo[$device->id] ?? 0)),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
      * Detail satu device untuk popup MAP.
      *
      * Read-only: tidak menjalankan ping dan tidak mengubah database.
