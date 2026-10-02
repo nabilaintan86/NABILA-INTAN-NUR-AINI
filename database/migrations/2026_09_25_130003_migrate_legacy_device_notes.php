@@ -10,17 +10,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('device_notes') || ! Schema::hasTable('device')) {
+        if (! Schema::hasTable('device_notes') || ! Schema::hasTable('devices')) {
             return;
         }
 
         $this->makeUserNullable();
 
-        if (! Schema::hasColumn('device', 'penyebab') || ! Schema::hasColumn('device_notes', 'tanggal')) {
+        if (! Schema::hasColumn('devices', 'penyebab') || ! Schema::hasColumn('device_notes', 'tanggal')) {
             return;
         }
 
-        $devices = DB::table('device')->select(['id', 'penyebab', 'created_at', 'updated_at'])->get();
+        $devices = DB::table('devices')->select(['id', 'penyebab', 'created_at', 'updated_at'])->get();
 
         foreach ($devices as $device) {
             $catatan = trim((string) $device->penyebab);

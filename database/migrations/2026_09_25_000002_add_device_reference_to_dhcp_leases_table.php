@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('device_id')->nullable()->after('id')->index();
             $table->foreign('device_id')
                 ->references('id')
-                ->on('device')
+                ->on('devices')
                 ->nullOnDelete();
 
             $table->text('comment')->nullable()->after('source');

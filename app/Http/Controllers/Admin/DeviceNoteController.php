@@ -118,7 +118,7 @@ class DeviceNoteController extends Controller
             $totalCount = (clone $query)->count();
         }
 
-        $devices = Schema::hasTable('device')
+        $devices = Schema::hasTable('devices')
             ? Device::query()->orderBy('name')->get(['id', 'name'])
             : collect();
         $users = Schema::hasTable('users')
@@ -197,7 +197,7 @@ class DeviceNoteController extends Controller
     {
         $deviceColumns = ['id', 'name'];
         foreach (['ip_address', 'type', 'icon_type', 'status', 'protocol'] as $column) {
-            if (Schema::hasColumn('device', $column)) {
+            if (Schema::hasColumn('devices', $column)) {
                 $deviceColumns[] = $column;
             }
         }

@@ -248,7 +248,7 @@ class LaporanController extends Controller
                     ->sort()
                     ->take(200),
             ],
-            'existingDevices' => DB::table('device')->whereNotNull('id')->pluck('id')->map(fn ($id) => (int) $id)->flip(),
+            'existingDevices' => DB::table('devices')->whereNotNull('id')->pluck('id')->map(fn ($id) => (int) $id)->flip(),
             'hasData'         => $totals['checks'] > 0 || $episodes->isNotEmpty(),
             'generatedAt'     => now()->format('d M Y H:i:s'),
             'modalData'       => $this->modalData($period, $perDevice, $episodes),
@@ -518,7 +518,7 @@ class LaporanController extends Controller
             return $episodes;
         }
 
-        $names = DB::table('device')
+        $names = DB::table('devices')
             ->whereIn('id', $ids)
             ->pluck('name', 'id');
 

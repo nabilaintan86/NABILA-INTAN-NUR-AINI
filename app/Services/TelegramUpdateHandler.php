@@ -222,7 +222,7 @@ class TelegramUpdateHandler
 
     protected function statusText(): string
     {
-        if (! Schema::hasTable('device')) {
+        if (! Schema::hasTable('devices')) {
             return "📊 Status RADNET\n\nData perangkat belum tersedia.";
         }
 
@@ -242,7 +242,7 @@ class TelegramUpdateHandler
 
     protected function deviceText(string $argument): string
     {
-        if (! Schema::hasTable('device')) {
+        if (! Schema::hasTable('devices')) {
             return 'Data perangkat belum tersedia.';
         }
 

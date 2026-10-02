@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('device')) {
+        if (! Schema::hasTable('devices')) {
             Schema::create('device', function (Blueprint $table): void {
                 $table->id();
                 $table->string('name');
@@ -74,7 +74,7 @@ return new class extends Migration
         ];
 
         foreach ($columns as $name => $definition) {
-            if (Schema::hasColumn('device', $name)) {
+            if (Schema::hasColumn('devices', $name)) {
                 continue;
             }
 

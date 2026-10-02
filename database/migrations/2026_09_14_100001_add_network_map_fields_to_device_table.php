@@ -12,7 +12,7 @@ return new class extends Migration
         // jadi dilewati bila sudah ada (pola yang dipakai migration lain).
         $missing = array_values(array_filter(
             ['icon_type', 'pop_name'],
-            fn (string $column): bool => ! Schema::hasColumn('device', $column)
+            fn (string $column): bool => ! Schema::hasColumn('devices', $column)
         ));
 
         if ($missing === []) {

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->dropForeign('activity_logs_device_id_foreign');
             $table->foreign('device_id')
                 ->references('id')
-                ->on('device')
+                ->on('devices')
                 ->nullOnDelete();
         });
     }
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->dropForeign('activity_logs_device_id_foreign');
             $table->foreign('device_id')
                 ->references('id')
-                ->on('device')
+                ->on('devices')
                 ->nullOnDelete();
         });
     }

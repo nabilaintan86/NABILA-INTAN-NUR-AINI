@@ -1,0 +1,796 @@
+@extends('layouts.admin')
+
+@section('title', 'Troubleshooting · RADNET NOC')
+
+@push('styles')
+{{-- Tailwind CSS khusus halaman ini (utilities saja, TANPA preflight agar tidak merusak tema Bootstrap RadneXt) --}}
+@vite(['resources/css/troubleshooting.css'])
+<style>
+    .ts-kpi .ts-kpi-icon {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .ts-kpi .ts-kpi-number { font-size: 26px; font-weight: 800; line-height: 1.1; }
+    .ts-kpi .ts-kpi-label {
+        font-size: 11.5px; color: #64748b; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .5px;
+    }
+    .kpi-blue  { background: #eff6ff; color: #2563eb; }
+    .kpi-red   { background: #fee2e2; color: #dc2626; }
+    .kpi-green { background: #dcfce7; color: #16a34a; }
+
+    .ts-badge {
+        font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+    .ts-badge .ts-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .ts-badge-down    { background: #fee2e2; color: #dc2626; }
+    .ts-badge-warning { background: #fef9c3; color: #a16207; }
+    .ts-badge-up      { background: #dcfce7; color: #15803d; }
+
+    .filter-chip {
+        font-size: 12.5px; font-weight: 600; padding: 7px 18px; border-radius: 999px;
+        border: 1px solid #e2e8f0; background: #fff; color: #475569; cursor: pointer;
+        transition: all .15s ease; display: inline-flex; align-items: center; gap: 6px;
+        text-decoration: none;
+    }
+    .filter-chip:hover { border-color: #93c5fd; color: #2563eb; }
+    .filter-chip.active {
+        background: #2563eb; border-color: #2563eb; color: #fff;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+    }
+
+    .ts-search { position: relative; flex: 1 1 280px; min-width: 230px; }
+    .ts-search .icon {
+        position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+        color: #94a3b8; font-size: 15px;
+    }
+    .ts-search input {
+        padding-left: 34px; border-radius: 10px; border-color: #e2e8f0;
+        font-size: 12.5px; box-shadow: none; height: 36px;
+    }
+    .ts-search input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+
+    .pag-wrap {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 10px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #eef2f7;
+    }
+    .pag-wrap .pag-info { font-size: 12px; color: #64748b; font-weight: 600; }
+    .pag-wrap .pagination { margin: 0; }
+    .pag-wrap .page-link {
+        font-size: 12px; font-weight: 600; margin: 0 2px; border-radius: 8px;
+        padding: .4rem .72rem;
+    }
+
+    .ts-table td, .ts-table th { vertical-align: middle; font-size: 12.5px; }
+    .ts-table .device-name { font-weight: 700; color: #0f172a; }
+    .ts-table .device-ip   { font-family: 'Consolas', monospace; font-size: 11.5px; color: #64748b; }
+    .ts-table .ts-row { cursor: pointer; }
+    .ts-table .ts-row:hover td { background: #f0f7ff; }
+
+    .btn-retest {
+        font-size: 12px; font-weight: 700; border-radius: 8px; color: #fff; border: 0;
+        background: linear-gradient(135deg, #dc2626, #f59e0b);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, .25);
+        padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px;
+        white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-retest:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(220, 38, 38, .38); }
+
+    .spinner-mini {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%;
+        display: inline-block; animation: ts-spin .7s linear infinite;
+    }
+    @keyframes ts-spin { to { transform: rotate(360deg); } }
+
+    /* Terminal transparan untuk Raw Output */
+    .ts-terminal-body::-webkit-scrollbar { width: 8px; }
+    .ts-terminal-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+</style>
+@endpush
+
+@section('content')
+<div class="nk-content">
+    <div class="container">
+        <div class="nk-content-inner">
+            <div class="nk-content-body">
+
+                {{-- HEADER --}}
+                <div class="nk-block-head">
+                    <div class="nk-block-head-between flex-wrap gap g-2 mb-2">
+                        <div class="nk-block-head-content">
+                            <nav>
+                                <ol class="breadcrumb breadcrumb-arrow mb-0">
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ route('admin.dashboard') }}">Home</a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page">
+                                        Troubleshooting
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="nk-block-head-content">
+                            <span class="badge rounded-pill bg-soft-warning">
+                                <em class="icon ni ni-alert me-1"></em>
+                                {{ $problemCount }} perangkat perlu perhatian
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- KARTU STATISTIK (3 KPI) --}}
+                <div class="row g-gs mb-2">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="card card-bordered h-100">
+                            <div class="card-body ts-kpi">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="ts-kpi-icon kpi-blue"><em class="icon ni ni-server"></em></div>
+                                    <div>
+                                        <div class="ts-kpi-number">{{ number_format($totalChecked) }}</div>
+                                        <div class="ts-kpi-label">Total Perangkat Diperiksa</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="card card-bordered h-100">
+                            <div class="card-body ts-kpi">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="ts-kpi-icon kpi-red"><em class="icon ni ni-alert-circle"></em></div>
+                                    <div>
+                                        <div class="ts-kpi-number">{{ $criticalCount }}</div>
+                                        <div class="ts-kpi-label">Gangguan Kritis (DOWN)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="card card-bordered h-100">
+                            <div class="card-body ts-kpi">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="ts-kpi-icon kpi-green"><em class="icon ni ni-check-circle"></em></div>
+                                    <div>
+                                        <div class="ts-kpi-number">{{ $recoveryRate }}%</div>
+                                        <div class="ts-kpi-label">Tingkat Pemulihan (Recovery)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- FILTER STATUS & PENCARIAN (SERVER-SIDE) --}}
+                @php
+                    $uSearch = $search !== '' ? ['search' => $search] : [];
+                    $urlAll     = route('admin.troubleshooting', array_merge(['status' => 'all'], $uSearch));
+                    $urlDown    = route('admin.troubleshooting', array_merge(['status' => 'down'], $uSearch));
+                    $urlWarning = route('admin.troubleshooting', array_merge(['status' => 'warning'], $uSearch));
+                    $urlUp      = route('admin.troubleshooting', array_merge(['status' => 'up'], $uSearch));
+                @endphp
+                <div class="nk-block mt-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="text-soft me-1 small fw-bold">Filter status:</span>
+                        <div class="d-flex flex-wrap gap-2" id="tsFilterBar">
+                            <a href="{{ $urlAll }}" class="filter-chip {{ $status === 'all' ? 'active' : '' }}">
+                                Semua ({{ $summary['total'] }})
+                            </a>
+                            <a href="{{ $urlDown }}" class="filter-chip {{ $status === 'down' ? 'active' : '' }}">
+                                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;"></span>
+                                Down ({{ $summary['down'] }})
+                            </a>
+                            <a href="{{ $urlWarning }}" class="filter-chip {{ $status === 'warning' ? 'active' : '' }}">
+                                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;"></span>
+                                Warning ({{ $summary['warning'] }})
+                            </a>
+                            <a href="{{ $urlUp }}" class="filter-chip {{ $status === 'up' ? 'active' : '' }}">
+                                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;"></span>
+                                Up ({{ $summary['up'] }})
+                            </a>
+                        </div>
+                        <form class="ts-search ms-lg-auto" method="get" action="{{ route('admin.troubleshooting') }}" autocomplete="off">
+                            <em class="icon ni ni-search"></em>
+                            <input type="text" id="tsSearch" name="search" class="form-control"
+                                   placeholder="Cari nama perangkat, IP, atau type…" value="{{ $search }}">
+                            @if($status !== 'all')
+                                <input type="hidden" name="status" value="{{ $status }}">
+                            @endif
+                        </form>
+                    </div>
+                </div>
+
+                {{-- TABEL PERANGKAT BERMASALAH --}}
+                <div class="nk-block mt-3">
+                    <div class="card card-bordered">
+                        <div class="card-header border-0 pt-3 px-4">
+                            <h6 class="overline-title mb-0 mt-2">
+                                <em class="icon ni ni-activity me-1"></em>
+                                Daftar Perangkat Diperiksa ({{ number_format($resultCount) }})
+                                <span class="text-muted fw-normal small ms-2">— klik baris untuk detail</span>
+                            </h6>
+                        </div>
+                        <div class="card-body pt-2">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle ts-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-nowrap">No</th>
+                                            <th class="text-nowrap">Perangkat</th>
+                                            <th class="text-nowrap">IP Address</th>
+                                            <th class="text-nowrap">Type</th>
+                                            <th class="text-nowrap">Responded</th>
+                                            <th class="text-nowrap">Avg Latency</th>
+                                            <th class="text-nowrap">Down Time</th>
+                                            <th class="text-nowrap">Alerts</th>
+                                            <th class="text-nowrap">Status</th>
+                                            <th class="text-end text-nowrap">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tsDeviceRows">
+                                        @forelse($devices as $device)
+                                            <tr class="ts-row js-row-detail"
+                                                data-device-id="{{ $device['id'] }}"
+                                                data-name="{{ $device['name'] }}"
+                                                data-type="{{ $device['type'] }}"
+                                                data-ip="{{ $device['ip_address'] }}"
+                                                data-status="{{ $device['status'] }}"
+                                                data-latency="{{ $device['avg_delay'] }}"
+                                                data-down-time="{{ $device['down_time'] ?? '-' }}"
+                                                data-period="{{ $device['period'] ?? '' }}">
+                                                <td>{{ $loop->iteration + $devices->firstItem() - 1 }}</td>
+                                                <td><span class="device-name">{{ $device['name'] }}</span></td>
+                                                <td><span class="device-ip">{{ $device['ip_address'] }}</span></td>
+                                                <td><span class="badge bg-soft-primary">{{ $device['type'] }}</span></td>
+                                                <td>
+                                                    <span class="{{ $device['responded_percentage'] < 90 ? 'text-danger fw-bold' : 'text-warning fw-bold' }}">
+                                                        {{ $device['responded_percentage'] }}%
+                                                    </span>
+                                                </td>
+                                                <td>{{ $device['avg_delay'] }} ms</td>
+                                                <td>
+                                                    <span class="fw-bold {{ $device['status'] === 'down' ? 'text-danger' : 'text-warning' }}">
+                                                        {{ $device['down_time'] ?? '-' }}
+                                                    </span>
+                                                    @if($device['period'])
+                                                        <span class="d-block text-muted small">{{ $device['period'] }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($device['alerts_count'] > 0)
+                                                        <span class="badge bg-danger">{{ $device['alerts_count'] }}</span>
+                                                    @else
+                                                        <span class="text-muted">0</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="ts-badge ts-badge-{{ $device['status'] }}">
+                                                        <span class="ts-dot"></span>{{ strtoupper($device['status']) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <button type="button"
+                                                            class="btn btn-retest js-diagnose"
+                                                            data-device-id="{{ $device['id'] }}"
+                                                            data-name="{{ $device['name'] }}"
+                                                            data-ip="{{ $device['ip_address'] }}">
+                                                        <em class="icon ni ni-reload me-1"></em>Re-Test Connection
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="10" class="text-center text-muted py-5">
+                                                    <em class="icon ni ni-shield-check d-block mb-2" style="font-size:32px;"></em>
+                                                    Tidak ada perangkat yang cocok dengan pencarian / filter saat ini.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @if($resultCount > 0)
+                        <div class="pag-wrap">
+                            <div class="pag-info">
+                                Menampilkan {{ $devices->firstItem() }}–{{ $devices->lastItem() }} dari {{ number_format($resultCount) }} perangkat
+                            </div>
+                            @if($devices->hasPages())
+                                {{ $devices->links('pagination::bootstrap-5') }}
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+                </div>
+        </div>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════════════════════
+     MODAL DETAIL PERANGKAT (TAILWIND CSS)
+     Dibuka saat baris perangkat pada tabel diklik.
+══════════════════════════════════════════════════════════════ --}}
+<div id="detailModal" class="fixed inset-0 z-[1050] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-close></div>
+    <div class="relative w-full max-w-3xl max-h-[92vh] overflow-hidden flex flex-col bg-white rounded-2xl shadow-2xl">
+        {{-- Penutup --}}
+        <button type="button" data-close
+                class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
+            <em class="icon ni ni-cross"></em>
+        </button>
+
+        {{-- Header modal --}}
+        <div class="px-6 pt-6 pb-4 border-b border-slate-200">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <em class="icon ni ni-signal" style="font-size:22px;"></em>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-lg font-bold text-slate-900 truncate" id="dModalName">—</h3>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-sm text-slate-500 font-mono" id="dModalIp">—</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600" id="dModalType">—</span>
+                    </div>
+                </div>
+                <div class="ml-auto shrink-0">
+                    <span id="dModalStatusBadge"></span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Body modal --}}
+        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+            {{-- 1) RINGKASAN DATA (4 kotak, rapat & selalu terisi) --}}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Status</div>
+                    <div class="mt-1 text-base font-bold leading-tight" id="dModalStatusValue">—</div>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Latensi</div>
+                    <div class="mt-1 text-base font-bold text-slate-800 leading-tight" id="dModalLatency">—</div>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Metode Tes</div>
+                    <div class="mt-1 text-sm font-semibold text-slate-800 leading-snug" id="dModalMethod">—</div>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Durasi</div>
+                    <div class="mt-1 text-base font-bold text-slate-800 leading-tight" id="dModalDownTime">—</div>
+                </div>
+            </div>
+
+            {{-- 2) RAW OUTPUT (TERMINAL NOC) --}}
+            <div class="rounded-xl overflow-hidden border border-slate-700">
+                <div class="flex items-center gap-2 px-4 py-2.5 bg-slate-900">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#ff5f56;"></span>
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#ffbd2e;"></span>
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#27c93f;"></span>
+                    <span class="ml-2 text-xs font-semibold text-slate-400">Raw Output — Terminal</span>
+                    <span class="ml-auto text-[10px] font-bold tracking-wider text-green-400">LIVE</span>
+                </div>
+                <pre id="dModalRawOutput"
+                     class="m-0 px-4 py-3 text-xs leading-[1.75] font-mono text-green-400 bg-slate-950 whitespace-pre-wrap break-words ts-terminal-body"
+                     style="max-height:260px; min-height:120px; overflow-y:auto;">&gt; Menjalankan diagnostik…</pre>
+            </div>
+
+            {{-- 3) MANAJEMEN & ANALISIS (dinamis sesuai status perangkat) --}}
+            <div id="dModalAnalytics">
+                <div id="dModalSummaryPanel" class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <em id="dModalSummaryIcon" class="icon ni ni-briefcase text-blue-600"></em>
+                        <h4 class="text-sm font-bold text-blue-900 uppercase tracking-wide">Ringkasan untuk Manajemen</h4>
+                    </div>
+                    <p id="dModalSummaryText" class="text-sm text-slate-700 leading-relaxed">Menjalankan pemeriksaan…</p>
+                </div>
+
+                <div id="dModalCausePanel" class="rounded-xl border border-red-200 bg-red-50 p-4 mt-3">
+                    <div class="flex items-center gap-2 mb-2">
+                        <em id="dModalCauseIcon" class="icon ni ni-zoom-in text-red-600"></em>
+                        <h4 class="text-sm font-bold text-red-900 uppercase tracking-wide">Analisis Penyebab (Root Cause)</h4>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3 flex-wrap">
+                        <span id="dModalCauseBadge"
+                              class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"></span>
+                        <p id="dModalCause" class="text-sm font-bold text-red-800 mb-0">—</p>
+                    </div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Rekomendasi Langkah Teknis</div>
+                    <ol id="dModalSteps" class="space-y-1.5"></ol>
+                </div>
+            </div>
+
+            {{-- Recovery success --}}
+            <div id="dModalRecovered" class="rounded-xl p-4 hidden bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                <em class="icon ni ni-check-circle me-2"></em><strong>Status dipulihkan ke UP.</strong>
+                <span id="dModalRecoveredMsg"></span>
+            </div>
+        </div>
+
+        {{-- Footer modal --}}
+        <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-2">
+            <button type="button" data-close
+                    class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                Tutup
+            </button>
+            <button type="button" id="dModalResolve"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">
+                <em class="icon ni ni-check-circle me-1"></em>Pulihkan Status (Set to UP)
+            </button>
+            <button type="button" id="dModalRerun"
+                    class="px-4 py-2 text-sm font-bold text-white rounded-lg transition"
+                    style="background:linear-gradient(135deg,#dc2626,#f59e0b);">
+                <em class="icon ni ni-reload me-1"></em>Jalankan Ulang
+            </button>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+(function () {
+    'use strict';
+
+    const csrf = document.querySelector('meta[name="csrf-token"]');
+    const routeDiagnose = '{{ route("admin.troubleshooting.diagnose") }}';
+    const routeResolve  = '{{ route("admin.troubleshooting.resolve", ["id" => "__ID__"]) }}';
+
+    const modal      = document.getElementById('detailModal');
+    const modalBody  = modal.querySelector('.flex-1');
+
+    const elName        = document.getElementById('dModalName');
+    const elIp          = document.getElementById('dModalIp');
+    const elType        = document.getElementById('dModalType');
+    const elStatusBadge = document.getElementById('dModalStatusBadge');
+    const elStatusVal   = document.getElementById('dModalStatusValue');
+    const elLatency     = document.getElementById('dModalLatency');
+    const elMethod      = document.getElementById('dModalMethod');
+    const elDownTime    = document.getElementById('dModalDownTime');
+    const elRawOutput   = document.getElementById('dModalRawOutput');
+    const elAnalytics   = document.getElementById('dModalAnalytics');
+    const elSummaryPanel= document.getElementById('dModalSummaryPanel');
+    const elSummaryIcon = document.getElementById('dModalSummaryIcon');
+    const elSummaryText = document.getElementById('dModalSummaryText');
+    const elCausePanel  = document.getElementById('dModalCausePanel');
+    const elCauseIcon   = document.getElementById('dModalCauseIcon');
+    const elCauseBadge  = document.getElementById('dModalCauseBadge');
+    const elCause       = document.getElementById('dModalCause');
+    const elSteps       = document.getElementById('dModalSteps');
+    const elRecovered   = document.getElementById('dModalRecovered');
+    const elRecoveredMsg= document.getElementById('dModalRecoveredMsg');
+    const btnResolve    = document.getElementById('dModalResolve');
+    const btnRerun      = document.getElementById('dModalRerun');
+
+    let currentId = null;
+    let currentName = '';
+    let currentIp = '';
+    let currentStatus = null;
+
+    /* ── PENCARIAN SERVER-SIDE (auto-submit saat jeda ketik) ── */
+    let tsSearchTimer = null;
+    document.addEventListener('input', function (e) {
+        const form = e.target.closest('form.ts-search');
+        if (!form) return;
+        clearTimeout(tsSearchTimer);
+        tsSearchTimer = setTimeout(function () { form.submit(); }, 400);
+    });
+
+    function escHTML(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /* ── STATUS BADGE (Tailwind) ── */
+    const badgeCls = {
+        down:    'bg-red-50 text-red-700 border border-red-200',
+        warning: 'bg-amber-50 text-amber-700 border border-amber-200',
+        up:      'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    };
+    const badgeStyle = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase';
+
+    function statusBadge(status) {
+        const cls = badgeCls[status] || badgeCls.warning;
+        return '<span class="' + badgeStyle + ' ' + cls + '"><span class="inline-block w-2 h-2 rounded-full bg-current"></span>' +
+               escHTML(String(status).toUpperCase()) + '</span>';
+    }
+
+    /* ── IKON & WARNA ANALISIS PER KATEGORI ── */
+    const anaStyle = {
+        offline: {
+            panel: 'border-red-200 bg-red-50',
+            icon:  'text-red-600',
+            text:  'text-red-800',
+            badge: 'bg-red-600 text-white',
+            label: 'KRITIS',
+        },
+        latency: {
+            panel: 'border-amber-200 bg-amber-50',
+            icon:  'text-amber-600',
+            text:  'text-amber-800',
+            badge: 'bg-amber-500 text-white',
+            label: 'PERINGATAN',
+        },
+        normal: {
+            panel: 'border-emerald-200 bg-emerald-50',
+            icon:  'text-emerald-600',
+            text:  'text-emerald-800',
+            badge: 'bg-emerald-600 text-white',
+            label: 'NORMAL',
+        },
+    };
+
+    function renderAnalysis(analysis) {
+        if (!analysis || !analysis.summary) {
+            elSummaryPanel.className = 'rounded-xl border border-blue-200 bg-blue-50 p-4';
+            elSummaryIcon.className  = 'icon ni ni-briefcase text-blue-600';
+            elSummaryText.className  = 'text-sm text-slate-700 leading-relaxed';
+            elSummaryText.textContent = 'Tidak ada ringkasan analisis untuk perangkat ini.';
+            elCausePanel.classList.add('hidden');
+            return;
+        }
+
+        const style = anaStyle[analysis.category] || anaStyle.normal;
+        const hasSteps = Array.isArray(analysis.steps) && analysis.steps.length > 0;
+
+        elSummaryPanel.className = 'rounded-xl border p-4 ' + style.panel;
+        elSummaryIcon.className  = 'icon ni ni-briefcase ' + style.icon;
+        elSummaryText.className  = 'text-sm leading-relaxed ' + style.text;
+        elSummaryText.textContent = analysis.summary;
+
+        if (!hasSteps) {
+            elCausePanel.classList.add('hidden');
+            return;
+        }
+
+        elCausePanel.classList.remove('hidden');
+        elCausePanel.className = 'mt-3 rounded-xl border p-4 ' + style.panel;
+        elCauseIcon.className  = 'icon ni ni-zoom-in ' + style.icon;
+        elCauseBadge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ' + style.badge;
+        elCauseBadge.textContent = style.label;
+        elCause.textContent    = analysis.cause || '';
+        elCause.className      = 'text-sm font-bold mb-0 ' + style.text;
+
+        elSteps.innerHTML = '';
+        analysis.steps.forEach(function (step, i) {
+            const li = document.createElement('li');
+            li.className = 'flex items-start gap-2 text-sm text-slate-700';
+            const num = document.createElement('span');
+            num.className = 'shrink-0 mt-0.5 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center ' + style.badge;
+            num.textContent = String(i + 1);
+            const txt = document.createElement('span');
+            txt.textContent = step;
+            li.appendChild(num);
+            li.appendChild(txt);
+            elSteps.appendChild(li);
+        });
+    }
+
+    function resetAnalysis() {
+        elSummaryPanel.className = 'rounded-xl border border-blue-200 bg-blue-50 p-4';
+        elSummaryIcon.className  = 'icon ni ni-briefcase text-blue-600';
+        elSummaryText.className  = 'text-sm text-slate-700 leading-relaxed';
+        elSummaryText.textContent = 'Menjalankan pemeriksaan…';
+        elCausePanel.classList.add('hidden');
+        elCause.innerHTML   = '—';
+        elCauseBadge.textContent = '';
+        elSteps.innerHTML   = '';
+    }
+
+    /* ── MODAL BUKA / TUTUP ── */
+    function openModal() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+
+    /* ── VISIBILITAS TOMBOL PULIHKAN (hanya DOWN/WARNING) ── */
+    function setResolveVisible(status) {
+        const show = status === 'down' || status === 'warning';
+        btnResolve.classList.toggle('hidden', !show);
+        if (show) {
+            btnResolve.disabled = false;
+            btnResolve.style.opacity = '1';
+        }
+    }
+
+    /* ── EKSEKUSI DIAGNOSTIK ── */
+    function runDiagnostic() {
+        const body = new FormData();
+        body.append('device_id', currentId);
+
+        elRawOutput.textContent = '> Menjalankan diagnostik ICMP real-time pada ' + currentIp + '…\n> # ping -c 4 ' + currentIp;
+        elAnalytics.classList.remove('hidden');
+        elRecovered.classList.add('hidden');
+        resetAnalysis();
+
+        btnResolve.disabled = true;
+        btnResolve.classList.add('hidden');
+        btnRerun.disabled = true;
+        btnRerun.style.opacity = '0.5';
+
+        fetch(routeDiagnose, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
+            body: body,
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (!res.success) {
+                btnResolve.classList.add('hidden');
+                btnRerun.disabled = false;
+                btnRerun.style.opacity = '1';
+
+                elStatusBadge.innerHTML = statusBadge('warning');
+                elStatusVal.textContent = 'GAGAL';
+                elLatency.textContent   = '—';
+                elMethod.textContent    = '—';
+                elRawOutput.textContent = '> ERROR: ' + (res.message || 'Terjadi kesalahan menjalankan diagnostik.');
+                elSummaryText.textContent = res.message || 'Terjadi kesalahan menjalankan diagnostik.';
+                elSummaryIcon.className  = 'icon ni ni-briefcase text-red-600';
+                elCausePanel.classList.add('hidden');
+                return;
+            }
+
+            const log = res.log;
+            currentStatus = log.status;
+            setResolveVisible(currentStatus);
+            btnRerun.disabled = false;
+            btnRerun.style.opacity = '1';
+
+            elStatusBadge.innerHTML = statusBadge(log.status);
+            elStatusVal.textContent = String(log.status).toUpperCase();
+            elStatusVal.className   = 'mt-1 text-lg font-bold ' + (log.status === 'down' ? 'text-red-600' : log.status === 'warning' ? 'text-amber-600' : 'text-emerald-600');
+
+            // Indikator latensi segaris dengan status perangkat.
+            if (log.status === 'down') {
+                elLatency.innerHTML = '<span class="text-slate-500 font-bold">-</span>';
+            } else if (log.status === 'warning') {
+                elLatency.innerHTML = Number(log.latency || 0) + ' <span class="text-xs font-normal text-amber-600">ms</span>';
+            } else {
+                elLatency.innerHTML = Number(log.latency || 0) + ' <span class="text-xs font-normal text-slate-400">ms</span>';
+            }
+
+            elMethod.textContent    = log.diagnostic;
+            elRawOutput.textContent = log.output || (log.error ? '> ERROR: ' + log.error : '> Perintah selesai tanpa output.');
+
+            if (res.device && res.device.down_time) {
+                elDownTime.textContent = res.device.down_time;
+            }
+
+            renderAnalysis(res.analysis);
+        })
+        .catch(function () {
+            btnResolve.classList.add('hidden');
+            btnRerun.disabled = false;
+            btnRerun.style.opacity = '1';
+            elRawOutput.textContent = '> Tidak dapat terhubung ke server. Coba lagi nanti.';
+            elStatusBadge.innerHTML = statusBadge('warning');
+            elStatusVal.textContent = 'ERR';
+            elSummaryText.textContent = 'Tidak dapat terhubung ke server. Coba lagi nanti.';
+            elSummaryIcon.className  = 'icon ni ni-briefcase text-red-600';
+            elCausePanel.classList.add('hidden');
+        });
+    }
+
+    function openDetail(deviceId, name, ip, type, downTime, status) {
+        currentId      = deviceId;
+        currentName    = name;
+        currentIp      = ip;
+        currentStatus  = status || null;
+
+        elName.textContent = name;
+        elIp.textContent   = ip;
+        elType.textContent = type || '—';
+        elStatusVal.textContent = '…';
+        elStatusVal.className   = 'mt-1 text-lg font-bold text-slate-800';
+        elStatusBadge.innerHTML = '<span class="' + badgeStyle + ' bg-slate-100 text-slate-500 border border-slate-200">MENUNGGU</span>';
+        elLatency.textContent   = '…';
+        elMethod.textContent    = 'ICMP Ping (4 probe)';
+        elDownTime.textContent  = downTime || '—';
+        elRawOutput.textContent = '> Menyiapkan diagnostik…';
+        elAnalytics.classList.remove('hidden');
+        elRecovered.classList.add('hidden');
+        resetAnalysis();
+        setResolveVisible(currentStatus);
+
+        openModal();
+        runDiagnostic();
+    }
+
+    /* ── PULIHKAN STATUS ── */
+    function resolveDevice() {
+        if (!currentId || !confirm('Yakin ingin memulihkan status perangkat ini ke UP? (simulasi perbaikan)')) return;
+
+        const url = routeResolve.replace('__ID__', String(currentId));
+        btnResolve.disabled = true;
+        btnResolve.innerHTML = '<span class="spinner-mini"></span> Menyimpan…';
+
+        const body = new FormData();
+        body.append('_method', 'POST');
+        body.append('id', currentId);
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
+            body: body,
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            btnResolve.disabled = false;
+            btnResolve.innerHTML = '<em class="icon ni ni-check-circle me-1"></em>Pulihkan Status (Set to UP)';
+            if (!res.success) { alert(res.message || 'Gagal memulihkan status.'); return; }
+
+            elStatusBadge.innerHTML = statusBadge('up');
+            elStatusVal.textContent = 'UP';
+            elStatusVal.className   = 'mt-1 text-lg font-bold text-emerald-600';
+            elAnalytics.classList.add('hidden');
+            elRecovered.classList.remove('hidden');
+            elRecoveredMsg.textContent = res.message;
+            setTimeout(function () { closeModal(); refreshTroubleshootingPage(); }, 1300);
+        })
+        .catch(function () {
+            btnResolve.disabled = false;
+            btnResolve.innerHTML = '<em class="icon ni ni-check-circle me-1"></em>Pulihkan Status (Set to UP)';
+            alert('Tidak dapat terhubung ke server. Coba lagi nanti.');
+        });
+    }
+
+    /* ── REFRESH & LOG ── */
+    function refreshTroubleshootingPage() {
+        const base = '{{ route("admin.troubleshooting") }}';
+        const qs   = window.location.search;
+        fetch(base + qs, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const fresh = doc.querySelector('.nk-content-body');
+            const target = document.querySelector('.nk-content-body');
+            if (fresh && target) target.innerHTML = fresh.innerHTML;
+        })
+        .catch(function () {});
+    }
+
+    /* ── DELEGASI GLOBAL ── */
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-close]')) { closeModal(); return; }
+
+        // Klik tombol Re-Test Connection
+        const retest = e.target.closest('.js-diagnose');
+        if (retest) {
+            e.preventDefault();
+            e.stopPropagation();
+            const retestRow = retest.closest('.ts-row');
+            openDetail(retest.dataset.deviceId, retest.dataset.name, retest.dataset.ip,
+                       retestRow ? retestRow.dataset.type : retest.dataset.type,
+                       retestRow ? retestRow.dataset.downTime : '',
+                       retestRow ? retestRow.dataset.status : (retest.dataset.status || ''));
+            return;
+        }
+
+        // Klik baris tabel -> buka modal detail
+        const row = e.target.closest('.ts-row');
+        if (row && row.querySelector('[data-close]') === null) {
+            openDetail(row.dataset.deviceId, row.dataset.name, row.dataset.ip,
+                       row.dataset.type, row.dataset.downTime, row.dataset.status || '');
+            return;
+        }
+
+        if (e.target.closest('#dModalRerun')) { runDiagnostic(); return; }
+        if (e.target.closest('#dModalResolve')) { resolveDevice(); return; }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+})();
+</script>
+@endpush

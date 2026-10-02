@@ -67,7 +67,7 @@ class ImportMonitoringData extends Command
             $this->runSeeders();
         }
 
-        $deviceCount = DB::table('device')->count();
+        $deviceCount = DB::table('devices')->count();
         $areaCount = DB::table('network_areas')->count();
         $connCount = DB::table('device_connections')->count();
         $userCount = DB::table('users')->count();
