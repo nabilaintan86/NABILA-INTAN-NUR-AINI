@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Backup files
+*.bak
+*.bak2
+*.bak-restore
+device_monitoring
+device_monitoring.bak
