@@ -673,8 +673,13 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-primary text-white fw-bold" id="areaCountBadge">{{ count($networkAreas) }} Total Card Area</span>
-                <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddArea">
-                    <em class="icon ni ni-plus-circle me-1"></em> Tambah Card Area Baru
+                    <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm me-1"
+                        onclick="openAddAreaModal('monitoring')">
+                    <em class="icon ni ni-plus-circle me-1"></em> Card Area Monitoring
+                </button>
+                <button type="button" class="btn btn-sm btn-primary fw-bold shadow-sm"
+                        onclick="openAddAreaModal('ezyhome')">
+                    <em class="icon ni ni-plus-circle me-1"></em> Card Area EzyHome
                 </button>
             </div>
         </div>
@@ -696,10 +701,11 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle" id="tableNetworkArea">
-                    <thead class="table-light">
+                                <thead class="table-light">
                         <tr>
                             <th style="width: 45px;">No</th>
                             <th>Nama Area / POP</th>
+                            <th style="width: 100px;">Scope</th>
                             <th>Kode</th>
                             <th style="text-align: center;">Ukuran Card (W &times; H)</th>
                             <th style="text-align: center;">Koordinat Canvas (X, Y)</th>
@@ -709,16 +715,39 @@
                         </tr>
                     </thead>
                     <tbody id="areaTableBody">
-                        @forelse($networkAreas as $index => $ar)
-                            <tr id="area-row-{{ $ar->id }}" data-search="{{ strtolower($ar->name . ' ' . $ar->code . ' ' . $ar->description) }}">
-                                <td>{{ $index + 1 }}</td>
+                        @php
+                            $rowNo = 0;
+                            $allAreas = [];
+                            foreach ($networkAreas as $ar) {
+                                $ar->_scope = 'monitoring';
+                                $ar->_device_count = $ar->devices_count ?? 0;
+                                $allAreas[] = $ar;
+                            }
+                            foreach ($ezyhomeAreas ?? [] as $ar) {
+                                $ar->_scope = 'ezyhome';
+                                $ar->_device_count = $ar->positions_count ?? 0;
+                                $allAreas[] = $ar;
+                            }
+                        @endphp
+
+                        @forelse($allAreas as $ar)
+                            @php $rowNo++; @endphp
+                            <tr id="area-row-{{ $ar->_scope }}-{{ $ar->id }}" data-search="{{ strtolower($ar->name .' ' . $ar->code . ' ' . $ar->description) }}">
+                                <td>{{ $rowNo }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <span style="display:inline-block; width:14px; height:14px; border-radius:3px; border:2px solid {{ $ar->border_color ?: '#1a8024' }}; background:{{ $ar->bg_color ?: '#f8fafc' }};"></span>
-                                        <span class="fw-bold" style="color: {{ $ar->title_color ?: '#1a8024' }};">{{ $ar->name }}</span>
+                                        <span class="fw-bold" style="color: {{ $ar->title_color ?:'#1a8024' }};">{{ $ar->name }}</span>
                                     </div>
                                     @if($ar->description)
                                         <small class="text-muted d-block mt-1">{{ Str::limit($ar->description, 50) }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($ar->_scope === 'ezyhome')
+                                        <span class="badge bg-primary">EzyHome</span>
+                                    @else
+                                        <span class="badge bg-success">Monitoring</span>
                                     @endif
                                 </td>
                                 <td><code>{{ $ar->code ?: '-' }}</code></td>
@@ -735,19 +764,19 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="badge" style="background-color: {{ $ar->border_color ?: '#1a8024' }}; color:#fff;" title="Border Color">Border: {{ $ar->border_color ?: '#1a8024' }}</span>
-                                        <span class="badge border" style="background-color: {{ $ar->bg_color ?: '#f8fafc' }}; color:#000;" title="Background Color">BG: {{ $ar->bg_color ?: '#f8fafc' }}</span>
+                                        <span class="badge border" style="background-color: {{ $ar->bg_color ?: '#f8fafc' }}; color:#000;" title="Background Color">BG: {{ $ar->bg_color ?: '#f8fafc'}}</span>
                                         <span class="badge" style="background-color: {{ $ar->title_color ?: '#1a8024' }}; color:#fff;" title="Title Color">Judul: {{ $ar->title_color ?: '#1a8024' }}</span>
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-info-dim text-info fw-bold">{{ $ar->devices_count ?? 0 }} Router</span>
+                                    <span class="badge bg-info-dim text-info fw-bold">{{ $ar->_device_count }} Device</span>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-warning" title="Edit Card Area &amp; Ukuran" onclick='openEditAreaModal(@json($ar))'>
+                                        <button type="button" class="btn btn-outline-warning" title="Edit Card Area &amp; Ukuran" onclick='openEditAreaModal(@json($ar), "{{ $ar->_scope }}")'>
                                             <em class="icon ni ni-edit"></em>
                                         </button>
-                                        <button type="button" class="btn btn-outline-danger" title="Hapus Area" onclick="deleteArea({{ $ar->id }}, '{{ addslashes($ar->name) }}')">
+                                        <button type="button" class="btn btn-outline-danger" title="Hapus Area" onclick="deleteArea({{ $ar->id }}, '{{ addslashes($ar->name) }}', '{{ $ar->_scope }}')">
                                             <em class="icon ni ni-trash"></em>
                                         </button>
                                     </div>
@@ -755,7 +784,7 @@
                             </tr>
                         @empty
                             <tr id="rowEmptyArea">
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="9" class="text-center py-4 text-muted">
                                     <p class="mb-0">Belum ada card area POP terdaftar.</p>
                                 </td>
                             </tr>
@@ -802,11 +831,13 @@
                         </div>
                         <div class="col-md-3 col-6">
                             <label for="add_area_pos_x" class="form-label fw-bold">Posisi Awal X (px)</label>
-                            <input type="number" name="pos_x" id="add_area_pos_x" class="form-control" value="50" step="10" required>
+                            <input type="number" name="pos_x" id="add_area_pos_x" class="form-control" step="10" placeholder="Auto">
+                            <small class="text-muted" style="font-size:10px;">Kosongkan untuk auto</small>
                         </div>
                         <div class="col-md-3 col-6">
                             <label for="add_area_pos_y" class="form-label fw-bold">Posisi Awal Y (px)</label>
-                            <input type="number" name="pos_y" id="add_area_pos_y" class="form-control" value="50" step="10" required>
+                            <input type="number" name="pos_y" id="add_area_pos_y" class="form-control" step="10" placeholder="Auto">
+                            <small class="text-muted" style="font-size:10px;">Kosongkan untuk auto</small>
                         </div>
 
                         <div class="col-md-4">
@@ -1435,10 +1466,22 @@
     // ═══════════════════════════════════════════════════
     // CRUD CARD AREA / POP HANDLERS (WHATSUP GOLD 2026)
     // ═══════════════════════════════════════════════════
-    var areaStoreUrl = "{{ route('admin.monitoring.area.store') }}";
-    var areaUpdateUrlTemplate = "{{ route('admin.monitoring.area.update', ['area' => '__AREA_ID__']) }}";
-    var areaDestroyUrlTemplate = "{{ route('admin.monitoring.area.destroy', ['area' => '__AREA_ID__']) }}";
-
+    // ─── Endpoint per-scope ───
+    var areaEndpoints = {
+        monitoring: {
+            store:   "{{ route('admin.monitoring.area.store') }}",
+            update:  "{{ route('admin.monitoring.area.update', ['area' => '__AREA_ID__']) }}",
+            destroy: "{{ route('admin.monitoring.area.destroy', ['area' => '__AREA_ID__']) }}",
+            color:   '#1a8024'
+        },
+        ezyhome: {
+            store:   "{{ route('admin.ezyhome.area.store') }}",
+            update:  "{{ route('admin.ezyhome.area.update', ['area' => '__AREA_ID__']) }}",
+            destroy: "{{ route('admin.ezyhome.area.destroy', ['area' => '__AREA_ID__']) }}",
+            color:   '#2563eb'
+        }
+    };
+    var currentAreaScope = 'monitoring';
     // Filter Area Table
     function filterAreaTable() {
         var query = (document.getElementById('searchAreaInput') ? document.getElementById('searchAreaInput').value : '').toLowerCase().trim();
@@ -1453,9 +1496,36 @@
     // Modal Edit Area Handler
     var modalEditAreaEl = document.getElementById('modalEditArea');
     var bsModalEditArea = modalEditAreaEl ? new bootstrap.Modal(modalEditAreaEl) : null;
+    window.openAddAreaModal = function (scope) {
+        scope = scope || 'monitoring';
+        currentAreaScope = scope;
 
-    window.openEditAreaModal = function (area) {
+        // Update judul modal & warna header
+        var titleEl = document.querySelector('#modalAddArea .modal-title');
+        var headerEl = document.querySelector('#modalAddArea .modal-header');
+        if (titleEl) {
+            titleEl.innerHTML = '<em class="icon ni ni-plus-circle me-1"></em> Tambah Card Area ' +
+                (scope === 'ezyhome' ? 'EzyHome' : 'Monitoring');
+        }
+        if (headerEl) {
+            headerEl.classList.remove('bg-success', 'bg-primary');
+            headerEl.classList.add(scope === 'ezyhome' ? 'bg-primary' : 'bg-success');
+        }
+
+        // Reset form default
+        document.getElementById('formAddArea').reset();
+        document.getElementById('add_area_border_color').value = areaEndpoints[scope].color;
+        document.getElementById('add_area_border_color_text').value = areaEndpoints[scope].color;
+        document.getElementById('add_area_title_color').value = areaEndpoints[scope].color;
+        document.getElementById('add_area_title_color_text').value = areaEndpoints[scope].color;
+
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAddArea'));
+        modal.show();
+    };
+
+    window.openEditAreaModal = function (area, scope) {
         if (!area) return;
+        currentAreaScope = scope || 'monitoring';
         document.getElementById('edit_area_id').value = area.id;
         document.getElementById('edit_area_name').value = area.name || '';
         document.getElementById('edit_area_code').value = area.code || '';
@@ -1494,7 +1564,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
 
-        fetch(areaStoreUrl, {
+        fetch(areaEndpoints[currentAreaScope].store, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1506,8 +1576,8 @@
                 code: code,
                 width: width,
                 height: height,
-                pos_x: pos_x,
-                pos_y: pos_y,
+                pos_x: pos_x === '' ? null : pos_x,
+                pos_y: pos_y === '' ? null : pos_y,
                 border_color: border_color,
                 bg_color: bg_color,
                 title_color: title_color,
@@ -1554,7 +1624,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memperbarui...';
 
-        var url = areaUpdateUrlTemplate.replace('__AREA_ID__', id);
+        var url = areaEndpoints[currentAreaScope].update.replace('__AREA_ID__', id);
         fetch(url, {
             method: 'POST',
             headers: {
@@ -1597,12 +1667,13 @@
     };
 
     // Hapus Area
-    window.deleteArea = function (id, name) {
+    window.deleteArea = function (id, name, scope) {
+        scope = scope || 'monitoring';
         if (!confirm('Apakah Anda yakin ingin menghapus card area POP ini:\n\n' + name + '\n\nArea ini akan dihapus dari peta topologi.')) {
             return;
         }
 
-        var url = areaDestroyUrlTemplate.replace('__AREA_ID__', id);
+        var url = areaEndpoints[scope].destroy.replace('__AREA_ID__', id);
         fetch(url, {
             method: 'POST',
             headers: {
@@ -1615,7 +1686,7 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
             if (res.success) {
-                var row = document.getElementById('area-row-' + id);
+                var row = document.getElementById('area-row-' + scope + '-' + id);
                 if (row) {
                     row.style.transition = 'opacity .3s ease';
                     row.style.opacity = '0';

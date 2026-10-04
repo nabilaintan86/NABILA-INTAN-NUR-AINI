@@ -69,6 +69,13 @@ class MonitoringController extends Controller
             ->orderBy('id')
             ->get();
 
+
+        // Ambil seluruh card area / POP EzyHome
+        $ezyhomeAreas = \App\Models\EzyHomeArea::withCount('positions')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         // Riwayat log pemantauan terbaru
         $logs = MonitoringLog::with('device')
             ->orderByDesc('checked_at')
@@ -76,7 +83,7 @@ class MonitoringController extends Controller
             ->limit(50)
             ->get();
 
-        return view('admin.index', compact(
+                    return view('admin.index', compact(
             'devices',
             'totalUp',
             'totalDown',
@@ -85,6 +92,7 @@ class MonitoringController extends Controller
             'totalServicesDown',
             'connections',
             'networkAreas',
+            'ezyhomeAreas',
             'logs'
         ) + [
             'deviceSource' => $source->officialSummary(),
@@ -193,6 +201,35 @@ class MonitoringController extends Controller
         return response()->json([
             'success'  => true,
             'message'  => "Perangkat {$name} berhasil dihapus.",
+            'devices'  => $this->topologyService->deviceList(),
+            'topology' => $this->topologyService->build(),
+        ]);
+    }
+
+
+    /**
+     * Hapus SATU POSISI device dari map (device tetap ada di DB).
+     * Dipakai saat device dipakai di banyak POP — hapus per-POP.
+     */
+    public function destroyPosition(\App\Models\DevicePosition $position)
+    {
+        if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus posisi perangkat.')) {
+            return $forbidden;
+        }
+
+        $device = $position->device;
+        $deviceName = $device ? $device->name : ('#' . $position->device_id);
+
+        // Hapus edge yang endpoint-nya posisi ini (kiri atau kanan).
+        \App\Models\DeviceConnection::where('from_position_id', $position->id)
+            ->orWhere('to_position_id', $position->id)
+            ->delete();
+
+        $position->delete();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "Posisi perangkat {$deviceName} berhasil dihapus dari POP ini.",
             'devices'  => $this->topologyService->deviceList(),
             'topology' => $this->topologyService->build(),
         ]);

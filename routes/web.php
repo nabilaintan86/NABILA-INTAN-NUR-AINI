@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EzyHomeController;
 use App\Http\Controllers\Admin\DeviceDetailController;
 use App\Http\Controllers\Admin\DeviceNoteController;
 use App\Http\Controllers\Admin\DhcpLeaseController;
@@ -83,7 +84,6 @@ Route::prefix('admin')
         Route::get('/monitoring/data', [MonitoringController::class, 'data'])
             ->name('monitoring.data');
 
-
         // JSON daftar device untuk panel kiri workspace Map.
         Route::get('/monitoring/devices', [MonitoringController::class, 'devices'])
             ->name('monitoring.devices');
@@ -122,11 +122,107 @@ Route::prefix('admin')
         Route::post('/monitoring/area/{area}/bounds', [MonitoringController::class, 'updateAreaBounds'])
             ->name('monitoring.area.bounds');
 
-        // Simpan & Reset Kustomisasi Full Layout Map oleh Super Admin (Pembatas Router, Posisi, Jarak Jarum)
+        // Simpan & Reset Kustomisasi Full Layout Map oleh Super Admin
         Route::post('/monitoring/map-layout', [MonitoringController::class, 'saveMapLayout'])
             ->name('monitoring.map-layout.save');
         Route::post('/monitoring/map-layout/reset', [MonitoringController::class, 'resetMapLayout'])
             ->name('monitoring.map-layout.reset');
+
+        /*
+        |--------------------------------------------------------------------------
+        | EzyHome (jaringan kecil / mini topology)
+        |--------------------------------------------------------------------------
+        */
+
+        // Halaman utama
+        Route::get('/ezyhome', [EzyHomeController::class, 'index'])
+            ->name('ezyhome');
+
+        // Endpoint JSON topology (auto-refresh)
+        Route::get('/ezyhome/data', [EzyHomeController::class, 'data'])
+            ->name('ezyhome.data');
+
+        // JSON daftar device untuk panel kiri
+        Route::get('/ezyhome/devices', [EzyHomeController::class, 'devices'])
+            ->name('ezyhome.devices');
+
+        // Detail satu device
+        Route::get('/ezyhome/device/{device}', [EzyHomeController::class, 'device'])
+            ->name('ezyhome.device');
+
+        // CRUD Device
+        Route::post('/ezyhome/device', [EzyHomeController::class, 'storeDevice'])
+            ->name('ezyhome.device.store');
+        Route::put('/ezyhome/device/{device}', [EzyHomeController::class, 'updateDevice'])
+            ->name('ezyhome.device.update');
+        Route::delete('/ezyhome/device/{device}', [EzyHomeController::class, 'destroyDevice'])
+            ->name('ezyhome.device.destroy');
+
+        // Posisi device (drag & drop)
+        Route::post('/ezyhome/device/{device}/position', [EzyHomeController::class, 'updatePosition'])
+            ->name('ezyhome.device.position');
+        Route::delete('/ezyhome/position/{position}', [EzyHomeController::class, 'destroyPosition'])
+            ->name('ezyhome.position.destroy');
+
+        // Relasi antar-device
+        Route::post('/ezyhome/connection', [EzyHomeController::class, 'storeConnection'])
+            ->name('ezyhome.connection.store');
+        Route::delete('/ezyhome/connection/{connection}', [EzyHomeController::class, 'destroyConnection'])
+            ->name('ezyhome.connection.destroy');
+        Route::post('/ezyhome/connection/{connection}/direction', [EzyHomeController::class, 'updateDirection'])
+            ->name('ezyhome.connection.direction');
+
+        // Area / POP bounds (resize card)
+        // CRUD Card Area / POP EzyHome
+        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
+            ->name('ezyhome.area.store');
+        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
+            ->name('ezyhome.area.update');
+        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
+            ->name('ezyhome.area.destroy');
+
+        // Area / POP bounds (resize card)
+        // CRUD Card Area / POP EzyHome
+        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
+            ->name('ezyhome.area.store');
+        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
+            ->name('ezyhome.area.update');
+        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
+            ->name('ezyhome.area.destroy');
+
+        // Area / POP bounds (resize card)
+                // CRUD Card Area / POP EzyHome
+        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
+            ->name('ezyhome.area.store');
+        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
+            ->name('ezyhome.area.update');
+        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
+            ->name('ezyhome.area.destroy');
+
+        // Area / POP bounds (resize card)
+// CRUD Card Area / POP EzyHome
+        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
+            ->name('ezyhome.area.store');
+        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
+            ->name('ezyhome.area.update');
+        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
+            ->name('ezyhome.area.destroy');
+
+        // Area / POP bounds (resize card)
+        Route::post('/ezyhome/area/{area}/bounds', [EzyHomeController::class, 'updateAreaBounds'])
+            ->name('ezyhome.area.bounds');       
+
+        // Simpan & Reset kustomisasi layout
+        Route::post('/ezyhome/map-layout', [EzyHomeController::class, 'saveMapLayout'])
+            ->name('ezyhome.map-layout.save');
+        Route::post('/ezyhome/map-layout/reset', [EzyHomeController::class, 'resetMapLayout'])
+            ->name('ezyhome.map-layout.reset');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Log History
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
@@ -139,27 +235,29 @@ Route::prefix('admin')
         Route::get('/log/archive', [LogHistoryController::class, 'archive'])
             ->name('log.archive');
 
-        // Detail device (modal popup) - bisa id monitoring_logs atau log_archives
+        // Detail device (modal popup)
         Route::get('/log/detail/{id}', [LogHistoryController::class, 'detail'])
             ->whereNumber('id')
             ->name('log.detail');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Notifikasi
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])
             ->name('notifikasi');
 
-        // Jumlah notifikasi yang belum dibaca untuk badge / offcanvas
         Route::get('/notifikasi/unread-count', [NotifikasiController::class, 'unreadCount'])
             ->name('notifikasi.unread-count');
 
-        // Tandai notifikasi yang baru ditampilkan di offcanvas sebagai sudah dibaca
         Route::patch('/notifikasi/read-displayed', [NotifikasiController::class, 'markDisplayedAsRead'])
             ->name('notifikasi.read-displayed');
 
-        // Tandai semua notifikasi yang belum dibaca sebagai sudah dibaca
         Route::patch('/notifikasi/read-all', [NotifikasiController::class, 'markAllAsRead'])
             ->name('notifikasi.read-all');
 
-        // Tandai satu notifikasi sebagai sudah dibaca
         Route::patch('/notifikasi/{notification}/read', [NotifikasiController::class, 'markAsRead'])
             ->whereNumber('notification')
             ->name('notifikasi.read');
@@ -172,15 +270,12 @@ Route::prefix('admin')
 
         // Kelola Router
         Route::middleware('auth')->group(function () {
-            // Read-only access (admin and super_admin)
             Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
                 ->name('kelola-router');
 
-            // Detail perangkat readable by authenticated users
             Route::get('/device/{device}/detail', [DeviceDetailController::class, 'show'])
                 ->name('device.detail');
 
-            // Mutating actions: only super_admin
             Route::middleware('role:super_admin')->group(function () {
                 Route::post('/kelola-router', [KelolaRouterController::class, 'store'])
                     ->name('kelola-router.store');
@@ -193,25 +288,17 @@ Route::prefix('admin')
             });
         });
 
-        // Detail perangkat (read-only), dipakai sebagai target link nama device
-        // di tabel laporan & modal. Tidak mengubah status / menjalankan ping.
-        // Hanya didefinisikan sekali (di dalam middleware auth di atas) supaya
-        // tidak ada versi tanpa proteksi auth yang menimpa.
-
+        // Profile & Device Notes
         Route::middleware('auth')->group(function () {
-            // Profile user yang sedang login (tidak ada user_id di URL,
-            // sehingga user hanya bisa mengedit profile miliknya sendiri).
             Route::get('/profile', [ProfileController::class, 'index'])
                 ->name('profile');
 
             Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])
                 ->name('profile.photo.update');
 
-            // Edit informasi akun (nama + email) milik user yang sedang login.
             Route::patch('/profile', [ProfileController::class, 'updateAccount'])
                 ->name('profile.update');
 
-            // Ganti password milik user yang sedang login.
             Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])
                 ->name('profile.password.update');
 
@@ -231,16 +318,27 @@ Route::prefix('admin')
                 ->name('device.notes.destroy');
         });
 
-        // DHCP Lease - daftar perangkat yang mendapat IP dari DHCP
+        /*
+        |--------------------------------------------------------------------------
+        | DHCP Lease
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/dhcp-lease', [DhcpLeaseController::class, 'index'])
             ->name('dhcp-lease');
 
-        // Upload devices.csv lewat halaman (drag & drop / pilih file)
         Route::post('/dhcp-lease/upload', [DhcpLeaseController::class, 'upload'])
             ->name('dhcp-lease.upload');
 
+        Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])
+            ->name('dhcp-lease.import');
 
-        // CRUD Device langsung dari workspace Map (Super Admin)
+        /*
+        |--------------------------------------------------------------------------
+        | CRUD Device Monitoring (Super Admin)
+        |--------------------------------------------------------------------------
+        */
+
         Route::post('/monitoring/device', [MonitoringController::class, 'storeDevice'])
             ->name('monitoring.device.store');
         Route::put('/monitoring/device/{device}', [MonitoringController::class, 'updateDevice'])
@@ -248,22 +346,30 @@ Route::prefix('admin')
         Route::delete('/monitoring/device/{device}', [MonitoringController::class, 'destroyDevice'])
             ->name('monitoring.device.destroy');
 
-        // Import devices.csv dari path default (tombol "Import Sekarang" di empty state)
-        Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])
-            ->name('dhcp-lease.import');
+        Route::delete('/monitoring/position/{position}', [MonitoringController::class, 'destroyPosition'])
+            ->name('monitoring.position.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laporan
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/laporan', [LaporanController::class, 'index'])
             ->name('laporan');
 
-        // Export PDF laporan monitoring mengikuti periode aktif
         Route::get('/laporan/pdf', [LaporanController::class, 'pdf'])
             ->name('laporan.pdf');
 
-        // Export PDF laporan per perangkat (menambahi, tidak mengganti,
-        // route laporan.pdf di atas).
         Route::get('/laporan/perangkat/{device}/pdf', [LaporanController::class, 'perangkatPdf'])
             ->whereNumber('device')
             ->name('laporan.perangkat.pdf');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tools
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/tools', [ToolsController::class, 'index'])
             ->name('tools');
@@ -282,7 +388,7 @@ Route::prefix('admin')
 
         /*
         |--------------------------------------------------------------------------
-        | Kelola User (khusus Super Admin, middleware role)
+        | Kelola User (khusus Super Admin)
         |--------------------------------------------------------------------------
         */
 
@@ -327,9 +433,12 @@ Route::prefix('admin')
         });
     });
 
-// Compatibility routes for legacy/short URLs. These redirect to the admin
-// prefixed routes so existing bookmarks like /laporan and /kelola-router work
-// without changing the admin middleware or controllers.
+/*
+|--------------------------------------------------------------------------
+| Compatibility routes (legacy URL redirects)
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/laporan', function () {
     return redirect()->route('admin.laporan');
 })->name('laporan.redirect');
@@ -343,10 +452,6 @@ Route::get('/kelola-router', function () {
 /*
 |--------------------------------------------------------------------------
 | TELEGRAM BOT WEBHOOK
-|--------------------------------------------------------------------------
-| Endpoint callback yang dipanggil Telegram Bot API saat ada update
-| (mis. user menekan /start). Nilai chat_id disimpan sebagai subscriber
-| agar notifikasi device DOWN/RECOVERED otomatis terkirim ke semua subscriber.
 |--------------------------------------------------------------------------
 */
 

@@ -532,6 +532,28 @@
         </div>
     </div>
 </div>
+{{-- MODAL: KONFIRMASI HAPUS --}}
+
+<div class="modal fade" id="wugModalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title fs-14px">
+                    <em class="icon ni ni-alert-circle text-danger me-1"></em>
+                    <span id="wugDeleteTitle">Hapus?</span>
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-3 text-center">
+                <p class="mb-0" id="wugDeleteName">-</p>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger btn-sm" id="wugBtnConfirmDelete">Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {{-- ============================================================
      MODAL: HUBUNGKAN DUA DEVICE (dipanggil dari mode Hubungkan di map)
@@ -604,7 +626,8 @@
         destroyTpl:  {!! json_encode(route('admin.monitoring.device.destroy', ['device' => '__DEVICE_ID__'])) !!},
         positionTpl: {!! json_encode(route('admin.monitoring.device.position', ['device' => '__DEVICE_ID__'])) !!},
         connection:  {!! json_encode(route('admin.monitoring.connection.store')) !!},
-        detailTpl:   {!! json_encode(route('admin.monitoring.device', ['device' => '__DEVICE_ID__'])) !!}
+        detailTpl:   {!! json_encode(route('admin.monitoring.device', ['device' => '__DEVICE_ID__'])) !!},
+        positionDestroyTpl: {!! json_encode(route('admin.monitoring.position.destroy', ['position' => '__POSITION_ID__'])) !!}
     };
     var csrfToken = @json(csrf_token());
 
@@ -625,6 +648,7 @@
     var devices = {!! json_encode(array_values($deviceList)) !!};
     var draggedDevice = null;
     var pendingConnect = null;
+    var pendingDelete = null;
 
     function iconFile(key) {
         return ICONS[String(key || '').toLowerCase()] || 'server.png';
@@ -695,10 +719,11 @@
                     + '<em class="icon ni ni-trash"></em></button>'
                     + '</div>';
             }
-
-            html += '<div class="wug-dev-item st-' + escapeHtml(st) + '"'
-                + ' data-id="' + d.id + '" data-name="' + escapeHtml(d.name) + '"'
-                + (isSuperAdmin ? ' draggable="true"' : '') + '>'
+                html += '<div class="wug-dev-item st-' + escapeHtml(st) + '"'
+                + ' data-id="' + d.id + '"'
+                + ' data-position-id="' + (d.position_id || '') + '"'
+                + ' data-name="' + escapeHtml(d.name) + '"'
+                + (isSuperAdmin ? ' draggable="true"' : '') + '>'        
                 + '<img class="wug-dev-icon" src="' + iconBase + '/' + iconFile(d.icon) + '" alt="">'
                 + '<div class="wug-dev-info">'
                 + '<div class="wug-dev-name"><span class="wug-dev-status ' + escapeHtml(st) + '"></span>'
@@ -1028,28 +1053,51 @@
 
     function destroyDevice(device) {
         if (!device) return;
-        if (!confirm('Hapus perangkat "' + device.name + '" dari database?\n\n'
-            + 'Seluruh relasi (device_connections) yang terhubung ke perangkat ini juga terhapus.')) {
-            return;
-        }
 
-        fetch(URLS.destroyTpl.replace('__DEVICE_ID__', device.id), {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-            if (res && res.success) {
-                if (res.devices) { devices = res.devices; render(); }
-                if (res.topology && window.WugTopology && window.WugTopology.render) {
-                    window.WugTopology.render(res.topology);
+        var posId = device.position_id || null;
+
+        document.getElementById('wugDeleteTitle').textContent = 'Hapus ' + (device.name || 'perangkat') + '?';
+        document.getElementById('wugDeleteName').textContent = posId && posId > 0
+            ? 'Posisi di POP ini akan dihapus.'
+            : 'Yakin ingin menghapus perangkat ini?';
+
+        pendingDelete = { device: device, posId: posId };
+        modalOf('wugModalConfirmDelete').show();
+    }
+
+    // Handler tombol "Hapus" di modal konfirmasi
+    var btnConfirmDelete = document.getElementById('wugBtnConfirmDelete');
+    if (btnConfirmDelete) {
+        btnConfirmDelete.addEventListener('click', function () {
+            if (!pendingDelete) return;
+            var pd = pendingDelete;
+            pendingDelete = null;
+
+            var url = (pd.posId && pd.posId > 0)
+                ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.posId)
+                : URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id);
+
+            var modal = bootstrap.Modal.getInstance(document.getElementById('wugModalConfirmDelete'));
+            if (modal) modal.hide();
+
+            fetch(url, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res && res.success) {
+                    if (res.devices) { devices = res.devices; render(); }
+                    if (res.topology && window.WugTopology && window.WugTopology.render) {
+                        window.WugTopology.render(res.topology);
+                    }
+                    showToast(res.message);
+                } else {
+                    showToast((res && res.message) || 'Gagal menghapus.', true);
                 }
-                showToast(res.message);
-            } else {
-                showToast((res && res.message) || 'Gagal menghapus perangkat.', true);
-            }
-        })
-        .catch(function () { showToast('Gagal menghapus perangkat.', true); });
+            })
+            .catch(function () { showToast('Gagal menghapus.', true); });
+        });
     }
 
     /* ------------------------------------------------------------------
@@ -1058,8 +1106,13 @@
     if (listEl) {
         listEl.addEventListener('click', function (e) {
             var btn = e.target.closest('[data-wug-act]');
-            if (btn) {
-                var device = devices.find(function (d) { return String(d.id) === btn.dataset.id; });
+                if (btn) {
+                var itemEl = btn.closest('.wug-dev-item');
+                var posId = itemEl ? itemEl.dataset.positionId : '';
+                var device = devices.find(function (d) {
+                    return String(d.id) === btn.dataset.id
+                        && (posId ? String(d.position_id) === String(posId) : true);
+                });
                 if (btn.dataset.wugAct === 'edit') openEditDevice(device);
                 if (btn.dataset.wugAct === 'delete') destroyDevice(device);
                 if (btn.dataset.wugAct === 'focus' && window.WugTopology) {

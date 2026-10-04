@@ -338,6 +338,7 @@
 
     var isConnectMode = false, connectSourceNode = null;
     var currentDetailDeviceId = null;
+    var currentDetailPositionId = null;
     var btnConnectMode = document.getElementById('btnConnectMode');
     var btnAddDevice = document.getElementById('btnAddDevice');
     var btnDetailEditDevice = document.getElementById('btnDetailEditDevice');
@@ -986,6 +987,7 @@
 
     function openDeviceDetail(id, fallback) {
         currentDetailDeviceId = id;
+        currentDetailPositionId = (fallback && fallback.id && fallback.id > 0) ? fallback.id : null;
         detailOverlay.classList.add('active');
         detailLoading.style.display = 'block';
         detailContent.style.display = 'none';
@@ -1054,12 +1056,24 @@
     var btnDetailDeleteEl = document.getElementById('btnDetailDeleteDevice');
     if (btnDetailDeleteEl) {
         btnDetailDeleteEl.addEventListener('click', function () {
-            if (!currentDetailDeviceId) return;
-                        var list = (window.WugDeviceList || []);
+            if (!currentDetailDeviceId && !currentDetailPositionId) return;
+
+            var list = (window.WugDeviceList || []);
             var dev = list.find(function (d) {
-                return String(d.id) === String(currentDetailDeviceId);
+                return String(d.id) === String(currentDetailDeviceId)
+                    && (currentDetailPositionId
+                        ? String(d.position_id) === String(currentDetailPositionId)
+                        : true);
             });
-            if (!dev) { alert('Data device tidak ditemukan.'); return; }
+
+            if (!dev) {
+                dev = {
+                    id: currentDetailDeviceId,
+                    position_id: currentDetailPositionId,
+                    name: (list.find(function (d) { return String(d.id) === String(currentDetailDeviceId); }) || {}).name || 'device'
+                };
+            }
+
             if (window.WugDevicePanel && window.WugDevicePanel.deleteDevice) {
                 detailOverlay.classList.remove('active');
                 window.WugDevicePanel.deleteDevice(dev);

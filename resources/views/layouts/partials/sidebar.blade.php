@@ -96,6 +96,21 @@
                             </span>
                         </a>
                     </li>
+        
+                    {{-- EzyHome Topology --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.ezyhome*') ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.ezyhome') }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-map"></em>
+                            </span>
+                            <span class="nk-menu-text">
+                                EzyHome Topology
+                            </span>
+                        </a>
+                    </li>
 
                     {{-- Relasi Perangkat --}}
                     <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && request()->query('tab') === 'relasi' ? 'active' : '' }}">
