@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TelegramWebhookController;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;use App\Http\Controllers\Auth\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +46,23 @@ Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
 
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
     ->name('password.email');
+
+
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', function () {
+        return view('auth.forgot-password');
+    })->name('password.request');
+
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', function ($token) {
+        return view('auth.reset-password', ['token' => $token]);
+    })->name('password.reset');
+
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
+        ->name('password.update');
+});
 
 /*
 |--------------------------------------------------------------------------

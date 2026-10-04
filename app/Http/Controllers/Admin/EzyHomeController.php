@@ -217,17 +217,12 @@ class EzyHomeController extends Controller
 
         $positionId = $validated['position_id'] ?? null;
         $areaId = $validated['ezyhome_area_id'] ?? null;
+        $positionId = $validated['position_id'] ?? null;
+        $areaId = $validated['ezyhome_area_id'] ?? null;
 
-        // Fallback: kalau frontend gak kirim position_id,
-        // cek apakah device ini sudah punya posisi di EzyHome.
-        // EzyHome = 1 device = 1 posisi (beda dengan Monitoring yang multi-posisi).
-        if (! $positionId) {
-            $existing = EzyHomePosition::where('ezyhome_device_id', $device->id)->first();
-            if ($existing) {
-                $positionId = $existing->id;
-            }
-        }
-
+        // EzyHome = multi-position (mirror Monitoring).
+        // - position_id ada → update posisi existing (drag node di canvas)
+        // - position_id kosong → create posisi baru (drag device dari panel)
         if ($positionId) {
             $pos = EzyHomePosition::find($positionId);
             if ($pos) {

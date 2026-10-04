@@ -613,7 +613,7 @@
 
         var body = { pos_x: x, pos_y: y };
         if (area && area.id) body.ezyhome_area_id = area.id;
-        if (device.position_id) body.position_id = device.position_id;
+        // Drag dari panel = SELALU create position baru (multi-position)       if (device.position_id) body.position_id = device.position_id;
 
         fetch(URLS.positionTpl.replace('__DEVICE_ID__', device.id), {
             method: 'POST',

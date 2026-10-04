@@ -163,45 +163,25 @@ class EzyHomeTopologyService
     /**
      * Daftar device EzyHome untuk panel kiri.
      */
+    /**
+     * Daftar device EzyHome untuk panel kiri.
+     * 1 device = 1 baris (multi-position ditampilkan di canvas).
+     */
     public function deviceList(): array
     {
-        $devices = EzyHomeDevice::orderBy('name')->get()->keyBy('id');
+        $devices   = EzyHomeDevice::orderBy('name')->get();
         $positions = EzyHomePosition::orderBy('id')->get();
 
-        $areasById = EzyHomeArea::pluck('name', 'id');
+        $positionsByDevice = [];
+        foreach ($positions as $pos) {
+            $positionsByDevice[$pos->ezyhome_device_id][] = $pos;
+        }
 
         $result = [];
 
-        foreach ($positions as $pos) {
-            $device = $devices[$pos->ezyhome_device_id] ?? null;
-            if (! $device) continue;
-
-            $areaName = $areasById[$pos->ezyhome_area_id] ?? null;
-
-            $result[] = [
-                'id'             => (int) $device->id,
-                'position_id'    => (int) $pos->id,
-                'name'           => $device->name,
-                'ip'             => $device->ip_address,
-                'icon'           => $device->icon_key,
-                'type'           => $device->type,
-                'protocol'       => $device->protocol,
-                'status'         => $device->status,
-                'router_version' => $device->router_version,
-                'pop'            => $areaName ?: ($device->pop_name ?: 'Belum ditempatkan'),
-                'area_id'        => $pos->ezyhome_area_id,
-                'area'           => $areaName,
-                'placed'         => true,
-                'pos_x'          => $pos->pos_x,
-                'pos_y'          => $pos->pos_y,
-                'links'          => 0,
-            ];
-        }
-
-        // Device yang belum punya posisi
-        $deviceIdsWithPos = $positions->pluck('ezyhome_device_id')->unique()->all();
         foreach ($devices as $device) {
-            if (in_array($device->id, $deviceIdsWithPos, true)) continue;
+            $devPositions = $positionsByDevice[$device->id] ?? [];
+            $posCount     = count($devPositions);
 
             $result[] = [
                 'id'             => (int) $device->id,
@@ -213,10 +193,11 @@ class EzyHomeTopologyService
                 'protocol'       => $device->protocol,
                 'status'         => $device->status,
                 'router_version' => $device->router_version,
-                'pop'            => $device->pop_name ?: 'Belum ditempatkan',
+                'pop'            => $device->pop_name ?: 'EzyHome',
                 'area_id'        => null,
                 'area'           => null,
-                'placed'         => false,
+                'placed'         => $posCount > 0,
+                'position_count' => $posCount,
                 'pos_x'          => null,
                 'pos_y'          => null,
                 'links'          => 0,
@@ -225,7 +206,7 @@ class EzyHomeTopologyService
 
         return $result;
     }
-
+    
     /**
      * Detail satu device EzyHome (untuk popup).
      */

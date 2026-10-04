@@ -1190,7 +1190,6 @@ document.addEventListener('DOMContentLoaded', function () {
             currentFilter = btn.getAttribute('data-filter');
             render();
             renderFilterModal();
-            notifFilterModalInstance.show();
         });
     });
 

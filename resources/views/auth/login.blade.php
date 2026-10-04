@@ -204,15 +204,24 @@
             position: relative;
         }
 
-        .input-wrap i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            font-size: 15px;
-            transition: color 0.3s ease;
-        }
+.input-wrap > i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 15px;
+    transition: color 0.3s ease;
+}
+
+.toggle-password i {
+    position: static;
+    transform: none;
+    left: auto;
+    top: auto;
+    color: inherit;
+    font-size: 14px;
+}
 
         .form-input {
             width: 100%;
