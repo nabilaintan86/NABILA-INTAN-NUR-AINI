@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\EzyHomeController;
 use App\Http\Controllers\Admin\DeviceDetailController;
 use App\Http\Controllers\Admin\DeviceNoteController;
 use App\Http\Controllers\Admin\DhcpLeaseController;
+use App\Http\Controllers\Admin\EzyHomeController;
 use App\Http\Controllers\Admin\KelolaRouterController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\LogHistoryController;
@@ -13,10 +13,11 @@ use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\TelegramUserController;
 use App\Http\Controllers\Admin\ToolsController;
+use App\Http\Controllers\Admin\TopologyMapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TelegramWebhookController;
-use Illuminate\Support\Facades\Route;use App\Http\Controllers\Auth\ForgotPasswordController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,49 +25,23 @@ use Illuminate\Support\Facades\Route;use App\Http\Controllers\Auth\ForgotPasswor
 |--------------------------------------------------------------------------
 */
 
-// Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])
     ->name('login');
 
 Route::post('/login', [AuthController::class, 'login']);
 
-// Register
 Route::get('/register', [AuthController::class, 'showRegisterForm'])
     ->name('register');
 
 Route::post('/register', [AuthController::class, 'register']);
 
-// Logout
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
-// Forgot Password
-Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
-    ->name('password.request');
-
-Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
-    ->name('password.email');
-
-
-Route::middleware('guest')->group(function () {
-    Route::get('/forgot-password', function () {
-        return view('auth.forgot-password');
-    })->name('password.request');
-
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
-        ->name('password.email');
-
-    Route::get('/reset-password/{token}', function ($token) {
-        return view('auth.reset-password', ['token' => $token]);
-    })->name('password.reset');
-
-    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
-        ->name('password.update');
-});
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN
+| ADMIN AREA
 |--------------------------------------------------------------------------
 */
 
@@ -75,53 +50,44 @@ Route::prefix('admin')
     ->group(function () {
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Dashboard
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-        // Endpoint JSON data dashboard (dipakai auto-refresh grafik tiap 30 dtk)
         Route::get('/dashboard/data', [DashboardController::class, 'data'])
             ->name('dashboard.data');
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Monitoring
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/monitoring', [MonitoringController::class, 'index'])
             ->name('monitoring');
 
-        // Endpoint JSON data topology (dipakai auto-refresh status tiap 30 dtk)
-        // Dipakai oleh komponen network-topology pada /admin/monitoring.
         Route::get('/monitoring/data', [MonitoringController::class, 'data'])
             ->name('monitoring.data');
 
-        // JSON daftar device untuk panel kiri workspace Map.
         Route::get('/monitoring/devices', [MonitoringController::class, 'devices'])
             ->name('monitoring.devices');
 
-        // Detail satu device (popup MAP RADNET) - read-only, tanpa ping.
         Route::get('/monitoring/device/{device}', [MonitoringController::class, 'device'])
             ->name('monitoring.device');
 
-        // Drag and drop posisi perangkat pada Map View
         Route::post('/monitoring/device/{device}/position', [MonitoringController::class, 'updatePosition'])
             ->name('monitoring.device.position');
 
-        // Reset semua posisi perangkat ke tata letak default
         Route::post('/monitoring/reset-positions', [MonitoringController::class, 'resetPositions'])
             ->name('monitoring.reset-positions');
 
-        // Atur arah panah relasi (->, <-, <->, --)
         Route::post('/monitoring/connection/{connection}/direction', [MonitoringController::class, 'updateDirection'])
             ->name('monitoring.connection.direction');
 
-        // CRUD Relasi Antar-Perangkat (WhatsUp Gold)
         Route::post('/monitoring/connection', [MonitoringController::class, 'storeConnection'])
             ->name('monitoring.connection.store');
         Route::put('/monitoring/connection/{connection}', [MonitoringController::class, 'updateConnection'])
@@ -129,7 +95,6 @@ Route::prefix('admin')
         Route::delete('/monitoring/connection/{connection}', [MonitoringController::class, 'destroyConnection'])
             ->name('monitoring.connection.destroy');
 
-        // CRUD Card Area / POP Pembatas Router (WhatsUp Gold 2026)
         Route::post('/monitoring/area', [MonitoringController::class, 'storeArea'])
             ->name('monitoring.area.store');
         Route::put('/monitoring/area/{area}', [MonitoringController::class, 'updateArea'])
@@ -139,35 +104,77 @@ Route::prefix('admin')
         Route::post('/monitoring/area/{area}/bounds', [MonitoringController::class, 'updateAreaBounds'])
             ->name('monitoring.area.bounds');
 
-        // Simpan & Reset Kustomisasi Full Layout Map oleh Super Admin
         Route::post('/monitoring/map-layout', [MonitoringController::class, 'saveMapLayout'])
             ->name('monitoring.map-layout.save');
         Route::post('/monitoring/map-layout/reset', [MonitoringController::class, 'resetMapLayout'])
             ->name('monitoring.map-layout.reset');
 
+        // CRUD Device Monitoring (Super Admin)
+        Route::post('/monitoring/device', [MonitoringController::class, 'storeDevice'])
+            ->name('monitoring.device.store');
+        Route::put('/monitoring/device/{device}', [MonitoringController::class, 'updateDevice'])
+            ->name('monitoring.device.update');
+        Route::delete('/monitoring/device/{device}', [MonitoringController::class, 'destroyDevice'])
+            ->name('monitoring.device.destroy');
+
+        Route::delete('/monitoring/position/{position}', [MonitoringController::class, 'destroyPosition'])
+            ->name('monitoring.position.destroy');
+
         /*
-        |--------------------------------------------------------------------------
-        | EzyHome (jaringan kecil / mini topology)
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Topology Maps (CRUD) — BARU
+        |----------------------------------------------------------------------
         */
 
-        // Halaman utama
+        Route::prefix('topology-maps')->name('topology-maps.')->group(function () {
+
+            /* -------- MAPS CRUD (utama) -------- */
+            Route::get('/',           [TopologyMapController::class, 'index'])->name('index');
+            Route::get('/create',     [TopologyMapController::class, 'create'])->name('create');
+            Route::post('/',          [TopologyMapController::class, 'store'])->name('store');
+
+            /* -------- DETAIL MAPS (harus di atas /{topologyMap}) -------- */
+            Route::get('/{topologyMap}',      [TopologyMapController::class, 'show'])->name('show');
+            Route::get('/{topologyMap}/edit', [TopologyMapController::class, 'edit'])->name('edit');
+            Route::put('/{topologyMap}',      [TopologyMapController::class, 'update'])->name('update');
+            Route::delete('/{topologyMap}',   [TopologyMapController::class, 'destroy'])->name('destroy');
+
+            /* -------- JSON DATA (buat canvas & tabs) -------- */
+            Route::get('/{topologyMap}/data',              [TopologyMapController::class, 'mapData'])->name('data');
+            Route::get('/{topologyMap}/available-devices', [TopologyMapController::class, 'availableDevices'])->name('available-devices');
+
+            /* -------- DEVICE DI DALAM MAP -------- */
+            Route::post('/{topologyMap}/devices',                                   [TopologyMapController::class, 'storeDevice'])->name('devices.store');
+            Route::patch('/{topologyMap}/devices/{mapDevice}/position',             [TopologyMapController::class, 'updateDevicePosition'])->name('devices.position');
+            Route::delete('/{topologyMap}/devices/{mapDevice}',                     [TopologyMapController::class, 'destroyDevice'])->name('devices.destroy');
+
+            /* -------- AREA / POP DI DALAM MAP -------- */
+            Route::post('/{topologyMap}/areas',              [TopologyMapController::class, 'storeArea'])->name('areas.store');
+            Route::put('/{topologyMap}/areas/{mapArea}',     [TopologyMapController::class, 'updateArea'])->name('areas.update');
+            Route::delete('/{topologyMap}/areas/{mapArea}',  [TopologyMapController::class, 'destroyArea'])->name('areas.destroy');
+
+            /* -------- CONNECTION / RELASI -------- */
+            Route::post('/{topologyMap}/connections',                    [TopologyMapController::class, 'storeConnection'])->name('connections.store');
+            Route::delete('/{topologyMap}/connections/{mapConnection}',  [TopologyMapController::class, 'destroyConnection'])->name('connections.destroy');
+        });
+        /*
+        |----------------------------------------------------------------------
+        | EzyHome (Legacy)
+        |----------------------------------------------------------------------
+        */
+
         Route::get('/ezyhome', [EzyHomeController::class, 'index'])
             ->name('ezyhome');
 
-        // Endpoint JSON topology (auto-refresh)
         Route::get('/ezyhome/data', [EzyHomeController::class, 'data'])
             ->name('ezyhome.data');
 
-        // JSON daftar device untuk panel kiri
         Route::get('/ezyhome/devices', [EzyHomeController::class, 'devices'])
             ->name('ezyhome.devices');
 
-        // Detail satu device
         Route::get('/ezyhome/device/{device}', [EzyHomeController::class, 'device'])
             ->name('ezyhome.device');
 
-        // CRUD Device
         Route::post('/ezyhome/device', [EzyHomeController::class, 'storeDevice'])
             ->name('ezyhome.device.store');
         Route::put('/ezyhome/device/{device}', [EzyHomeController::class, 'updateDevice'])
@@ -175,13 +182,11 @@ Route::prefix('admin')
         Route::delete('/ezyhome/device/{device}', [EzyHomeController::class, 'destroyDevice'])
             ->name('ezyhome.device.destroy');
 
-        // Posisi device (drag & drop)
         Route::post('/ezyhome/device/{device}/position', [EzyHomeController::class, 'updatePosition'])
             ->name('ezyhome.device.position');
         Route::delete('/ezyhome/position/{position}', [EzyHomeController::class, 'destroyPosition'])
             ->name('ezyhome.position.destroy');
 
-        // Relasi antar-device
         Route::post('/ezyhome/connection', [EzyHomeController::class, 'storeConnection'])
             ->name('ezyhome.connection.store');
         Route::delete('/ezyhome/connection/{connection}', [EzyHomeController::class, 'destroyConnection'])
@@ -189,7 +194,6 @@ Route::prefix('admin')
         Route::post('/ezyhome/connection/{connection}/direction', [EzyHomeController::class, 'updateDirection'])
             ->name('ezyhome.connection.direction');
 
-        // Area / POP bounds (resize card)
         // CRUD Card Area / POP EzyHome
         Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
             ->name('ezyhome.area.store');
@@ -197,70 +201,37 @@ Route::prefix('admin')
             ->name('ezyhome.area.update');
         Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
             ->name('ezyhome.area.destroy');
-
-        // Area / POP bounds (resize card)
-        // CRUD Card Area / POP EzyHome
-        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
-            ->name('ezyhome.area.store');
-        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
-            ->name('ezyhome.area.update');
-        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
-            ->name('ezyhome.area.destroy');
-
-        // Area / POP bounds (resize card)
-                // CRUD Card Area / POP EzyHome
-        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
-            ->name('ezyhome.area.store');
-        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
-            ->name('ezyhome.area.update');
-        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
-            ->name('ezyhome.area.destroy');
-
-        // Area / POP bounds (resize card)
-// CRUD Card Area / POP EzyHome
-        Route::post('/ezyhome/area', [EzyHomeController::class, 'storeArea'])
-            ->name('ezyhome.area.store');
-        Route::put('/ezyhome/area/{area}', [EzyHomeController::class, 'updateArea'])
-            ->name('ezyhome.area.update');
-        Route::delete('/ezyhome/area/{area}', [EzyHomeController::class, 'destroyArea'])
-            ->name('ezyhome.area.destroy');
-
-        // Area / POP bounds (resize card)
         Route::post('/ezyhome/area/{area}/bounds', [EzyHomeController::class, 'updateAreaBounds'])
-            ->name('ezyhome.area.bounds');       
+            ->name('ezyhome.area.bounds');
 
-        // Simpan & Reset kustomisasi layout
         Route::post('/ezyhome/map-layout', [EzyHomeController::class, 'saveMapLayout'])
             ->name('ezyhome.map-layout.save');
         Route::post('/ezyhome/map-layout/reset', [EzyHomeController::class, 'resetMapLayout'])
             ->name('ezyhome.map-layout.reset');
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Log History
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/log', [LogHistoryController::class, 'index'])
             ->name('log');
 
-        // Infinite scroll tab real-time (load 50 per batch)
         Route::get('/log/load-more', [LogHistoryController::class, 'loadMore'])
             ->name('log.load-more');
 
-        // Tab arsip (date range + tabel + pagination)
         Route::get('/log/archive', [LogHistoryController::class, 'archive'])
             ->name('log.archive');
 
-        // Detail device (modal popup)
         Route::get('/log/detail/{id}', [LogHistoryController::class, 'detail'])
             ->whereNumber('id')
             ->name('log.detail');
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Notifikasi
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])
@@ -280,12 +251,11 @@ Route::prefix('admin')
             ->name('notifikasi.read');
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Manajemen
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
-        // Kelola Router
         Route::middleware('auth')->group(function () {
             Route::get('/kelola-router', [KelolaRouterController::class, 'index'])
                 ->name('kelola-router');
@@ -336,9 +306,9 @@ Route::prefix('admin')
         });
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | DHCP Lease
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/dhcp-lease', [DhcpLeaseController::class, 'index'])
@@ -351,25 +321,9 @@ Route::prefix('admin')
             ->name('dhcp-lease.import');
 
         /*
-        |--------------------------------------------------------------------------
-        | CRUD Device Monitoring (Super Admin)
-        |--------------------------------------------------------------------------
-        */
-
-        Route::post('/monitoring/device', [MonitoringController::class, 'storeDevice'])
-            ->name('monitoring.device.store');
-        Route::put('/monitoring/device/{device}', [MonitoringController::class, 'updateDevice'])
-            ->name('monitoring.device.update');
-        Route::delete('/monitoring/device/{device}', [MonitoringController::class, 'destroyDevice'])
-            ->name('monitoring.device.destroy');
-
-        Route::delete('/monitoring/position/{position}', [MonitoringController::class, 'destroyPosition'])
-            ->name('monitoring.position.destroy');
-
-        /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Laporan
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/laporan', [LaporanController::class, 'index'])
@@ -383,9 +337,9 @@ Route::prefix('admin')
             ->name('laporan.perangkat.pdf');
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Tools
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         Route::get('/tools', [ToolsController::class, 'index'])
@@ -404,9 +358,9 @@ Route::prefix('admin')
             ->name('tools.scan');
 
         /*
-        |--------------------------------------------------------------------------
-        | Kelola User (khusus Super Admin)
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Kelola User (Super Admin)
+        |----------------------------------------------------------------------
         */
 
         Route::group(['middleware' => 'role:super_admin'], function () {
@@ -428,6 +382,12 @@ Route::prefix('admin')
             Route::delete('/kelola-user/{user}', [UserController::class, 'destroy'])
                 ->name('kelola-user.destroy');
         });
+
+        /*
+        |----------------------------------------------------------------------
+        | Telegram Users (Super Admin)
+        |----------------------------------------------------------------------
+        */
 
         Route::middleware(['auth', 'role:super_admin'])->group(function () {
             Route::get('/telegram-users', [TelegramUserController::class, 'index'])

@@ -22,6 +22,12 @@
 <style>
     .wug-btn-hdr.btn-add-device { background: #f97316 !important; border-color: #ea580c !important; font-weight: 700; }
     .wug-btn-hdr.btn-add-device:hover { background: #ea580c !important; }
+    .wug-btn-hdr.btn-maps-dropdown { background: #2563eb !important; border-color: #1d4ed8 !important; font-weight: 700; }
+    .wug-btn-hdr.btn-maps-dropdown:hover { background: #1d4ed8 !important; }
+    .wug-btn-hdr.btn-maps-dropdown::after { display: none !important; }
+    #wugMapsDropdownWrap .dropdown-menu { border-radius: 8px; border: 1px solid #e2e8f0; padding: 6px; }
+    #wugMapsDropdownWrap .dropdown-item { border-radius: 6px; padding: 7px 10px; font-size: 13px; }
+    #wugMapsDropdownWrap .dropdown-item:hover { background: #f1f5f9; }
     .wug-btn-hdr.btn-connect-mode.active { background: #f59e0b !important; color: #000 !important; border-color: #d97706 !important; }
     .wug-btn-hdr.btn-custom-toggle.active { background: #f59e0b !important; color: #000 !important; border-color: #d97706 !important; }
     .wug-btn-hdr.btn-save-layout { background: #10b981 !important; border-color: #059669 !important; font-weight: 700; }
@@ -128,6 +134,62 @@
             @endif
         </div>
         <div class="wug-header-actions">
+            {{-- DROPDOWN TOPOLOGY MAPS --}}
+            <div class="dropdown d-inline-block" id="wugMapsDropdownWrap">
+                <button type="button"
+                        class="wug-btn-hdr btn-maps-dropdown"
+                        id="wugMapsDropdownBtn"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false"
+                        title="Pilih Maps">
+                    <em class="icon ni ni-map"></em>
+                    <span>Maps</span>
+                    <em class="icon ni ni-chevron-down ms-1" style="font-size:10px"></em>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-start shadow"
+                    aria-labelledby="wugMapsDropdownBtn"
+                    style="min-width:260px; max-height:400px; overflow-y:auto;">
+                    <li>
+                        <h6 class="dropdown-header text-uppercase fw-bold" style="font-size:11px; letter-spacing:.5px;">
+                            <em class="icon ni ni-map me-1"></em>Pilih Maps
+                        </h6>
+                    </li>
+
+                    @php
+                        $sidebarMaps = \App\Models\TopologyMap::orderBy('name')->get();
+                    @endphp
+
+                    @forelse($sidebarMaps as $sm)
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2"
+                               href="{{ route('admin.topology-maps.show', $sm) }}">
+                                <em class="icon ni ni-map-pin text-primary"></em>
+                                <span class="flex-grow-1">{{ $sm->name }}</span>
+                                <small class="text-muted">
+                                    {{ $sm->devices()->count() }} dev
+                                </small>
+                            </a>
+                        </li>
+                    @empty
+                        <li>
+                            <span class="dropdown-item text-muted small">
+                                Belum ada maps.
+                            </span>
+                        </li>
+                    @endforelse
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item text-success fw-bold"
+                           href="{{ route('admin.topology-maps.create') }}">
+                            <em class="icon ni ni-plus-circle me-1"></em>
+                            Tambah Maps Baru
+                        </a>
+                    </li>
+                </ul>
+            </div>
             @if($isSuperAdmin)
                 <button type="button" class="wug-btn-hdr btn-add-device" id="btnAddDevice" title="Tambah Perangkat Baru">
                     <em class="icon ni ni-plus"></em><span>Tambah Device</span>

@@ -70,17 +70,6 @@
                             </span>
                         </a>
                     </li>
-
-
-                    {{-- =================================================
-                        MONITORING
-                    ================================================== --}}
-                    <li class="nk-menu-heading">
-                        <h6 class="overline-title">
-                            Monitoring
-                        </h6>
-                    </li>
-
                     {{-- Monitoring Jaringan --}}
                     <li class="nk-menu-item {{ request()->routeIs('admin.monitoring*') && (!request()->has('tab') || request()->query('tab') === 'topview') ? 'active' : '' }}">
                         <a
@@ -93,21 +82,6 @@
 
                             <span class="nk-menu-text">
                                 Monitoring Jaringan
-                            </span>
-                        </a>
-                    </li>
-        
-                    {{-- EzyHome Topology --}}
-                    <li class="nk-menu-item {{ request()->routeIs('admin.ezyhome*') ? 'active' : '' }}">
-                        <a
-                            href="{{ route('admin.ezyhome') }}"
-                            class="nk-menu-link"
-                        >
-                            <span class="nk-menu-icon">
-                                <em class="icon ni ni-map"></em>
-                            </span>
-                            <span class="nk-menu-text">
-                                EzyHome Topology
                             </span>
                         </a>
                     </li>
