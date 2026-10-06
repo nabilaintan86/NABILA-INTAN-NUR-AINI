@@ -127,12 +127,13 @@ Route::prefix('admin')
         */
 
         Route::prefix('topology-maps')->name('topology-maps.')->group(function () {
+        Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
 
             /* -------- MAPS CRUD (utama) -------- */
             Route::get('/',           [TopologyMapController::class, 'index'])->name('index');
             Route::get('/create',     [TopologyMapController::class, 'create'])->name('create');
             Route::post('/',          [TopologyMapController::class, 'store'])->name('store');
-
+            Route::post('/{topologyMap}/save-layout', [TopologyMapController::class, 'saveLayout'])->name('save-layout');
             /* -------- DETAIL MAPS (harus di atas /{topologyMap}) -------- */
             Route::get('/{topologyMap}',      [TopologyMapController::class, 'show'])->name('show');
             Route::get('/{topologyMap}/edit', [TopologyMapController::class, 'edit'])->name('edit');
@@ -145,6 +146,7 @@ Route::prefix('admin')
 
             /* -------- DEVICE DI DALAM MAP -------- */
             Route::post('/{topologyMap}/devices',                                   [TopologyMapController::class, 'storeDevice'])->name('devices.store');
+            Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
             Route::patch('/{topologyMap}/devices/{mapDevice}/position',             [TopologyMapController::class, 'updateDevicePosition'])->name('devices.position');
             Route::delete('/{topologyMap}/devices/{mapDevice}',                     [TopologyMapController::class, 'destroyDevice'])->name('devices.destroy');
 

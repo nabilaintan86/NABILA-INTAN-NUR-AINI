@@ -181,6 +181,68 @@ class TopologyMapController extends Controller
             ],
         ]);
     }
+    /**
+     * Bikin device BARU + langsung masuk ke map
+     * (form input manual, bukan pilih dari existing)
+     */
+    public function storeNewDevice(Request $request, TopologyMap $topologyMap)
+    {
+        $data = $request->validate([
+            'name'                 => 'required|string|max:255',
+            'type'                 => 'required|string|max:50',
+            'protocol'             => 'required|string|max:50',
+            'ip_address'           => 'required|string|max:45',
+            'router_version'       => 'nullable|string|max:255',
+            'topology_map_area_id' => 'nullable|exists:topology_map_areas,id',
+            'pos_x'                => 'nullable|integer',
+            'pos_y'                => 'nullable|integer',
+        ]);
+
+        // Cek duplikat IP di tabel devices
+        $existingIp = Device::where('ip_address', $data['ip_address'])->exists();
+        if ($existingIp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'IP address sudah terdaftar di sistem.',
+            ], 422);
+        }
+
+        // Bikin device baru di tabel `devices`
+        $device = Device::create([
+            'name'           => $data['name'],
+            'type'           => $data['type'],
+            'protocol'       => $data['protocol'],
+            'ip_address'     => $data['ip_address'],
+            'router_version' => $data['router_version'] ?? null,
+            'status'         => 'unknown',
+            'polls'          => 0,
+        ]);
+
+        // Link device ke map
+        $mapDevice = TopologyMapDevice::create([
+            'topology_map_id'      => $topologyMap->id,
+            'topology_map_area_id' => $data['topology_map_area_id'] ?? null,
+            'device_id'            => $device->id,
+            'pos_x'                => $data['pos_x'] ?? 100,
+            'pos_y'                => $data['pos_y'] ?? 100,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device berhasil dibuat & ditambahkan ke map.',
+            'map_device' => [
+                'id'                   => $mapDevice->id,
+                'device_id'            => $device->id,
+                'name'                 => $device->name,
+                'ip_address'           => $device->ip_address,
+                'type'                 => $device->type,
+                'status'               => $device->status ?? 'unknown',
+                'pos_x'                => $mapDevice->pos_x,
+                'pos_y'                => $mapDevice->pos_y,
+                'topology_map_area_id' => $mapDevice->topology_map_area_id,
+            ],
+        ]);
+    }
 
     /**
      * Update posisi device di canvas (drag & drop)
@@ -289,12 +351,6 @@ class TopologyMapController extends Controller
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------
-    | CONNECTION / RELASI ANTAR DEVICE
-    |--------------------------------------------------------------------
-    */
-
     public function storeConnection(Request $request, TopologyMap $topologyMap)
     {
         $data = $request->validate([
@@ -347,16 +403,6 @@ class TopologyMapController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /*
-    |--------------------------------------------------------------------
-    | DATA UNTUK CANVAS (AJAX refresh)
-    |--------------------------------------------------------------------
-    */
-
-    /**
-     * Ambil semua data map (areas, devices, connections) via JSON
-     * Buat auto-refresh canvas / load saat pindah tab
-     */
     public function mapData(TopologyMap $topologyMap)
     {
         $topologyMap->load(['areas', 'devices.device', 'connections']);
@@ -417,5 +463,48 @@ class TopologyMapController extends Controller
             });
 
         return response()->json(['devices' => $available]);
+    }
+    /**
+     * Batch save semua posisi (area + device)
+     */
+    public function saveLayout(Request $request, TopologyMap $topologyMap)
+    {
+        $data = $request->validate([
+            'areas'              => 'nullable|array',
+            'areas.*.id'         => 'required|integer',
+            'areas.*.pos_x'      => 'required|integer',
+            'areas.*.pos_y'      => 'required|integer',
+            'areas.*.width'      => 'nullable|integer',
+            'areas.*.height'     => 'nullable|integer',
+            'devices'            => 'nullable|array',
+            'devices.*.id'       => 'required|integer',
+            'devices.*.pos_x'    => 'required|integer',
+            'devices.*.pos_y'    => 'required|integer',
+        ]);
+
+        foreach ($data['areas'] ?? [] as $a) {
+            TopologyMapArea::where('id', $a['id'])
+                ->where('topology_map_id', $topologyMap->id)
+                ->update([
+                    'pos_x'  => $a['pos_x'],
+                    'pos_y'  => $a['pos_y'],
+                    'width'  => $a['width'] ?? null,
+                    'height' => $a['height'] ?? null,
+                ]);
+        }
+
+        foreach ($data['devices'] ?? [] as $d) {
+            TopologyMapDevice::where('id', $d['id'])
+                ->where('topology_map_id', $topologyMap->id)
+                ->update([
+                    'pos_x' => $d['pos_x'],
+                    'pos_y' => $d['pos_y'],
+                ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Layout berhasil disimpan.',
+        ]);
     }
 }
