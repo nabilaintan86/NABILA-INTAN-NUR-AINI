@@ -125,9 +125,17 @@ Route::prefix('admin')
         | Topology Maps (CRUD) — BARU
         |----------------------------------------------------------------------
         */
+    Route::get('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'showDevice'])->name('devices.show');
+    Route::put('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'updateDevice'])->name('devices.update');
 
         Route::prefix('topology-maps')->name('topology-maps.')->group(function () {
         Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
+            // Device detail, edit, update
+            Route::get('/{topologyMap}/devices/{mapDevice}',    [TopologyMapController::class, 'showDevice'])->name('devices.show');
+            Route::put('/{topologyMap}/devices/{mapDevice}',    [TopologyMapController::class, 'updateDevice'])->name('devices.update');
+
+            // Ubah arah panah relasi
+            Route::post('/{topologyMap}/connections/{mapConnection}/direction', [TopologyMapController::class, 'updateConnectionDirection'])->name('connections.direction');
 
             /* -------- MAPS CRUD (utama) -------- */
             Route::get('/',           [TopologyMapController::class, 'index'])->name('index');

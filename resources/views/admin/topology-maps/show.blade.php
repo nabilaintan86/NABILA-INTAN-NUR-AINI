@@ -141,17 +141,29 @@
         transition: background .12s;
     }
     .topo-panel-item:hover { background: #f1f5f9; }
-    .topo-panel-item .status-dot {
-        width: 8px; height: 8px;
-        border-radius: 50%;
+    .topo-panel-item .item-icon {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
         flex-shrink: 0;
     }
-    .topo-panel-item .status-dot.up { background: #22c55e; }
-    .topo-panel-item .status-dot.down { background: #ef4444; }
-    .topo-panel-item .status-dot.warning { background: #f59e0b; }
-    .topo-panel-item .status-dot.unknown { background: #94a3b8; }
     .topo-panel-item .item-name { flex: 1; font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .topo-panel-item .item-ip { font-size: 10.5px; color: #94a3b8; font-family: monospace; }
+    .topo-panel-empty-hint {
+        font-size: 10.5px;
+        color: #94a3b8;
+        padding: 6px 10px;
+        line-height: 1.4;
+    }
+    .topo-panel-item[draggable="true"] { cursor: grab; }
+    .topo-panel-item[draggable="true"]:active { cursor: grabbing; opacity: .7; }
+    .topo-panel-item.is-placed { opacity: .55; cursor: default; background: #f8fafc; }
+    .topo-panel-item .badge-placed {
+        color: #059669;
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
 
     .topo-canvas {
         flex: 1;
@@ -164,6 +176,10 @@
     }
     .topo-canvas:active { cursor: grabbing; }
     .topo-canvas.is-panning { cursor: grabbing !important; }
+    .topo-canvas.drag-over {
+        border-color: #10b981;
+        box-shadow: inset 0 0 0 4px rgba(16,185,129,.2);
+    }
     .topo-canvas svg {
         width: 100%;
         height: 100%;
@@ -179,6 +195,15 @@
     .topo-edge { stroke: #16a34a; stroke-width: 2; fill: none; cursor: pointer; }
     .topo-edge:hover { stroke: #f59e0b; stroke-width: 4; }
     .topo-area-box { fill: #f8fafc; stroke-width: 2.5; }
+    .topo-area-resize-handle {
+        cursor: nwse-resize;
+        fill: #2563eb;
+        stroke: #fff;
+        stroke-width: 2;
+    }
+    .topo-area-resize-handle:hover {
+        fill: #ef4444;
+    }
 
     /* ══ ZOOM CONTROLS ══ */
     .topo-zoom-controls {
@@ -235,6 +260,78 @@
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         flex-shrink: 0;
+    }
+
+    /* ══ MODAL DETAIL ══ */
+    .nm-info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 7px 0;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .nm-info-label { color: #64748b; font-weight: 500; }
+    .nm-info-value { font-weight: 700; color: #0f172a; }
+
+    .nm-stat-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    .nm-stat-table th,
+    .nm-stat-table td {
+        border: 1px solid #e2e8f0;
+        padding: 6px 10px;
+    }
+    .nm-stat-table th {
+        background: #f8fafc;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    .nm-log-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background: #0f172a;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-family: monospace;
+        font-size: 11.5px;
+        color: #cbd5e1;
+        margin-top: 8px;
+    }
+    .nm-log-list .log-down    { color: #f87171; }
+    .nm-log-list .log-up      { color: #4ade80; }
+    .nm-log-list .log-warning { color: #fbbf24; }
+
+    /* ══ MODAL CONNECTION ══ */
+    .conn-dir-btn {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 14px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all .15s;
+        font-size: 13px;
+        color: #1e293b;
+    }
+    .conn-dir-btn:hover {
+        border-color: #2563eb;
+        background: #eff6ff;
+    }
+    .conn-dir-btn.active {
+        border-color: #2563eb;
+        background: #dbeafe;
+        box-shadow: 0 0 0 2px rgba(37,99,235,.2);
+    }
+    .conn-dir-btn small {
+        display: block;
+        font-size: 11px;
+        margin-top: 2px;
     }
 </style>
 @endpush
@@ -306,11 +403,15 @@
 
     {{-- CANVAS --}}
     <div class="topo-canvas" id="topoCanvas">
-        <svg id="topoSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet">
+        <svg id="topoSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <marker id="arrowEnd" viewBox="0 0 14 14" refX="12" refY="7"
                         markerWidth="8" markerHeight="8" orient="auto">
                     <path d="M 1 2 L 13 7 L 1 12 z" fill="#16a34a"/>
+                </marker>
+                <marker id="arrowStart" viewBox="0 0 14 14" refX="2" refY="7"
+                        markerWidth="8" markerHeight="8" orient="auto">
+                    <path d="M 13 2 L 1 7 L 13 12 z" fill="#16a34a"/>
                 </marker>
             </defs>
             <g id="topoTransformGroup">
@@ -325,7 +426,7 @@
             <button type="button" class="topo-zoom-btn" id="btnZoomOut" title="Perkecil">
                 <em class="icon ni ni-minus"></em>
             </button>
-            <button type="button" class="topo-zoom-btn topo-zoom-reset" id="btnZoomReset" title="Reset & Fit ke Konten">
+            <button type="button" class="topo-zoom-btn topo-zoom-reset" id="btnZoomReset" title="Reset View">
                 <em class="icon ni ni-reload"></em>
             </button>
         </div>
@@ -333,11 +434,8 @@
 
 </div>
 
-{{-- ══════════════════════════════════════════════════════
-     MODAL TAMBAH POP
-══════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalAddPop" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <form id="formAddPop">
                 <div class="modal-header bg-primary text-white">
@@ -345,26 +443,91 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama POP <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required
-                               placeholder="Misal: POP Gresik, Lantai 1, Gedung A">
+
+                    {{-- Row 1: Nama + Kode --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Area / POP <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required
+                                   placeholder="Contoh: POP Rungkut, POP Bandara">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Kode Area (Singkatan)</label>
+                            <input type="text" name="code" class="form-control"
+                                   placeholder="Contoh: POP-RKT">
+                        </div>
                     </div>
-                    <div class="row g-2">
-                        <div class="col-6">
+
+                    {{-- Row 2: Size & Posisi --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Lebar Card (W px)</label>
+                            <input type="number" name="width" id="popWidth" class="form-control"
+                                   min="100" max="2000" value="280">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tinggi Card (H px)</label>
+                            <input type="number" name="height" id="popHeight" class="form-control"
+                                   min="80" max="2000" value="220">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Posisi Awal X (px)</label>
+                            <input type="number" name="pos_x" class="form-control" placeholder="Auto">
+                            <small class="text-muted" style="font-size:10.5px">Kosongkan untuk auto</small>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Posisi Awal Y (px)</label>
+                            <input type="number" name="pos_y" class="form-control" placeholder="Auto">
+                            <small class="text-muted" style="font-size:10.5px">Kosongkan untuk auto</small>
+                        </div>
+                    </div>
+
+                    {{-- Row 3: Warna --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
                             <label class="form-label">Warna Border</label>
-                            <input type="color" name="border_color" class="form-control form-control-color" value="#4F46E5">
+                            <div class="d-flex gap-2">
+                                <input type="color" name="border_color" id="popBorderColor"
+                                       class="form-control form-control-color" value="#2563eb"
+                                       style="max-width:44px;height:38px;padding:3px;">
+                                <input type="text" class="form-control" value="#2563eb" readonly
+                                       id="popBorderText" style="font-family:monospace;font-size:12px;">
+                            </div>
                         </div>
-                        <div class="col-6">
+                        <div class="col-md-4">
                             <label class="form-label">Warna Background</label>
-                            <input type="color" name="bg_color" class="form-control form-control-color" value="#f8fafc">
+                            <div class="d-flex gap-2">
+                                <input type="color" name="bg_color" id="popBgColor"
+                                       class="form-control form-control-color" value="#f8fafc"
+                                       style="max-width:44px;height:38px;padding:3px;">
+                                <input type="text" class="form-control" value="#f8fafc" readonly
+                                       id="popBgText" style="font-family:monospace;font-size:12px;">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Warna Judul</label>
+                            <div class="d-flex gap-2">
+                                <input type="color" name="title_color" id="popTitleColor"
+                                       class="form-control form-control-color" value="#2563eb"
+                                       style="max-width:44px;height:38px;padding:3px;">
+                                <input type="text" class="form-control" value="#2563eb" readonly
+                                       id="popTitleText" style="font-family:monospace;font-size:12px;">
+                            </div>
                         </div>
                     </div>
+
+                    {{-- Row 4: Keterangan --}}
+                    <div class="mb-3">
+                        <label class="form-label">Keterangan / Lokasi</label>
+                        <textarea name="description" class="form-control" rows="3"
+                                  placeholder="Catatan lokasi atau deskripsi teknis POP..."></textarea>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <em class="icon ni ni-save me-1"></em>Simpan POP
+                    <button type="submit" class="btn btn-success">
+                        <em class="icon ni ni-check me-1"></em>Simpan Card Area
                     </button>
                 </div>
             </form>
@@ -386,8 +549,8 @@
                 <div class="modal-body">
                     <div class="alert alert-info small mb-3">
                         <em class="icon ni ni-info me-1"></em>
-                        Perangkat baru akan otomatis masuk ke tabel <code>devices</code> dan
-                        langsung muncul di canvas map ini.
+                        Perangkat baru masuk ke tabel <code>devices</code>. Setelah disimpan, device muncul
+                        di panel kiri — <strong>drag ke canvas</strong> untuk menempatkan.
                     </div>
 
                     <div class="mb-3">
@@ -443,14 +606,11 @@
                     <div class="mb-3">
                         <label class="form-label">POP / Area</label>
                         <select name="topology_map_area_id" class="form-select">
-                            <option value="">-- Tanpa area (langsung taruh lewat map) --</option>
+                            <option value="">-- Tanpa area --</option>
                             @foreach($map->areas as $area)
                                 <option value="{{ $area->id }}">{{ $area->name }}</option>
                             @endforeach
                         </select>
-                        <small class="text-muted">
-                            Bila diisi, device langsung tampil di panel area tersebut.
-                        </small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -464,6 +624,241 @@
     </div>
 </div>
 
+{{-- ══════════════════════════════════════════════════════
+     MODAL DETAIL DEVICE
+══════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalDeviceDetail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title text-white" id="detailDeviceName">Detail Perangkat</h6>
+                <div class="ms-auto d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-warning fw-bold" id="btnOpenEditDevice">
+                        <em class="icon ni ni-edit me-1"></em>Edit
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger fw-bold" id="btnDeleteDevice">
+                        <em class="icon ni ni-trash me-1"></em>Hapus
+                    </button>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="nm-info-row">
+                    <span class="nm-info-label">Hostname</span>
+                    <span class="nm-info-value" id="detailFieldName">-</span>
+                </div>
+                <div class="nm-info-row">
+                    <span class="nm-info-label">IP Address</span>
+                    <span class="nm-info-value" id="detailFieldIp">-</span>
+                </div>
+                <div class="nm-info-row">
+                    <span class="nm-info-label">Area / POP</span>
+                    <span class="nm-info-value" id="detailFieldArea">-</span>
+                </div>
+                <div class="nm-info-row">
+                    <span class="nm-info-label">Status</span>
+                    <span class="nm-info-value" id="detailFieldStatus">-</span>
+                </div>
+                <div class="nm-info-row">
+                    <span class="nm-info-label">Last Poll</span>
+                    <span class="nm-info-value" id="detailFieldLastPoll">-</span>
+                </div>
+
+                <h6 class="mt-3 mb-1 text-uppercase fw-bold text-muted small">Statistics</h6>
+                <table class="nm-stat-table">
+                    <thead>
+                        <tr>
+                            <th>Protocol</th>
+                            <th>Total Polls</th>
+                            <th>Responded</th>
+                            <th>Missed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="statProtocol">-</td>
+                            <td id="statPolls">-</td>
+                            <td id="statResponded">-</td>
+                            <td id="statMissed">-</td>
+                        </tr>
+                        <tr>
+                            <th>Down Time</th>
+                            <th>Avg Delay</th>
+                            <th>Min Delay</th>
+                            <th>Max Delay</th>
+                        </tr>
+                        <tr>
+                            <td id="statDowntime">-</td>
+                            <td id="statAvgDelay">-</td>
+                            <td id="statMinDelay">-</td>
+                            <td id="statMaxDelay">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="mt-3 mb-1 text-uppercase fw-bold text-muted small">Recent Log Extract</h6>
+                <div class="nm-log-list" id="detailLogs">Belum ada riwayat log.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════════════
+     MODAL EDIT DEVICE
+══════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalEditDevice" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="formEditDevice">
+                <input type="hidden" name="map_device_id" id="editMapDeviceId">
+                <div class="modal-header bg-primary text-white">
+                    <h6 class="modal-title text-white">
+                        <em class="icon ni ni-edit me-1"></em>Edit Perangkat
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Perangkat <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="editName" class="form-control" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipe Perangkat <span class="text-danger">*</span></label>
+                            <div class="d-flex align-items-center gap-2">
+                                <select name="type" id="editType" class="form-select" required style="flex:1">
+                                    <option value="Router">Router</option>
+                                    <option value="Switch">Switch</option>
+                                    <option value="OLT">OLT</option>
+                                    <option value="EPON">EPON</option>
+                                    <option value="Server">Server</option>
+                                    <option value="Access Point">Access Point</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="device-type-preview" title="Preview icon">
+                                    <img id="editTypeIcon"
+                                         src="{{ asset('images/devices/router.png') }}"
+                                         alt="Preview"
+                                         style="width:32px;height:32px;object-fit:contain;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Metode Monitoring <span class="text-danger">*</span></label>
+                            <select name="protocol" id="editProtocol" class="form-select" required>
+                                <option value="ICMP">ICMP</option>
+                                <option value="HTTP">HTTP</option>
+                                <option value="SNMP">SNMP</option>
+                                <option value="TCP">TCP</option>
+                                <option value="SSH">SSH</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">IP Address <span class="text-danger">*</span></label>
+                            <input type="text" name="ip_address" id="editIp" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Router Version</label>
+                        <input type="text" name="router_version" id="editRouterVersion" class="form-control"
+                               placeholder="Contoh: IOS-XE 17.3.1 (opsional)">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">POP / Area</label>
+                        <select name="topology_map_area_id" id="editArea" class="form-select">
+                            <option value="">-- Tanpa area --</option>
+                            @foreach($map->areas as $area)
+                                <option value="{{ $area->id }}">{{ $area->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <em class="icon ni ni-save me-1"></em>Update Perangkat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════════════
+     MODAL HUBUNGKAN DUA PERANGKAT (Relasi)
+══════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalConnection" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title text-white">
+                    <em class="icon ni ni-link me-1"></em>Hubungkan Dua Perangkat
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="text-center mb-3">
+                    <div class="text-muted small">Sambungan:</div>
+                    <div class="fw-bold" style="font-size:14px;">
+                        <span id="connFromName">-</span>
+                        <span id="connSymbol" class="text-primary px-1">→</span>
+                        <span id="connToName">-</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tipe Media</label>
+                    <select id="connType" class="form-select">
+                        <option value="ethernet">Ethernet</option>
+                        <option value="fiber">Fiber Optic</option>
+                        <option value="wireless">Wireless Link</option>
+                        <option value="serial">Serial / WAN</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Arah Panah</label>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="conn-dir-btn" data-dir="forward">
+                            <span class="fw-bold">→ Parent → Child Uplink</span>
+                            <small class="text-muted">(Forward)</small>
+                        </button>
+                        <button type="button" class="conn-dir-btn" data-dir="reverse">
+                            <span class="fw-bold">← Reverse</span>
+                            <small class="text-muted">(Inbound Downlink)</small>
+                        </button>
+                        <button type="button" class="conn-dir-btn" data-dir="bidirectional">
+                            <span class="fw-bold">↔ Dua Arah</span>
+                            <small class="text-muted">(Active Peering / Duplex)</small>
+                        </button>
+                        <button type="button" class="conn-dir-btn" data-dir="none">
+                            <span class="fw-bold">— Tanpa Panah</span>
+                            <small class="text-muted">(Layer-2 Pasif)</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div>
+                    <button type="button" class="btn btn-danger" id="btnDeleteConnection">
+                        <em class="icon ni ni-trash me-1"></em>Hapus Relasi
+                    </button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveConnection">
+                        <em class="icon ni ni-save me-1"></em>Simpan Relasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- HIDDEN: Info Map --}}
 <input type="hidden" id="currentMapId" value="{{ $map->id }}">
 <input type="hidden" id="currentMapDataUrl" value="{{ route('admin.topology-maps.data', $map) }}">
@@ -472,7 +867,6 @@
 <input type="hidden" id="storeAreaUrl" value="{{ route('admin.topology-maps.areas.store', $map) }}">
 <input type="hidden" id="storeConnectionUrl" value="{{ route('admin.topology-maps.connections.store', $map) }}">
 
-{{-- Data dari backend (buat JS) --}}
 @php
     $initialDevices = $map->devices->map(function($d) {
         return [
@@ -567,36 +961,8 @@
     }
 
     function fitToContent() {
-        if (!state.areas.length && !state.devices.length) {
-            svg.setAttribute('viewBox', '0 0 1200 800');
-            return;
-        }
-
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-        state.areas.forEach(a => {
-            const x = a.pos_x || 0, y = a.pos_y || 0;
-            const w = a.width || 240, h = a.height || 200;
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x + w);
-            maxY = Math.max(maxY, y + h);
-        });
-
-        state.devices.forEach(d => {
-            const x = d.pos_x || 0, y = d.pos_y || 0;
-            minX = Math.min(minX, x - 60);
-            minY = Math.min(minY, y - 60);
-            maxX = Math.max(maxX, x + 60);
-            maxY = Math.max(maxY, y + 80);
-        });
-
-        const PAD = 80;
-        const MIN_W = 900, MIN_H = 600;
-        const w = Math.max(maxX - minX + PAD * 2, MIN_W);
-        const h = Math.max(maxY - minY + PAD * 2, MIN_H);
-
-        svg.setAttribute('viewBox', `${minX - PAD} ${minY - PAD} ${w} ${h}`);
+        // ViewBox fixed → konsisten, device nggak kegedean
+        svg.setAttribute('viewBox', '0 0 1600 1000');
     }
 
     function resetView() {
@@ -643,6 +1009,90 @@
         canvasEl.classList.add('is-panning');
     });
 
+    // ═══ EVENT: DRAG OVER (dari panel) ═══
+    canvasEl.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        canvasEl.classList.add('drag-over');
+    });
+
+    canvasEl.addEventListener('dragleave', e => {
+        if (!canvasEl.contains(e.relatedTarget)) {
+            canvasEl.classList.remove('drag-over');
+        }
+    });
+
+    // ═══ EVENT: DROP DEVICE KE CANVAS ═══
+    canvasEl.addEventListener('drop', e => {
+        e.preventDefault();
+        canvasEl.classList.remove('drag-over');
+
+        const idStr = e.dataTransfer.getData('text/plain');
+        const mapDeviceId = parseInt(idStr, 10);
+        if (!mapDeviceId) return;
+
+        const dev = state.devices.find(d => d.id === mapDeviceId);
+        if (!dev) return;
+
+        if (dev.pos_x !== null && dev.pos_y !== null) {
+            toast('Device sudah ada di canvas.', true);
+            return;
+        }
+
+        const pt = getSvgPoint(e);
+        const posX = Math.round(pt.x);
+        const posY = Math.round(pt.y);
+
+        dev.pos_x = posX;
+        dev.pos_y = posY;
+
+        fetch(`/admin/topology-maps/${state.map.id}/devices/${dev.id}/position`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ pos_x: posX, pos_y: posY }),
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                toast(`${dev.name} ditambahkan ke canvas.`);
+                render();
+            } else {
+                toast(res.message || 'Gagal place device', true);
+                dev.pos_x = null;
+                dev.pos_y = null;
+                render();
+            }
+        })
+        .catch(() => {
+            toast('Error koneksi', true);
+            dev.pos_x = null;
+            dev.pos_y = null;
+            render();
+        });
+    });
+
+    // ═══ RESIZE POP ═══
+    let isResizingArea = false, resizedArea = null, resizeStart = { x: 0, y: 0, w: 0, h: 0 };
+
+    function onAreaResizeStart(e, area) {
+        if (e.button !== 0) return;
+        e.stopPropagation();
+        e.preventDefault();
+        isResizingArea = true;
+        resizedArea = area;
+        const pt = getSvgPoint(e);
+        resizeStart = {
+            x: pt.x,
+            y: pt.y,
+            w: area.width || 140,
+            h: area.height || 100,
+        };
+    }
+
     // ═══ RENDER ═══
     function render() {
         root.innerHTML = '';
@@ -653,24 +1103,38 @@
                 class: 'topo-area-group',
                 'data-id': area.id,
             });
+
             g.appendChild(createEl('rect', {
                 x: area.pos_x || 40,
                 y: area.pos_y || 40,
-                width: area.width || 240,
-                height: area.height || 200,
+                width: area.width || 140,
+                height: area.height || 100,
                 rx: 12,
                 class: 'topo-area-box',
                 stroke: area.border_color || '#4F46E5',
                 fill: area.bg_color || '#f8fafc',
             }));
-            g.appendChild(createEl('text', {
+
+                g.appendChild(createEl('text', {
                 x: (area.pos_x || 40) + 14,
                 y: (area.pos_y || 40) + 24,
-                fill: area.title_color || '#4F46E5',
+                fill: area.title_color || area.border_color || '#4F46E5',
                 'font-size': 14,
                 'font-weight': 800,
                 'pointer-events': 'none',
             }, area.name));
+
+            const handle = createEl('rect', {
+                x: (area.pos_x || 40) + (area.width || 140) - 10,
+                y: (area.pos_y || 40) + (area.height || 100) - 10,
+                width: 14,
+                height: 14,
+                rx: 3,
+                class: 'topo-area-resize-handle',
+                'data-area-id': area.id,
+            });
+            handle.addEventListener('mousedown', e => onAreaResizeStart(e, area));
+            g.appendChild(handle);
 
             g.style.cursor = 'move';
             g.addEventListener('mousedown', e => onPopMouseDown(e, area));
@@ -683,96 +1147,117 @@
             const from = state.devices.find(d => d.id === conn.from_map_device_id);
             const to   = state.devices.find(d => d.id === conn.to_map_device_id);
             if (!from || !to) return;
+            if (from.pos_x === null || from.pos_y === null) return;
+            if (to.pos_x === null || to.pos_y === null) return;
+
+            const dir = conn.direction || 'forward';
+            let markerEnd   = null;
+            let markerStart = null;
+
+            if (dir === 'forward')       markerEnd   = 'url(#arrowEnd)';
+            else if (dir === 'reverse')  markerStart = 'url(#arrowStart)';
+            else if (dir === 'bidirectional') {
+                markerEnd   = 'url(#arrowEnd)';
+                markerStart = 'url(#arrowStart)';
+            }
 
             const path = createEl('path', {
                 class: 'topo-edge',
-                d: `M ${from.pos_x ?? 100} ${from.pos_y ?? 100} L ${to.pos_x ?? 100} ${to.pos_y ?? 100}`,
-                'marker-end': 'url(#arrowEnd)',
+                d: `M ${from.pos_x} ${from.pos_y} L ${to.pos_x} ${to.pos_y}`,
+                'data-conn-id': conn.id,
             });
-            path.addEventListener('click', () => deleteConnection(conn));
+            if (markerEnd)   path.setAttribute('marker-end',   markerEnd);
+            if (markerStart) path.setAttribute('marker-start', markerStart);
+
+            path.addEventListener('click', e => {
+                e.stopPropagation();
+                openConnectionModal(conn.id);
+            });
             root.appendChild(path);
         });
 
-        // 3. DEVICES
-        state.devices.forEach(dev => {
-            const x = dev.pos_x ?? 100;
-            const y = dev.pos_y ?? 100;
+        // 3. DEVICES (cuma yang udah di-place)
+        state.devices
+            .filter(d => d.pos_x !== null && d.pos_y !== null)
+            .forEach(dev => {
+                const x = dev.pos_x;
+                const y = dev.pos_y;
 
-            const g = createEl('g', {
-                class: 'topo-node' + (state.selectedForConnect?.id === dev.id ? ' selected' : ''),
-                transform: `translate(${x},${y})`,
-                'data-id': dev.id,
-            });
+                const g = createEl('g', {
+                    class: 'topo-node' + (state.selectedForConnect?.id === dev.id ? ' selected' : ''),
+                    transform: `translate(${x},${y})`,
+                    'data-id': dev.id,
+                });
 
-            const statusColor = {
-                up: '#22c55e', down: '#ef4444',
-                warning: '#f59e0b', unknown: '#94a3b8'
-            }[dev.status] || '#94a3b8';
+                const statusColor = {
+                    up: '#22c55e', down: '#ef4444',
+                    warning: '#f59e0b', unknown: '#94a3b8'
+                }[dev.status] || '#94a3b8';
 
-            g.appendChild(createEl('rect', {
-                x: -36, y: -36, width: 72, height: 80,
-                fill: '#000', 'fill-opacity': 0, 'pointer-events': 'all',
-            }));
-
-            if (dev.status === 'down') {
-                g.appendChild(createEl('circle', {
-                    cx: 0, cy: -2, r: 26,
-                    fill: '#dc2626', 'fill-opacity': 0.18,
+                g.appendChild(createEl('rect', {
+                    x: -36, y: -36, width: 72, height: 80,
+                    fill: '#000', 'fill-opacity': 0, 'pointer-events': 'all',
                 }));
-            }
 
-            g.appendChild(createEl('image', {
-                href: `${ICON_BASE}/${getIconFile(dev.type)}`,
-                x: -ICON_SIZE / 2,
-                y: -ICON_SIZE / 2 - 2,
-                width: ICON_SIZE,
-                height: ICON_SIZE,
-                preserveAspectRatio: 'xMidYMid meet',
-            }));
+                if (dev.status === 'down') {
+                    g.appendChild(createEl('circle', {
+                        cx: 0, cy: -2, r: 26,
+                        fill: '#dc2626', 'fill-opacity': 0.18,
+                    }));
+                }
 
-            g.appendChild(createEl('circle', {
-                cx: ICON_SIZE / 2 - 3,
-                cy: -(ICON_SIZE / 2) + 3,
-                r: 5,
-                fill: statusColor,
-                stroke: '#fff',
-                'stroke-width': 1.5,
-            }));
+                g.appendChild(createEl('image', {
+                    href: `${ICON_BASE}/${getIconFile(dev.type)}`,
+                    x: -ICON_SIZE / 2,
+                    y: -ICON_SIZE / 2 - 2,
+                    width: ICON_SIZE,
+                    height: ICON_SIZE,
+                    preserveAspectRatio: 'xMidYMid meet',
+                }));
 
-            const labelName = String(dev.name || '');
-            const textW = Math.max(labelName.length * 6.5 + 12, 48);
-            const labelY = ICON_SIZE / 2 + 8;
+                g.appendChild(createEl('circle', {
+                    cx: ICON_SIZE / 2 - 3,
+                    cy: -(ICON_SIZE / 2) + 3,
+                    r: 5,
+                    fill: statusColor,
+                    stroke: '#fff',
+                    'stroke-width': 1.5,
+                }));
 
-            g.appendChild(createEl('rect', {
-                x: -textW / 2, y: labelY - 7,
-                width: textW, height: 15, rx: 3,
-                fill: '#fff', stroke: '#1e293b', 'stroke-width': 1,
-            }));
-            g.appendChild(createEl('text', {
-                x: 0, y: labelY + 1,
-                'text-anchor': 'middle',
-                'font-size': 11,
-                'font-weight': 700,
-                fill: '#0f172a',
-                'pointer-events': 'none',
-            }, labelName));
+                const labelName = String(dev.name || '');
+                const textW = Math.max(labelName.length * 6.5 + 12, 48);
+                const labelY = ICON_SIZE / 2 + 8;
 
-            if (dev.ip_address) {
+                g.appendChild(createEl('rect', {
+                    x: -textW / 2, y: labelY - 7,
+                    width: textW, height: 15, rx: 3,
+                    fill: '#fff', stroke: '#1e293b', 'stroke-width': 1,
+                }));
                 g.appendChild(createEl('text', {
-                    x: 0, y: labelY + 15,
+                    x: 0, y: labelY + 1,
                     'text-anchor': 'middle',
-                    'font-size': 9.5,
-                    'font-weight': 600,
-                    fill: '#475569',
+                    'font-size': 11,
+                    'font-weight': 700,
+                    fill: '#0f172a',
                     'pointer-events': 'none',
-                }, dev.ip_address));
-            }
+                }, labelName));
 
-            g.addEventListener('mousedown', e => onNodeMouseDown(e, dev));
-            g.addEventListener('click', () => onNodeClick(dev));
+                if (dev.ip_address) {
+                    g.appendChild(createEl('text', {
+                        x: 0, y: labelY + 15,
+                        'text-anchor': 'middle',
+                        'font-size': 9.5,
+                        'font-weight': 600,
+                        fill: '#475569',
+                        'pointer-events': 'none',
+                    }, dev.ip_address));
+                }
 
-            root.appendChild(g);
-        });
+                g.addEventListener('mousedown', e => onNodeMouseDown(e, dev));
+                g.addEventListener('click', () => onNodeClick(dev));
+
+                root.appendChild(g);
+            });
 
         renderPanel();
         document.getElementById('itemCount').textContent = state.devices.length + state.areas.length;
@@ -784,8 +1269,9 @@
         popsEl.innerHTML = '';
         devsEl.innerHTML = '';
 
+        // ── POP List ──
         if (!state.areas.length) {
-            popsEl.innerHTML = '<div class="text-muted small px-2 py-1">Belum ada POP.</div>';
+            popsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada POP.</div>';
         } else {
             state.areas.forEach(a => {
                 const el = document.createElement('div');
@@ -796,18 +1282,43 @@
             });
         }
 
+        // ── Device List ──
         if (!state.devices.length) {
-            devsEl.innerHTML = '<div class="text-muted small px-2 py-1">Belum ada device.</div>';
+            devsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada device. Klik <strong>+ Tambah Device</strong> untuk mulai.</div>';
         } else {
             state.devices.forEach(d => {
+                const isPlaced = d.pos_x !== null && d.pos_y !== null;
                 const el = document.createElement('div');
-                el.className = 'topo-panel-item';
-                el.innerHTML = `
-                    <span class="status-dot ${d.status || 'unknown'}"></span>
-                    <div class="flex-grow-1 overflow-hidden">
-                        <div class="item-name">${escapeHtml(d.name)}</div>
-                        <div class="item-ip">${escapeHtml(d.ip_address || '')}</div>
-                    </div>`;
+                el.className = 'topo-panel-item' + (isPlaced ? ' is-placed' : '');
+
+                if (isPlaced) {
+                    el.innerHTML = `
+                        <img class="item-icon"
+                             src="${ICON_BASE}/${getIconFile(d.type)}"
+                             alt="${escapeHtml(d.type || '')}">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="item-name">${escapeHtml(d.name)}</div>
+                            <div class="item-ip">${escapeHtml(d.ip_address || '')}</div>
+                        </div>
+                        <span class="badge-placed">✓</span>`;
+                    el.addEventListener('click', () => openDeviceDetail(d.id));
+                } else {
+                    el.setAttribute('draggable', 'true');
+                    el.innerHTML = `
+                        <img class="item-icon"
+                             src="${ICON_BASE}/${getIconFile(d.type)}"
+                             alt="${escapeHtml(d.type || '')}">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="item-name">${escapeHtml(d.name)}</div>
+                            <div class="item-ip">${escapeHtml(d.ip_address || '')}</div>
+                        </div>`;
+
+                    el.addEventListener('dragstart', e => {
+                        e.dataTransfer.setData('text/plain', d.id.toString());
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                }
+
                 devsEl.appendChild(el);
             });
         }
@@ -836,8 +1347,8 @@
         return pt.matrixTransform(gTransform.getScreenCTM().inverse());
     }
 
-    // ═══ DRAG HANDLERS ═══
-    function onNodeMouseDown(e, dev) {
+    // ═══ DRAG NODE / POP DI CANVAS ═══
+        function onNodeMouseDown(e, dev) {
         if (e.button !== 0 || state.isConnectMode) return;
         e.preventDefault();
         e.stopPropagation();
@@ -850,26 +1361,70 @@
         state.drag.offsetY = pt.y - (dev.pos_y ?? 100);
         e.currentTarget.classList.add('is-dragging');
     }
-
     function onPopMouseDown(e, area) {
         if (e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
+
+        // Guard: pastikan koordinat valid
+        const safeX = area.pos_x ?? 40;
+        const safeY = area.pos_y ?? 40;
+        area.pos_x = safeX;
+        area.pos_y = safeY;
+
         state.drag.active = true;
         state.drag.target = area;
         state.drag.targetType = 'pop';
         state.drag.moved = false;
         const pt = getSvgPoint(e);
-        state.drag.offsetX = pt.x - (area.pos_x || 40);
-        state.drag.offsetY = pt.y - (area.pos_y || 40);
-    }
+        state.drag.offsetX = pt.x - safeX;
+        state.drag.offsetY = pt.y - safeY;
 
+        // ── Capture device yang berada di dalam POP ini ──
+        const aw = area.width || 140;
+        const ah = area.height || 100;
+
+        state.drag.insideDevices = [];
+        state.devices.forEach(d => {
+            if (d.pos_x === null || d.pos_y === null) return;
+            if (d.pos_x >= safeX && d.pos_x <= safeX + aw &&
+                d.pos_y >= safeY && d.pos_y <= safeY + ah) {
+                state.drag.insideDevices.push({
+                    dev: d,
+                    offsetX: d.pos_x - safeX,
+                    offsetY: d.pos_y - safeY,
+                });
+            }
+        });
+    }
     document.addEventListener('mousemove', e => {
-        // Pan dulu (prioritas)
         if (isPanning) {
             view.panX = e.clientX - panStartX;
             view.panY = e.clientY - panStartY;
             applyTransform();
+            return;
+        }
+
+        if (isResizingArea && resizedArea) {
+            const pt = getSvgPoint(e);
+            const newW = Math.max(100, Math.round(resizeStart.w + (pt.x - resizeStart.x)));
+            const newH = Math.max(70,  Math.round(resizeStart.h + (pt.y - resizeStart.y)));
+            resizedArea.width = newW;
+            resizedArea.height = newH;
+
+            const g = root.querySelector(`.topo-area-group[data-id="${resizedArea.id}"]`);
+            if (g) {
+                const rect = g.querySelector('rect.topo-area-box');
+                const handle = g.querySelector('.topo-area-resize-handle');
+                if (rect) {
+                    rect.setAttribute('width', newW);
+                    rect.setAttribute('height', newH);
+                }
+                if (handle) {
+                    handle.setAttribute('x', (resizedArea.pos_x || 40) + newW - 10);
+                    handle.setAttribute('y', (resizedArea.pos_y || 40) + newH - 10);
+                }
+            }
             return;
         }
 
@@ -884,30 +1439,102 @@
             if (g) g.setAttribute('transform', `translate(${state.drag.target.pos_x},${state.drag.target.pos_y})`);
 
         } else if (state.drag.targetType === 'pop') {
-            state.drag.target.pos_x = Math.round(pt.x - state.drag.offsetX);
-            state.drag.target.pos_y = Math.round(pt.y - state.drag.offsetY);
+            const newX = Math.round(pt.x - state.drag.offsetX);
+            const newY = Math.round(pt.y - state.drag.offsetY);
+
+            // Guard: skip kalau NaN
+            if (!Number.isFinite(newX) || !Number.isFinite(newY)) return;
+
+            state.drag.target.pos_x = newX;
+            state.drag.target.pos_y = newY;
             state.drag.moved = true;
+
+            // Update visual POP
             const g = root.querySelector(`.topo-area-group[data-id="${state.drag.target.id}"]`);
             if (g) {
-                const rect = g.querySelector('rect');
+                const rect = g.querySelector('rect.topo-area-box');
                 const text = g.querySelector('text');
+                const handle = g.querySelector('.topo-area-resize-handle');
                 if (rect) {
-                    rect.setAttribute('x', state.drag.target.pos_x);
-                    rect.setAttribute('y', state.drag.target.pos_y);
+                    rect.setAttribute('x', newX);
+                    rect.setAttribute('y', newY);
                 }
                 if (text) {
-                    text.setAttribute('x', state.drag.target.pos_x + 14);
-                    text.setAttribute('y', state.drag.target.pos_y + 24);
+                    text.setAttribute('x', newX + 14);
+                    text.setAttribute('y', newY + 24);
+                }
+                if (handle) {
+                    handle.setAttribute('x', newX + (state.drag.target.width || 140) - 10);
+                    handle.setAttribute('y', newY + (state.drag.target.height || 100) - 10);
                 }
             }
+
+            // ── Update device pakai OFFSET (bukan delta) — KUNCI ANTI NUMPUK ──
+            const movedIds = [];
+            (state.drag.insideDevices || []).forEach(item => {
+                const nd = item.dev;
+
+                // Posisi device = posisi POP baru + offset yang disimpan saat dragstart
+                nd.pos_x = newX + item.offsetX;
+                nd.pos_y = newY + item.offsetY;
+
+                // Guard: clamp
+                if (!Number.isFinite(nd.pos_x)) nd.pos_x = 100;
+                if (!Number.isFinite(nd.pos_y)) nd.pos_y = 100;
+
+                movedIds.push(nd.id);
+
+                const ng = root.querySelector(`.topo-node[data-id="${nd.id}"]`);
+                if (ng) ng.setAttribute('transform', `translate(${nd.pos_x},${nd.pos_y})`);
+            });
+
+            // Update edges
+            if (movedIds.length) {
+                state.connections.forEach(conn => {
+                    const fromMoved = movedIds.includes(conn.from_map_device_id);
+                    const toMoved   = movedIds.includes(conn.to_map_device_id);
+                    if (!fromMoved && !toMoved) return;
+
+                    const from = state.devices.find(d => d.id === conn.from_map_device_id);
+                    const to   = state.devices.find(d => d.id === conn.to_map_device_id);
+                    if (!from || !to) return;
+                    if (from.pos_x === null || to.pos_x === null) return;
+
+                    const path = root.querySelector(`.topo-edge[data-conn-id="${conn.id}"]`);
+                    if (path) {
+                        path.setAttribute('d', `M ${from.pos_x} ${from.pos_y} L ${to.pos_x} ${to.pos_y}`);
+                    }
+                });
+            }
         }
-    });
+});
 
     document.addEventListener('mouseup', () => {
-        // Selesai pan
         if (isPanning) {
             isPanning = false;
             canvasEl.classList.remove('is-panning');
+            return;
+        }
+
+        if (isResizingArea) {
+            isResizingArea = false;
+            const ar = resizedArea;
+            resizedArea = null;
+            if (ar && ar.id) {
+                fetch(`/admin/topology-maps/${state.map.id}/areas/${ar.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        width:  ar.width,
+                        height: ar.height,
+                    }),
+                }).catch(() => toast('Gagal simpan ukuran POP', true));
+            }
+            render();
             return;
         }
 
@@ -916,6 +1543,8 @@
         const target = state.drag.target;
         const type = state.drag.targetType;
         const moved = state.drag.moved;
+
+        const savedInsideDevices = state.drag.insideDevices || [];   // ← BARU
 
         state.drag.active = false;
         state.drag.target = null;
@@ -935,6 +1564,7 @@
             }).catch(() => toast('Gagal simpan posisi device', true));
 
         } else if (type === 'pop') {
+            // 1. Simpan posisi POP
             fetch(`/admin/topology-maps/${state.map.id}/areas/${target.id}`, {
                 method: 'PUT',
                 headers: {
@@ -944,11 +1574,24 @@
                 },
                 body: JSON.stringify({ pos_x: target.pos_x, pos_y: target.pos_y }),
             }).catch(() => toast('Gagal simpan posisi POP', true));
+
+            // 2. Simpan posisi SEMUA device yang ikut kegeser
+            savedInsideDevices.forEach(item => {
+                const d = item.dev;
+                fetch(`/admin/topology-maps/${state.map.id}/devices/${d.id}/position`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ pos_x: d.pos_x, pos_y: d.pos_y }),
+                }).catch(() => {});
+            });
         }
 
         render();
     });
-
     // ═══ CONNECT MODE ═══
     document.getElementById('btnConnectMode').addEventListener('click', function () {
         state.isConnectMode = !state.isConnectMode;
@@ -959,82 +1602,66 @@
     });
 
     function onNodeClick(dev) {
-        if (!state.isConnectMode) return;
-        if (!state.selectedForConnect) {
-            state.selectedForConnect = dev;
-            render();
-            toast(`Sumber: ${dev.name}. Pilih device tujuan.`);
-        } else if (state.selectedForConnect.id === dev.id) {
-            state.selectedForConnect = null;
-            render();
-        } else {
-            createConnection(state.selectedForConnect.id, dev.id);
-            state.selectedForConnect = null;
-            state.isConnectMode = false;
-            document.getElementById('btnConnectMode').classList.remove('active');
-            render();
+        if (state.isConnectMode) {
+            if (!state.selectedForConnect) {
+                state.selectedForConnect = dev;
+                render();
+                toast(`Sumber: ${dev.name}. Pilih device tujuan.`);
+            } else if (state.selectedForConnect.id === dev.id) {
+                state.selectedForConnect = null;
+                render();
+            } else {
+                createConnection(state.selectedForConnect.id, dev.id);
+                state.selectedForConnect = null;
+                state.isConnectMode = false;
+                document.getElementById('btnConnectMode').classList.remove('active');
+                render();
+            }
+            return;
         }
+        openDeviceDetail(dev.id);
     }
 
     function createConnection(fromId, toId) {
-        fetch(urls.storeConnection, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                from_map_device_id: fromId,
-                to_map_device_id: toId,
-                direction: 'forward',
-            }),
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                state.connections.push(res.connection);
-                toast('Relasi berhasil dibuat.');
-                render();
-            } else {
-                toast(res.message || 'Gagal buat relasi', true);
-            }
-        })
-        .catch(() => toast('Error koneksi', true));
-    }
-
-    function deleteConnection(conn) {
-        if (!confirm('Hapus relasi ini?')) return;
-        fetch(`/admin/topology-maps/${state.map.id}/connections/${conn.id}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                state.connections = state.connections.filter(c => c.id !== conn.id);
-                toast('Relasi dihapus.');
-                render();
-            }
-        });
+        openCreateConnectionModal(fromId, toId);
     }
 
     // ═══ MODAL TAMBAH POP ═══
     const modalAddPop = new bootstrap.Modal(document.getElementById('modalAddPop'));
+    ['popBorder', 'popBg', 'popTitle'].forEach(function(prefix) {
+        const colorEl = document.getElementById(prefix + 'Color');
+        const textEl  = document.getElementById(prefix + 'Text');
+        if (colorEl && textEl) {
+            colorEl.addEventListener('input', () => { textEl.value = colorEl.value; });
+        }
+    });
     document.getElementById('btnAddPop').addEventListener('click', () => modalAddPop.show());
-
     document.getElementById('formAddPop').addEventListener('submit', e => {
         e.preventDefault();
         const fd = new FormData(e.target);
+
+        const w  = parseInt(fd.get('width'))  || 280;
+        const h  = parseInt(fd.get('height')) || 220;
+        const px = fd.get('pos_x');
+        const py = fd.get('pos_y');
+
         const payload = {
             name:         fd.get('name'),
-            border_color: fd.get('border_color'),
-            bg_color:     fd.get('bg_color'),
-            pos_x: 80 + ((state.areas.length * 280) % 1300),
-            pos_y: 80 + Math.floor(state.areas.length / 4) * 220,
-            width:  240,
-            height: 200,
+            code:         fd.get('code') || null,
+            description:  fd.get('description') || null,
+            border_color: fd.get('border_color') || '#2563eb',
+            bg_color:     fd.get('bg_color') || '#f8fafc',
+            title_color:  fd.get('title_color') || '#2563eb',
+            width:  w,
+            height: h,
+            pos_x: (px !== '' && px !== null) ? parseInt(px) : (80 + ((state.areas.length * 320) % 1300)),
+            pos_y: (py !== '' && py !== null) ? parseInt(py) : (80 + Math.floor(state.areas.length / 4) * 260),
         };
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        const original = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
 
         fetch(urls.storeArea, {
             method: 'POST',
@@ -1047,20 +1674,33 @@
         })
         .then(r => r.json())
         .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = original;
             if (res.success) {
                 state.areas.push(res.area);
                 toast('POP berhasil ditambahkan.');
                 modalAddPop.hide();
                 e.target.reset();
+
+                // Reset warna ke default
+                document.getElementById('popBorderColor').value = '#2563eb';
+                document.getElementById('popBorderText').value  = '#2563eb';
+                document.getElementById('popBgColor').value     = '#f8fafc';
+                document.getElementById('popBgText').value      = '#f8fafc';
+                document.getElementById('popTitleColor').value  = '#2563eb';
+                document.getElementById('popTitleText').value   = '#2563eb';
+
                 render();
-                fitToContent();
             } else {
                 toast(res.message || 'Gagal simpan POP', true);
             }
         })
-        .catch(() => toast('Error koneksi', true));
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = original;
+            toast('Error koneksi', true);
+        });
     });
-
     // ═══ MODAL TAMBAH DEVICE ═══
     const deviceTypeIcon   = document.getElementById('deviceTypeIcon');
     const selectDeviceType = document.getElementById('selectDeviceType');
@@ -1087,8 +1727,6 @@
             ip_address:           fd.get('ip_address'),
             router_version:       fd.get('router_version') || null,
             topology_map_area_id: fd.get('topology_map_area_id') || null,
-            pos_x: 150 + ((state.devices.length * 90) % 1200),
-            pos_y: 150 + Math.floor(state.devices.length / 12) * 110,
         };
 
         const btn = e.target.querySelector('button[type="submit"]');
@@ -1110,11 +1748,10 @@
             btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Perangkat';
             if (res.success) {
                 state.devices.push(res.map_device);
-                toast(`${payload.name} berhasil ditambahkan.`);
+                toast(`${payload.name} ditambahkan. Drag ke canvas untuk menempatkan.`);
                 modalAddDevice.hide();
                 e.target.reset();
                 render();
-                fitToContent();
             } else {
                 toast(res.message || 'Gagal tambah device', true);
             }
@@ -1123,6 +1760,370 @@
             btn.disabled = false;
             btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Perangkat';
             toast('Error koneksi', true);
+        });
+    });
+
+    // ═══ DEVICE DETAIL MODAL ═══
+    const modalDeviceDetail = new bootstrap.Modal(document.getElementById('modalDeviceDetail'));
+    const modalEditDevice   = new bootstrap.Modal(document.getElementById('modalEditDevice'));
+
+    let currentDetailDeviceId = null;
+
+    function openDeviceDetail(mapDeviceId) {
+        currentDetailDeviceId = mapDeviceId;
+
+        const dev = state.devices.find(d => d.id === mapDeviceId);
+        if (dev) {
+            document.getElementById('detailDeviceName').textContent = dev.name || '-';
+            document.getElementById('detailFieldName').textContent   = dev.name || '-';
+            document.getElementById('detailFieldIp').textContent     = dev.ip_address || '-';
+        }
+
+        modalDeviceDetail.show();
+
+        fetch(`/admin/topology-maps/${state.map.id}/devices/${mapDeviceId}`, {
+            headers: { 'Accept': 'application/json' },
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) return;
+            const d = res.device;
+
+            document.getElementById('detailDeviceName').textContent = d.name;
+            document.getElementById('detailFieldName').textContent   = d.name;
+            document.getElementById('detailFieldIp').textContent     = d.ip_address;
+            document.getElementById('detailFieldArea').textContent   = d.area_name || d.pop_name || '-';
+            document.getElementById('detailFieldLastPoll').textContent = d.last_poll || '-';
+
+            const statusMap = {
+                up:      { text: 'UP',      color: '#16a34a' },
+                down:    { text: 'DOWN',    color: '#dc2626' },
+                warning: { text: 'WARNING', color: '#d97706' },
+                unknown: { text: 'UNKNOWN', color: '#64748b' },
+            };
+            const s = statusMap[d.status] || statusMap.unknown;
+            document.getElementById('detailFieldStatus').innerHTML =
+                `<span style="color:${s.color};font-weight:800;">&bull; ${s.text}</span>`;
+
+            document.getElementById('statProtocol').textContent  = d.protocol || '-';
+            document.getElementById('statPolls').textContent     = d.polls || '0';
+            document.getElementById('statResponded').textContent = (d.responded_percentage || 0) + '%';
+            document.getElementById('statMissed').textContent    = (d.missed_percentage || 0) + '%';
+            document.getElementById('statDowntime').textContent  = d.down_time || '00:00:00';
+            document.getElementById('statAvgDelay').textContent  = (d.avg_delay || 0) + ' ms';
+            document.getElementById('statMinDelay').textContent  = (d.min_delay || 0) + ' ms';
+            document.getElementById('statMaxDelay').textContent  = (d.max_delay || 0) + ' ms';
+
+            const logBox = document.getElementById('detailLogs');
+            if (Array.isArray(res.logs) && res.logs.length) {
+                let html = '';
+                res.logs.forEach(l => {
+                    const cls = l.status === 'down' ? 'log-down'
+                              : l.status === 'up'   ? 'log-up'
+                              : l.status === 'warning' ? 'log-warning'
+                              : '';
+                    html += `<div><span class="text-muted">${l.time}</span> <span class="${cls}">[${(l.status || '').toUpperCase()}]</span> ${l.message}</div>`;
+                });
+                logBox.innerHTML = html;
+            } else {
+                logBox.innerHTML = '<div class="text-muted">Belum ada riwayat log.</div>';
+            }
+        })
+        .catch(() => toast('Gagal memuat detail device', true));
+    }
+
+    document.getElementById('btnOpenEditDevice').addEventListener('click', () => {
+        if (!currentDetailDeviceId) return;
+
+        fetch(`/admin/topology-maps/${state.map.id}/devices/${currentDetailDeviceId}`, {
+            headers: { 'Accept': 'application/json' },
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) return;
+            const d = res.device;
+
+            document.getElementById('editMapDeviceId').value = d.id;
+            document.getElementById('editName').value = d.name;
+            document.getElementById('editType').value = d.type;
+            document.getElementById('editProtocol').value = d.protocol;
+            document.getElementById('editIp').value = d.ip_address;
+            document.getElementById('editRouterVersion').value = d.router_version || '';
+            document.getElementById('editArea').value = d.topology_map_area_id || '';
+            document.getElementById('editTypeIcon').src = `${ICON_BASE}/${getIconFile(d.type)}`;
+
+            modalDeviceDetail.hide();
+            modalEditDevice.show();
+        })
+        .catch(() => toast('Gagal memuat data edit', true));
+    });
+
+    document.getElementById('editType').addEventListener('change', function () {
+        document.getElementById('editTypeIcon').src = `${ICON_BASE}/${getIconFile(this.value)}`;
+    });
+
+    document.getElementById('formEditDevice').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const id = fd.get('map_device_id');
+
+        const payload = {
+            name:                 fd.get('name'),
+            type:                 fd.get('type'),
+            protocol:             fd.get('protocol'),
+            ip_address:           fd.get('ip_address'),
+            router_version:       fd.get('router_version') || null,
+            topology_map_area_id: fd.get('topology_map_area_id') || null,
+        };
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+
+        fetch(`/admin/topology-maps/${state.map.id}/devices/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Update Perangkat';
+
+            if (res.success) {
+                const idx = state.devices.findIndex(d => d.id === parseInt(id, 10));
+                if (idx !== -1) {
+                    state.devices[idx] = { ...state.devices[idx], ...res.device };
+                }
+                toast('Device berhasil diupdate.');
+                modalEditDevice.hide();
+                render();
+            } else {
+                toast(res.message || 'Gagal update device', true);
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Update Perangkat';
+            toast('Error koneksi', true);
+        });
+    });
+
+    document.getElementById('btnDeleteDevice').addEventListener('click', () => {
+        if (!currentDetailDeviceId) return;
+        const dev = state.devices.find(d => d.id === currentDetailDeviceId);
+        const name = dev ? dev.name : 'device ini';
+
+        if (!confirm(`Hapus "${name}" dari map?`)) return;
+
+        fetch(`/admin/topology-maps/${state.map.id}/devices/${currentDetailDeviceId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                state.devices = state.devices.filter(d => d.id !== currentDetailDeviceId);
+                state.connections = state.connections.filter(c =>
+                    c.from_map_device_id !== currentDetailDeviceId &&
+                    c.to_map_device_id !== currentDetailDeviceId
+                );
+                toast('Device berhasil dihapus dari map.');
+                modalDeviceDetail.hide();
+                render();
+            } else {
+                toast(res.message || 'Gagal hapus device', true);
+            }
+        })
+        .catch(() => toast('Error koneksi', true));
+    });
+
+    // ═══ MODAL CONNECTION ═══
+    const modalConnection = new bootstrap.Modal(document.getElementById('modalConnection'));
+
+    let connectionModalMode = 'create';
+    let currentConnectionId = null;
+    let pendingFromId = null;
+    let pendingToId   = null;
+
+    function openCreateConnectionModal(fromId, toId) {
+        connectionModalMode = 'create';
+        currentConnectionId = null;
+        pendingFromId = fromId;
+        pendingToId   = toId;
+
+        const from = state.devices.find(d => d.id === fromId);
+        const to   = state.devices.find(d => d.id === toId);
+
+        document.getElementById('connFromName').textContent = from ? from.name : '-';
+        document.getElementById('connToName').textContent   = to ? to.name : '-';
+
+        document.getElementById('connType').value = 'ethernet';
+        document.querySelectorAll('.conn-dir-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.dir === 'forward');
+        });
+        updateConnSymbol('forward');
+
+        document.getElementById('btnDeleteConnection').style.display = 'none';
+        document.getElementById('btnSaveConnection').style.display   = '';
+
+        modalConnection.show();
+    }
+
+    function openConnectionModal(connId) {
+        const conn = state.connections.find(c => c.id === connId);
+        if (!conn) return;
+
+        connectionModalMode = 'edit';
+        currentConnectionId = connId;
+
+        const from = state.devices.find(d => d.id === conn.from_map_device_id);
+        const to   = state.devices.find(d => d.id === conn.to_map_device_id);
+
+        document.getElementById('connFromName').textContent = from ? from.name : '-';
+        document.getElementById('connToName').textContent   = to ? to.name : '-';
+
+        document.getElementById('connType').value = conn.connection_type || 'ethernet';
+        document.querySelectorAll('.conn-dir-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.dir === (conn.direction || 'forward'));
+        });
+        updateConnSymbol(conn.direction || 'forward');
+
+        document.getElementById('btnDeleteConnection').style.display = '';
+        document.getElementById('btnSaveConnection').style.display   = 'none';
+
+        modalConnection.show();
+    }
+
+    function updateConnSymbol(dir) {
+        const symbolMap = {
+            forward: '→',
+            reverse: '←',
+            bidirectional: '↔',
+            none: '—',
+        };
+        document.getElementById('connSymbol').textContent = symbolMap[dir] || '→';
+    }
+
+    document.querySelectorAll('.conn-dir-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const dir = btn.dataset.dir;
+            document.querySelectorAll('.conn-dir-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.dir === dir);
+            });
+            updateConnSymbol(dir);
+        });
+    });
+
+    document.getElementById('btnSaveConnection').addEventListener('click', function () {
+        if (connectionModalMode !== 'create') return;
+        if (!pendingFromId || !pendingToId) return;
+
+        const dir = document.querySelector('.conn-dir-btn.active')?.dataset.dir || 'forward';
+        const connType = document.getElementById('connType').value;
+
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+
+        fetch(urls.storeConnection, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                from_map_device_id: pendingFromId,
+                to_map_device_id:   pendingToId,
+                direction:          dir,
+                connection_type:    connType,
+            }),
+        })
+        .then(r => r.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Relasi';
+
+            if (res.success) {
+                state.connections.push(res.connection);
+                toast('Relasi berhasil dibuat.');
+                modalConnection.hide();
+                render();
+            } else {
+                toast(res.message || 'Gagal buat relasi', true);
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Relasi';
+            toast('Error koneksi', true);
+        });
+    });
+
+    document.getElementById('btnDeleteConnection').addEventListener('click', () => {
+        if (!currentConnectionId) return;
+        if (!confirm('Hapus relasi ini?')) return;
+
+        fetch(`/admin/topology-maps/${state.map.id}/connections/${currentConnectionId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                state.connections = state.connections.filter(c => c.id !== currentConnectionId);
+                toast('Relasi berhasil dihapus.');
+                modalConnection.hide();
+                render();
+            } else {
+                toast(res.message || 'Gagal hapus relasi', true);
+            }
+        })
+        .catch(() => toast('Error koneksi', true));
+    });
+
+    document.querySelectorAll('.conn-dir-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (connectionModalMode !== 'edit' || !currentConnectionId) return;
+
+            const dir = btn.dataset.dir;
+            const connType = document.getElementById('connType').value;
+
+            fetch(`/admin/topology-maps/${state.map.id}/connections/${currentConnectionId}/direction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    direction: dir,
+                    connection_type: connType,
+                }),
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    const idx = state.connections.findIndex(c => c.id === currentConnectionId);
+                    if (idx !== -1) {
+                        state.connections[idx].direction = dir;
+                        state.connections[idx].connection_type = connType;
+                    }
+                    toast('Arah panah diubah.');
+                    render();
+                } else {
+                    toast(res.message || 'Gagal ubah arah', true);
+                }
+            })
+            .catch(() => toast('Error koneksi', true));
         });
     });
 
@@ -1138,9 +2139,11 @@
                 id: a.id, pos_x: a.pos_x, pos_y: a.pos_y,
                 width: a.width, height: a.height,
             })),
-            devices: state.devices.map(d => ({
-                id: d.id, pos_x: d.pos_x, pos_y: d.pos_y,
-            })),
+            devices: state.devices
+                .filter(d => d.pos_x !== null && d.pos_y !== null)
+                .map(d => ({
+                    id: d.id, pos_x: d.pos_x, pos_y: d.pos_y,
+                })),
         };
 
         fetch(`/admin/topology-maps/${state.map.id}/save-layout`, {

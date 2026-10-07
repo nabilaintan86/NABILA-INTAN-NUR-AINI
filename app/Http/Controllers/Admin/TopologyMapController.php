@@ -217,14 +217,12 @@ class TopologyMapController extends Controller
             'status'         => 'unknown',
             'polls'          => 0,
         ]);
-
-        // Link device ke map
-        $mapDevice = TopologyMapDevice::create([
+             $mapDevice = TopologyMapDevice::create([
             'topology_map_id'      => $topologyMap->id,
             'topology_map_area_id' => $data['topology_map_area_id'] ?? null,
             'device_id'            => $device->id,
-            'pos_x'                => $data['pos_x'] ?? 100,
-            'pos_y'                => $data['pos_y'] ?? 100,
+            'pos_x'                => null,
+            'pos_y'                => null,
         ]);
 
         return response()->json([
@@ -289,13 +287,13 @@ class TopologyMapController extends Controller
 
     public function storeArea(Request $request, TopologyMap $topologyMap)
     {
-        $data = $request->validate([
+                $data = $request->validate([
             'name'         => 'required|string|max:255',
             'code'         => 'nullable|string|max:50',
             'description'  => 'nullable|string',
             'pos_x'        => 'nullable|integer',
             'pos_y'        => 'nullable|integer',
-            'width'        => 'nullable|integer|min:80',
+            'width'        => 'nullable|integer|min:120',
             'height'       => 'nullable|integer|min:80',
             'border_color' => 'nullable|string|max:20',
             'bg_color'     => 'nullable|string|max:20',
@@ -303,6 +301,8 @@ class TopologyMapController extends Controller
         ]);
 
         $data['topology_map_id'] = $topologyMap->id;
+        $data['width']  = $data['width']  ?? 180;
+        $data['height'] = $data['height'] ?? 140;
 
         $area = TopologyMapArea::create($data);
 
@@ -402,6 +402,145 @@ class TopologyMapController extends Controller
 
         return response()->json(['success' => true]);
     }
+    public function showDevice(TopologyMap $topologyMap, TopologyMapDevice $mapDevice)
+    {
+        if ((int) $mapDevice->topology_map_id !== (int) $topologyMap->id) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $mapDevice->load(['device', 'area']);
+        $device = $mapDevice->device;
+
+        // Recent log extract (opsional — kalau tabel monitoring_logs ada)
+        $logs = [];
+        if ($device && \Illuminate\Support\Facades\Schema::hasTable('monitoring_logs')) {
+            try {
+                $logs = \DB::table('monitoring_logs')
+                    ->where('device_id', $device->id)
+                    ->latest()
+                    ->limit(20)
+                    ->get()
+                    ->map(function ($log) {
+                        return [
+                            'time'    => \Carbon\Carbon::parse($log->created_at)->format('d/m H:i:s'),
+                            'status'  => strtolower($log->status ?? 'info'),
+                            'message' => $log->message ?? '-',
+                        ];
+                    })->toArray();
+            } catch (\Exception $e) {
+                $logs = [];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'device'  => [
+                'id'                   => $mapDevice->id,
+                'device_id'            => $mapDevice->device_id,
+                'name'                 => $device->name ?? '-',
+                'ip_address'           => $device->ip_address ?? '-',
+                'type'                 => $device->type ?? '-',
+                'protocol'             => $device->protocol ?? '-',
+                'status'               => $device->status ?? 'unknown',
+                'router_version'       => $device->router_version ?? null,
+                'pop_name'             => $device->pop_name ?? null,
+                'topology_map_area_id' => $mapDevice->topology_map_area_id,
+                'area_name'            => $mapDevice->area->name ?? null,
+                'pos_x'                => $mapDevice->pos_x,
+                'pos_y'                => $mapDevice->pos_y,
+
+                // Statistics
+                'polls'                => $device->polls ?? 0,
+                'responded_percentage' => $device->responded_percentage ?? 0,
+                'missed_percentage'    => $device->missed_percentage ?? 0,
+                'down_time'            => $device->down_time ?? null,
+                'avg_delay'            => $device->avg_delay ?? 0,
+                'min_delay'            => $device->min_delay ?? 0,
+                'max_delay'            => $device->max_delay ?? 0,
+                'uptime'               => $device->uptime ?? null,
+                'last_poll'            => $device->updated_at ? $device->updated_at->format('d/m/y H:i:s') : '-',
+            ],
+            'logs' => $logs,
+        ]);
+    }
+    public function updateDevice(Request $request, TopologyMap $topologyMap, TopologyMapDevice $mapDevice)
+    {
+        if ((int) $mapDevice->topology_map_id !== (int) $topologyMap->id) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $data = $request->validate([
+            'name'                 => 'required|string|max:255',
+            'type'                 => 'required|string|max:50',
+            'protocol'             => 'required|string|max:50',
+            'ip_address'           => 'required|string|max:45',
+            'router_version'       => 'nullable|string|max:255',
+            'topology_map_area_id' => 'nullable|exists:topology_map_areas,id',
+        ]);
+
+        // Cek duplikat IP (kecuali device ini sendiri)
+        $existingIp = Device::where('ip_address', $data['ip_address'])
+            ->where('id', '!=', $mapDevice->device_id)
+            ->exists();
+
+        if ($existingIp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'IP address sudah dipakai device lain.',
+            ], 422);
+        }
+
+        // Update tabel devices
+        $mapDevice->device->update([
+            'name'           => $data['name'],
+            'type'           => $data['type'],
+            'protocol'       => $data['protocol'],
+            'ip_address'     => $data['ip_address'],
+            'router_version' => $data['router_version'] ?? null,
+        ]);
+
+        // Update area kalau berubah
+        $mapDevice->update([
+            'topology_map_area_id' => $data['topology_map_area_id'] ?? null,
+        ]);
+
+        $mapDevice->load('device');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device berhasil diupdate.',
+            'device'  => [
+                'id'                   => $mapDevice->id,
+                'device_id'            => $mapDevice->device_id,
+                'name'                 => $mapDevice->device->name,
+                'ip_address'           => $mapDevice->device->ip_address,
+                'type'                 => $mapDevice->device->type,
+                'status'               => $mapDevice->device->status ?? 'unknown',
+                'topology_map_area_id' => $mapDevice->topology_map_area_id,
+                'pos_x'                => $mapDevice->pos_x,
+                'pos_y'                => $mapDevice->pos_y,
+            ],
+        ]);
+    }
+    public function updateConnectionDirection(Request $request, TopologyMap $topologyMap, TopologyMapConnection $mapConnection)
+    {
+        if ((int) $mapConnection->topology_map_id !== (int) $topologyMap->id) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $data = $request->validate([
+            'direction'       => 'required|in:forward,reverse,bidirectional,none',
+            'connection_type' => 'nullable|string|max:50',
+        ]);
+
+        $mapConnection->update($data);
+
+        return response()->json([
+            'success'    => true,
+            'message'    => 'Relasi berhasil diupdate.',
+            'connection' => $mapConnection->fresh(),
+        ]);
+    }   
 
     public function mapData(TopologyMap $topologyMap)
     {
