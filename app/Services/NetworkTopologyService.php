@@ -8,6 +8,10 @@ use App\Models\DevicePosition;
 use App\Models\MapSetting;
 use App\Models\MonitoringLog;
 use App\Models\NetworkArea;
+use App\Models\TopologyMap;
+use App\Models\TopologyMapArea;
+use App\Models\TopologyMapConnection;
+use App\Models\TopologyMapDevice;
 
 /**
  * Sumber tunggal topology jaringan "RADNET Wireless Network 2026".
@@ -415,10 +419,12 @@ class NetworkTopologyService
     public function build(): array
     {
         // 1. Ambil seluruh model NetworkArea aktif dari database
-        $dbAreas = NetworkArea::where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+        $dbAreas = \Illuminate\Support\Facades\Schema::hasTable('network_areas')
+            ? NetworkArea::where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+            : collect();
 
         $areasByName = [];
         $areasById = [];
@@ -427,22 +433,34 @@ class NetworkTopologyService
             $areasById[$a->id] = $a;
         }
 
-        // 2. Ambil seluruh perangkat (data master)
-        $devices = Device::all()->keyBy('id');
+        $customMapDeviceIds = \Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')
+            ? \App\Models\TopologyMapDevice::pluck('device_id')->unique()->all()
+            : [];
 
-        // 3. Ambil seluruh POSISI device (device_positions).
-        $positions = DevicePosition::orderBy('id')->get();
+        // 2. Ambil seluruh perangkat (data master) - kecuali yang masuk custom maps
+        $devices = \Illuminate\Support\Facades\Schema::hasTable('devices')
+            ? Device::whereNotIn('id', $customMapDeviceIds)->get()->keyBy('id')
+            : collect();
+
+        // 3. Ambil seluruh POSISI device (device_positions) - kecuali yang masuk custom maps
+        $positions = \Illuminate\Support\Facades\Schema::hasTable('device_positions')
+            ? DevicePosition::whereNotIn('device_id', $customMapDeviceIds)->orderBy('id')->get()
+            : collect();
         $positionMap = [];
         foreach ($positions as $pos) {
             $positionMap[$pos->id] = $pos;
         }
 
         // 3a. VIRTUAL POSITIONS: device yang belum punya posisi di DB
-        //     tetap dirender di area asalnya via grid fallback.
-        //     Virtual id = -device_id (negatif, biar nggak bentrok).
+        //     tetap dirender di area asalnya via grid fallback hanya jika sudah ditempatkan / punya area.
+        //     Device yang unplaced (belum di-place) tidak dibuatkan node di canvas.
         $deviceIdsWithPos = $positions->pluck('device_id')->unique()->all();
         foreach ($devices as $dev) {
             if (in_array($dev->id, $deviceIdsWithPos, true)) continue;
+
+            if (!$dev->map_positioned && !$dev->network_area_id && !$dev->pop_name) {
+                continue;
+            }
 
             $virtualId = -1 * (int) $dev->id;
             $virtual = new DevicePosition();
@@ -456,12 +474,11 @@ class NetworkTopologyService
             $positions->push($virtual);
         }
 
-        // 3b. Ambil seluruh relasi yang SUDAH punya from_position_id & to_position_id.
-        // 3b. Ambil SEMUA relasi. Kalau from/to_position_id NULL,
-        //     resolve ke VIRTUAL position id (-device_id).
         // 3b. Ambil SEMUA relasi. Kalau from/to_position_id NULL,
         //     resolve ke posisi device (real atau virtual).
-        $rawConnections = DeviceConnection::all();
+        $rawConnections = \Illuminate\Support\Facades\Schema::hasTable('device_connections')
+            ? DeviceConnection::all()
+            : collect();
 
         $degree = [];
         $edges = [];
@@ -573,7 +590,9 @@ class NetworkTopologyService
         }
 
         // Ambil layout custom dari MapSetting jika ada
-        $customLayout = MapSetting::get('topology_2026_layout', []);
+        $customLayout = \Illuminate\Support\Facades\Schema::hasTable('map_settings')
+            ? MapSetting::get('topology_2026_layout', [])
+            : [];
         if (!empty($customLayout['areas']) && is_array($customLayout['areas'])) {
             foreach ($customLayout['areas'] as $ar) {
                 if (!empty($ar['name']) && isset($box[$ar['name']])) {
@@ -772,23 +791,39 @@ class NetworkTopologyService
      */
     public function deviceList(): array
     {
-        $areasById = NetworkArea::where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->pluck('name', 'id');
+        $areasById = \Illuminate\Support\Facades\Schema::hasTable('network_areas')
+            ? NetworkArea::where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->pluck('name', 'id')
+            : collect();
 
-        $degree = DeviceConnection::selectRaw('from_position_id as position_id, count(*) as c')
-            ->whereNotNull('from_position_id')
-            ->groupBy('from_position_id')
-            ->pluck('c', 'position_id');
+        $degree = (\Illuminate\Support\Facades\Schema::hasTable('device_connections')
+            && \Illuminate\Support\Facades\Schema::hasColumn('device_connections', 'from_position_id'))
+            ? DeviceConnection::selectRaw('from_position_id as position_id, count(*) as c')
+                ->whereNotNull('from_position_id')
+                ->groupBy('from_position_id')
+                ->pluck('c', 'position_id')
+            : collect();
 
-        $degreeTo = DeviceConnection::selectRaw('to_position_id as position_id, count(*) as c')
-            ->whereNotNull('to_position_id')
-            ->groupBy('to_position_id')
-            ->pluck('c', 'position_id');
+        $degreeTo = (\Illuminate\Support\Facades\Schema::hasTable('device_connections')
+            && \Illuminate\Support\Facades\Schema::hasColumn('device_connections', 'to_position_id'))
+            ? DeviceConnection::selectRaw('to_position_id as position_id, count(*) as c')
+                ->whereNotNull('to_position_id')
+                ->groupBy('to_position_id')
+                ->pluck('c', 'position_id')
+            : collect();
 
-        $devices = Device::orderBy('name')->get()->keyBy('id');
-        $positions = DevicePosition::orderBy('id')->get();
+        $customMapDeviceIds = \Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')
+            ? \App\Models\TopologyMapDevice::pluck('device_id')->unique()->all()
+            : [];
+
+        $devices = \Illuminate\Support\Facades\Schema::hasTable('devices')
+            ? Device::whereNotIn('id', $customMapDeviceIds)->orderBy('name')->get()->keyBy('id')
+            : collect();
+        $positions = \Illuminate\Support\Facades\Schema::hasTable('device_positions')
+            ? DevicePosition::whereNotIn('device_id', $customMapDeviceIds)->orderBy('id')->get()
+            : collect();
 
         $result = [];
 
@@ -914,5 +949,277 @@ class NetworkTopologyService
                 },
             ])->values(),
         ];
+    }
+
+    /**
+     * Bangun payload topology untuk satu TopologyMap khusus (custom map).
+     * Format payload identik dengan build() agar kompatibel penuh dengan
+     * komponen Top View WhatsUp Gold (network-topology.blade.php).
+     */
+    public function buildForTopologyMap(TopologyMap $map): array
+    {
+        $map->loadMissing([
+            'areas.devices.device',
+            'devices.device',
+            'connections.fromDevice.device',
+            'connections.toDevice.device',
+        ]);
+
+        $areas = [];
+        $maxRight = 1400;
+        $maxBottom = 900;
+
+        // Hitung degree koneksi per map_device_id
+        $degree = [];
+        foreach ($map->connections as $conn) {
+            $degree[$conn->from_map_device_id] = ($degree[$conn->from_map_device_id] ?? 0) + 1;
+            $degree[$conn->to_map_device_id]   = ($degree[$conn->to_map_device_id] ?? 0) + 1;
+        }
+
+        // 1. Proses area yang terdaftar di map
+        $devicesInAreas = [];
+        foreach ($map->areas as $ar) {
+            $bx = (float) ($ar->pos_x ?? 50);
+            $by = (float) ($ar->pos_y ?? 50);
+            $bw = (float) ($ar->width ?? 280);
+            $bh = (float) ($ar->height ?? 220);
+
+            $maxRight = max($maxRight, $bx + $bw);
+            $maxBottom = max($maxBottom, $by + $bh);
+
+            $nodes = [];
+            $col = 0; $row = 0;
+            $devicesInThisArea = $map->devices->where('topology_map_area_id', $ar->id);
+
+            foreach ($devicesInThisArea as $md) {
+                $dev = $md->device;
+                if (!$dev) continue;
+
+                $devicesInAreas[$md->id] = true;
+
+                // Fallback posisi jika belum diset
+                $nx = $md->pos_x !== null ? (float) $md->pos_x : ($bx + 60 + ($col * 90));
+                $ny = $md->pos_y !== null ? (float) $md->pos_y : ($by + 80 + ($row * 80));
+                $col++;
+                if ($col > 2) { $col = 0; $row++; }
+
+                $deg = $degree[$md->id] ?? 0;
+
+                $nodes[] = [
+                    'id'            => (int) $md->id,
+                    'device_id'     => (int) $dev->id,
+                    'position_id'   => (int) $md->id,
+                    'map_device_id' => (int) $md->id,
+                    'name'          => $dev->name,
+                    'ip'            => $dev->ip_address,
+                    'status'        => strtolower($dev->status ?? 'unknown'),
+                    'icon'          => $dev->type ?? 'router',
+                    'type'          => $dev->type ?? 'router',
+                    'x'             => $nx,
+                    'y'             => $ny,
+                    'area'          => $ar->name,
+                    'area_id'       => $ar->id,
+                    'degree'        => $deg,
+                    'isHub'         => false,
+                ];
+            }
+
+            $areas[] = [
+                'id'           => $ar->id,
+                'name'         => $ar->name,
+                'code'         => $ar->code,
+                'x'            => $bx,
+                'y'            => $by,
+                'w'            => $bw,
+                'h'            => $bh,
+                'border_color' => $ar->border_color ?: '#1a8024',
+                'bg_color'     => $ar->bg_color ?: '#f8fafc',
+                'title_color'  => $ar->title_color ?: '#1a8024',
+                'nodes'        => $nodes,
+            ];
+        }
+
+        // 2. Device yang belum masuk ke area manapun
+        $unassignedDevices = $map->devices->reject(fn ($md) => isset($devicesInAreas[$md->id]));
+        if ($unassignedDevices->isNotEmpty() || empty($areas)) {
+            $unassignedNodes = [];
+            $uCol = 0; $uRow = 0;
+            $uBaseX = !empty($areas) ? ($maxRight + 60) : 50;
+            $uBaseY = 50;
+            $uW = max(320, (int) ceil(sqrt(max(1, $unassignedDevices->count())) * 110 + 60));
+            $uH = max(240, (int) ceil(max(1, $unassignedDevices->count()) / 3) * 90 + 70);
+
+            foreach ($unassignedDevices as $md) {
+                $dev = $md->device;
+                if (!$dev) continue;
+
+                $nx = $md->pos_x !== null ? (float) $md->pos_x : ($uBaseX + 60 + ($uCol * 90));
+                $ny = $md->pos_y !== null ? (float) $md->pos_y : ($uBaseY + 70 + ($uRow * 80));
+                $uCol++;
+                if ($uCol > 3) { $uCol = 0; $uRow++; }
+
+                $deg = $degree[$md->id] ?? 0;
+
+                $unassignedNodes[] = [
+                    'id'            => (int) $md->id,
+                    'device_id'     => (int) $dev->id,
+                    'position_id'   => (int) $md->id,
+                    'map_device_id' => (int) $md->id,
+                    'name'          => $dev->name,
+                    'ip'            => $dev->ip_address,
+                    'status'        => strtolower($dev->status ?? 'unknown'),
+                    'icon'          => $dev->type ?? 'router',
+                    'type'          => $dev->type ?? 'router',
+                    'x'             => $nx,
+                    'y'             => $ny,
+                    'area'          => 'Luar Area',
+                    'area_id'       => null,
+                    'degree'        => $deg,
+                    'isHub'         => false,
+                ];
+            }
+
+            $areas[] = [
+                'id'           => null,
+                'name'         => empty($areas) ? $map->name : 'Unassigned Devices',
+                'code'         => 'UNASSIGNED',
+                'x'            => $uBaseX,
+                'y'            => $uBaseY,
+                'w'            => $uW,
+                'h'            => $uH,
+                'border_color' => '#64748b',
+                'bg_color'     => '#f8fafc',
+                'title_color'  => '#475569',
+                'nodes'        => $unassignedNodes,
+            ];
+
+            $maxRight = max($maxRight, $uBaseX + $uW);
+            $maxBottom = max($maxBottom, $uBaseY + $uH);
+        }
+
+        // 3. Bangun node map untuk lookup posisi edges
+        $allNodeMap = [];
+        foreach ($areas as $ar) {
+            foreach ($ar['nodes'] as $n) {
+                $allNodeMap[$n['id']] = $n;
+            }
+        }
+
+        // 4. Edges / Koneksi
+        $edges = [];
+        foreach ($map->connections as $conn) {
+            $fromNode = $allNodeMap[$conn->from_map_device_id] ?? null;
+            $toNode   = $allNodeMap[$conn->to_map_device_id] ?? null;
+            if (!$fromNode || !$toNode) continue;
+
+            $isDown = ($fromNode['status'] === 'down' || $toNode['status'] === 'down');
+
+            $edges[] = [
+                'id'        => (int) $conn->id,
+                'from'      => (int) $fromNode['id'],
+                'to'        => (int) $toNode['id'],
+                'status'    => $isDown ? 'down' : 'up',
+                'direction' => $conn->direction ?: 'forward',
+            ];
+        }
+
+        return [
+            'viewBox'       => sprintf('0 0 %d %d', (int) ceil($maxRight + 60), (int) ceil($maxBottom + 60)),
+            'areas'         => $areas,
+            'edges'         => $edges,
+            'arrowSettings' => [
+                'clearance'    => 28,
+                'needle_size'  => 7,
+                'stroke_width' => 2.2,
+            ],
+            'isCustomized'  => true,
+        ];
+    }
+
+    /**
+     * Daftar device untuk panel kiri ketika membuka satu TopologyMap.
+     */
+    public function deviceListForMap(TopologyMap $map): array
+    {
+        $map->loadMissing(['devices.device', 'devices.area', 'connections']);
+
+        $result = [];
+        $mapDeviceIds = [];
+
+        foreach ($map->devices as $md) {
+            $dev = $md->device;
+            if (!$dev) continue;
+
+            $mapDeviceIds[] = $dev->id;
+            $result[] = [
+                'id'             => (int) $dev->id,
+                'position_id'    => (int) $md->id,
+                'map_device_id'  => (int) $md->id,
+                'name'           => $dev->name,
+                'ip'             => $dev->ip_address,
+                'icon'           => $dev->icon_key,
+                'type'           => $dev->display_type,
+                'protocol'       => $dev->display_protocol,
+                'status'         => $dev->status,
+                'router_version' => $dev->router_version,
+                'pop'            => $md->area?->name ?: 'Belum di area',
+                'area_id'        => $md->topology_map_area_id,
+                'area'           => $md->area?->name,
+                'placed'         => true,
+                'pos_x'          => $md->pos_x !== null ? (int) $md->pos_x : null,
+                'pos_y'          => $md->pos_y !== null ? (int) $md->pos_y : null,
+                'links'          => $map->connections->where('from_map_device_id', $md->id)->count()
+                                  + $map->connections->where('to_map_device_id', $md->id)->count(),
+            ];
+        }
+
+        // Kumpulkan semua device ID yang sudah dipakai di map lain atau di Main Map:
+        $otherMapDeviceIds = \Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')
+            ? \App\Models\TopologyMapDevice::where('topology_map_id', '!=', $map->id)->pluck('device_id')->all()
+            : [];
+
+        $mainMapDeviceIds = \Illuminate\Support\Facades\Schema::hasTable('device_positions')
+            ? \App\Models\DevicePosition::pluck('device_id')->all()
+            : [];
+
+        $mainMapAreaIds = \Illuminate\Support\Facades\Schema::hasTable('devices')
+            ? Device::where(function ($q) {
+                $q->where('map_positioned', true)
+                  ->orWhereNotNull('network_area_id');
+            })->pluck('id')->all()
+            : [];
+
+        $allExcludedIds = array_unique(array_merge(
+            $mapDeviceIds,
+            $otherMapDeviceIds,
+            $mainMapDeviceIds,
+            $mainMapAreaIds
+        ));
+
+        // Sisa perangkat yang benar-benar bebas (belum masuk map manapun)
+        $availableDevices = Device::whereNotIn('id', $allExcludedIds)->orderBy('name')->get();
+        foreach ($availableDevices as $dev) {
+            $result[] = [
+                'id'             => (int) $dev->id,
+                'position_id'    => null,
+                'map_device_id'  => null,
+                'name'           => $dev->name,
+                'ip'             => $dev->ip_address,
+                'icon'           => $dev->icon_key,
+                'type'           => $dev->display_type,
+                'protocol'       => $dev->display_protocol,
+                'status'         => $dev->status,
+                'router_version' => $dev->router_version,
+                'pop'            => 'Belum di map',
+                'area_id'        => null,
+                'area'           => null,
+                'placed'         => false,
+                'pos_x'          => null,
+                'pos_y'          => null,
+                'links'          => 0,
+            ];
+        }
+
+        return $result;
     }
 }

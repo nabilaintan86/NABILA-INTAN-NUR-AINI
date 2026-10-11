@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         if (! Schema::hasTable('devices')) {
-            Schema::create('device', function (Blueprint $table): void {
+            Schema::create('devices', function (Blueprint $table): void {
                 $table->id();
                 $table->string('name');
                 $table->string('ip_address')->nullable();
@@ -78,7 +78,7 @@ return new class extends Migration
                 continue;
             }
 
-            Schema::table('device', function (Blueprint $table) use ($definition): void {
+            Schema::table('devices', function (Blueprint $table) use ($definition): void {
                 $definition($table);
             });
         }
@@ -86,5 +86,6 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('devices');
     }
 };

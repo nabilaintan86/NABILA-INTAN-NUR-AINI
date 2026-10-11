@@ -32,7 +32,7 @@ class LaporanPerangkatExportTest extends TestCase
     protected function createSchema(): void
     {
         foreach ([
-            'device', 'monitoring_logs', 'log_archives', 'activity_logs',
+            'devices', 'monitoring_logs', 'log_archives', 'activity_logs',
             'device_notifications', 'users', 'device_notes',
         ] as $table) {
             Schema::dropIfExists($table);
@@ -49,9 +49,9 @@ class LaporanPerangkatExportTest extends TestCase
             $table->timestamps();
         });
 
-        // Kolom `device` disamakan dengan migration asli agar laporan
+        // Kolom `devices` disamakan dengan migration asli agar laporan
         // per perangkat bisa membaca identitas lengkap.
-        Schema::create('device', function (Blueprint $table) {
+        Schema::create('devices', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('ip_address')->nullable();

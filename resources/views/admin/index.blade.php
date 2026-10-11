@@ -89,6 +89,106 @@
         height: 22px;
         display: inline-block;
     }
+
+    /* ══ TABS MAPS (NAV TABS PENGATURAN MAPS) ══ */
+    .map-nav-tabs-wrap {
+        border-bottom: 2px solid #e2e8f0;
+        margin-top: 10px;
+        margin-bottom: 12px;
+        background: #ffffff;
+        border-radius: 8px 8px 0 0;
+        padding: 4px 6px 0 6px;
+    }
+    .topo-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 2px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+    .topo-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px 8px 0 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        text-decoration: none;
+        border: 1px solid transparent;
+        border-bottom: none;
+        white-space: nowrap;
+        transition: all .2s ease;
+        background: transparent;
+    }
+    .topo-tab:hover {
+        color: #0066cc;
+        background: #f1f5f9;
+    }
+    .topo-tab.active {
+        background: #ffffff;
+        color: #0066cc;
+        border-color: #cbd5e1;
+        border-bottom: 2px solid #ffffff;
+        margin-bottom: -2px;
+        box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
+    }
+    .topo-tab .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+        display: inline-block;
+        transition: background .2s ease;
+    }
+    .topo-tab.active .dot {
+        background: #0066cc;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+    }
+    .topo-tab-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #059669;
+        text-decoration: none;
+        border: 1px dashed #10b981;
+        background: #f0fdf4;
+        white-space: nowrap;
+        transition: all .2s ease;
+        margin-bottom: 4px;
+    }
+    .topo-tab-add:hover {
+        background: #dcfce7;
+        color: #047857;
+        border-color: #059669;
+    }
+    .topo-tab-manage {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-decoration: none;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        white-space: nowrap;
+        transition: all .2s ease;
+        margin-bottom: 4px;
+        margin-left: auto;
+    }
+    .topo-tab-manage:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
 </style>
 @endpush
 
@@ -99,9 +199,11 @@
         $activeTab = 'topview';
     }
 @endphp
-<div class="nk-block-head nk-block-head-sm pb-1">
-    <div class="wug-nav-bar">
-        <h2 class="wug-page-title">Map: RADNET Wireless Network 2026</h2>
+<x-admin.page-head
+    title="Monitoring Jaringan"
+    subtitle="Peta topologi dan status perangkat"
+>
+    <x-slot:actions>
         <div class="btn-group wug-btn-group shadow-sm" role="tablist">
             <button type="button" class="btn btn-outline-primary {{ $activeTab === 'topview' ? 'active' : '' }}" id="tabBtnTopView" onclick="switchWugTab('topview')">
                 <em class="icon ni ni-map"></em> Top View (2026)
@@ -110,7 +212,7 @@
                 <em class="icon ni ni-grid-alt"></em> Summary View
             </button>
             <button type="button" class="btn btn-outline-primary {{ $activeTab === 'logs' ? 'active' : '' }}" id="tabBtnLogs" onclick="switchWugTab('logs')">
-                <em class="icon ni ni-histroy"></em> Log View
+                <em class="icon ni ni-history"></em> Log View
             </button>
             <button type="button" class="btn btn-outline-primary {{ $activeTab === 'outage' ? 'active' : '' }}" id="tabBtnOutage" onclick="switchWugTab('outage')">
                 <em class="icon ni ni-alert"></em> Outage Report
@@ -128,8 +230,45 @@
                 <em class="icon ni ni-layers"></em> Kelola Card Area ({{ count($networkAreas) }})
             </button>
         </div>
+    </x-slot:actions>
+</x-admin.page-head>
+
+    {{-- ══ MAP TABS (NAV TABS PENGATURAN MAPS) ══ --}}
+    <div class="map-nav-tabs-wrap">
+        <div class="topo-tabs">
+            <a href="{{ route('admin.monitoring') }}"
+               class="topo-tab {{ empty($currentMap) ? 'active' : '' }}" title="Map Utama WhatsUp Gold">
+                <span class="dot"></span>
+                <em class="icon ni ni-map-pin text-primary"></em>
+                <span>Map: RADNET Wireless Network 2026</span>
+                <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 10px;">Utama</span>
+            </a>
+
+            @if(isset($topologyMaps))
+                @foreach($topologyMaps as $m)
+                    <a href="{{ route('admin.monitoring', ['map' => $m->id]) }}"
+                       class="topo-tab {{ (!empty($currentMap) && $currentMap->id === $m->id) ? 'active' : '' }}" title="{{ $m->description ?? $m->name }}">
+                        <span class="dot"></span>
+                        <em class="icon ni ni-map text-indigo"></em>
+                        <span>{{ $m->name }}</span>
+                        <span class="badge bg-light text-muted ms-1" style="font-size: 10px;">
+                            {{ $m->devices_count ?? 0 }} dev
+                        </span>
+                    </a>
+                @endforeach
+            @endif
+
+            <button type="button" class="topo-tab-add" data-bs-toggle="modal" data-bs-target="#modalQuickAddMap" title="Tambah Maps Baru Langsung">
+                <em class="icon ni ni-plus"></em>
+                <span>Maps Baru</span>
+            </button>
+
+            <a href="{{ route('admin.topology-maps.index') }}" class="topo-tab-manage ms-auto" title="Kelola &amp; Pengaturan Semua Maps">
+                <em class="icon ni ni-setting"></em>
+                <span>Pengaturan Maps</span>
+            </a>
+        </div>
     </div>
-</div>
 
 {{-- ═══════════════════════════════════════════════════
      VIEW 1: TOP VIEW (WHATSUP GOLD MAP 2026 - 1 SCREEN / FULLSCREEN)
@@ -137,14 +276,18 @@
 <div class="wug-view-pane {{ $activeTab === 'topview' ? 'active' : '' }}" id="wugViewTopView">
     @include('admin.components.network-topology', [
         'topology'            => $topology ?? null,
-        'endpoint'            => route('admin.monitoring.data'),
+        'endpoint'            => route('admin.monitoring.data', !empty($currentMap) ? ['map' => $currentMap->id] : []),
         'deviceEndpoint'      => route('admin.monitoring.device', ['device' => '__DEVICE_ID__']),
-        'positionEndpoint'    => route('admin.monitoring.device.position', ['device' => '__DEVICE_ID__']),
-        'directionEndpoint'   => route('admin.monitoring.connection.direction', ['connection' => '__CONN_ID__']),
-        'saveLayoutEndpoint'  => route('admin.monitoring.map-layout.save'),
+        'positionEndpoint'    => route('admin.monitoring.device.position', ['device' => '__DEVICE_ID__']) . (!empty($currentMap) ? '?map_id=' . $currentMap->id : ''),
+        'directionEndpoint'   => route('admin.monitoring.connection.direction', ['connection' => '__CONN_ID__']) . (!empty($currentMap) ? '?map_id=' . $currentMap->id : ''),
+        'areaBoundsEndpoint'  => route('admin.monitoring.area.bounds', ['area' => '__AREA_ID__']) . (!empty($currentMap) ? '?map_id=' . $currentMap->id : ''),
+        'saveLayoutEndpoint'  => route('admin.monitoring.map-layout.save') . (!empty($currentMap) ? '?map_id=' . $currentMap->id : ''),
         'resetLayoutEndpoint' => route('admin.monitoring.map-layout.reset'),
-        'isSuperAdmin'        => auth()->check() && auth()->user()->role === 'super_admin',
-        'title'               => 'Map: RADNET Wireless Network 2026',
+        'isSuperAdmin'        => auth()->check() && in_array(auth()->user()->role, ['super_admin', 'admin'], true),
+        'title'               => $mapTitle ?? 'Map: RADNET Wireless Network 2026',
+        'currentMap'          => $currentMap ?? null,
+        'mapId'               => !empty($currentMap) ? $currentMap->id : null,
+        'networkAreas'        => (!empty($currentMap) && $currentMap->areas->isNotEmpty()) ? $currentMap->areas : $networkAreas,
     ])
 </div>
 
@@ -398,7 +541,7 @@
 <div class="wug-view-pane {{ $activeTab === 'stats' ? 'active' : '' }}" id="wugViewStats">
     <div class="card">
         <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-            <span class="fw-bold">Laporan Statistik Latensi & Polling Jaringan</span>
+            <span class="fw-bold">Laporan Statistik Latensi &amp; Polling Jaringan</span>
             <span class="text-muted small">Periode: 30 Hari Terakhir</span>
         </div>
         <div class="card-body p-0">
@@ -454,7 +597,7 @@
     <div class="card mb-3 border border-primary-subtle shadow-sm">
         <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
             <span class="fw-bold text-dark fs-14px">
-                <em class="icon ni ni-help-fill text-primary me-1"></em> Panduan & Arti Arah Panah Relasi (WhatsUp Gold Standard 2026)
+                <em class="icon ni ni-help-fill text-primary me-1"></em> Panduan &amp; Arti Arah Panah Relasi (WhatsUp Gold Standard 2026)
             </span>
             <span class="badge bg-primary-dim text-primary">Logika Monitoring Topologi</span>
         </div>
@@ -512,7 +655,7 @@
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2 py-2">
             <div>
-                <h5 class="mb-0 text-white"><em class="icon ni ni-network"></em> Tabel Relasi & Koneksi Antar-Perangkat</h5>
+                <h5 class="mb-0 text-white"><em class="icon ni ni-network"></em> Tabel Relasi &amp; Koneksi Antar-Perangkat</h5>
                 <small class="text-white-50">Kelola sambungan, arah panah, dan dependensi antar perangkat topologi jaringan 2026</small>
             </div>
             <div class="d-flex align-items-center gap-2">
@@ -1102,6 +1245,54 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════
+     MODAL TAMBAH MAPS BARU (QUICK ADD MAPS)
+═══════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalQuickAddMap" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title text-white">
+                    <em class="icon ni ni-plus-circle me-1"></em> Tambah Maps Baru
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.topology-maps.store') }}" method="POST">
+                @csrf
+                <div class="modal-body py-3">
+                    <p class="text-muted small mb-3">
+                        Peta topologi baru akan langsung muncul sebagai tab di atas dan siap digunakan pada Top View.
+                    </p>
+                    <div class="mb-3">
+                        <label for="quick_map_name" class="form-label fw-bold">Nama Maps <span class="text-danger">*</span></label>
+                        <input type="text"
+                               class="form-control"
+                               id="quick_map_name"
+                               name="name"
+                               placeholder="Contoh: EzyHome Network / POP Timur"
+                               required
+                               autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quick_map_desc" class="form-label fw-bold">Deskripsi <span class="text-muted fw-normal">(Opsional)</span></label>
+                        <textarea class="form-control"
+                                  id="quick_map_desc"
+                                  name="description"
+                                  rows="2"
+                                  placeholder="Keterangan singkat peta ini..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">
+                        <em class="icon ni ni-check me-1"></em> Buat Maps
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- FOOTER WHATSUP GOLD --}}
 <div class="wug-footer">
     <div class="d-flex align-items-center gap-2">
@@ -1236,7 +1427,7 @@
         toast.style.display = 'flex';
         toast.style.alignItems = 'center';
         toast.style.gap = '8px';
-        toast.innerHTML = '<span class="icon ni ' + (isError ? 'ni-cross-circle' : 'ni-check-circle') + ' fs-5"></span><span>' + message + '</span>';
+        toast.innerHTML = '<span class="icon ni ' + (isError ? 'ni-cross-circle' : 'ni-check-circle') + ' fs-5"><\/span><span>' + message + '<\/span>';
 
         document.body.appendChild(toast);
         setTimeout(function () {
@@ -1326,7 +1517,7 @@
         }
 
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...';
 
         fetch("{{ route('admin.monitoring.connection.store') }}", {
             method: 'POST',
@@ -1345,7 +1536,7 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-check me-1"></em> Simpan Relasi';
+            btn.innerHTML = '<em class="icon ni ni-check me-1"><\/em> Simpan Relasi';
 
             if (res.success) {
                 var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddRelasi'));
@@ -1359,7 +1550,7 @@
         })
         .catch(function () {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-check me-1"></em> Simpan Relasi';
+            btn.innerHTML = '<em class="icon ni ni-check me-1"><\/em> Simpan Relasi';
             alert('Terjadi kesalahan jaringan.');
         });
     };
@@ -1384,7 +1575,7 @@
         }
 
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memperbarui...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Memperbarui...';
 
         var url = updateUrlTemplate.replace('__CONN_ID__', connId);
         fetch(url, {
@@ -1405,7 +1596,7 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Relasi';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Relasi';
 
             if (res.success) {
                 if (bsModalEditRelasi) bsModalEditRelasi.hide();
@@ -1417,7 +1608,7 @@
         })
         .catch(function () {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Relasi';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Relasi';
             alert('Terjadi kesalahan jaringan.');
         });
     };
@@ -1504,7 +1695,7 @@
         var titleEl = document.querySelector('#modalAddArea .modal-title');
         var headerEl = document.querySelector('#modalAddArea .modal-header');
         if (titleEl) {
-            titleEl.innerHTML = '<em class="icon ni ni-plus-circle me-1"></em> Tambah Card Area ' +
+            titleEl.innerHTML = '<em class="icon ni ni-plus-circle me-1"><\/em> Tambah Card Area ' +
                 (scope === 'ezyhome' ? 'EzyHome' : 'Monitoring');
         }
         if (headerEl) {
@@ -1562,7 +1753,7 @@
         var description = document.getElementById('add_area_description').value;
 
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...';
 
         fetch(areaEndpoints[currentAreaScope].store, {
             method: 'POST',
@@ -1587,7 +1778,7 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-check me-1"></em> Simpan Card Area';
+            btn.innerHTML = '<em class="icon ni ni-check me-1"><\/em> Simpan Card Area';
 
             if (res.success) {
                 var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddArea'));
@@ -1600,7 +1791,7 @@
         })
         .catch(function () {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-check me-1"></em> Simpan Card Area';
+            btn.innerHTML = '<em class="icon ni ni-check me-1"><\/em> Simpan Card Area';
             alert('Terjadi kesalahan jaringan.');
         });
     };
@@ -1622,7 +1813,7 @@
         var description = document.getElementById('edit_area_description').value;
 
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memperbarui...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Memperbarui...';
 
         var url = areaEndpoints[currentAreaScope].update.replace('__AREA_ID__', id);
         fetch(url, {
@@ -1649,7 +1840,7 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Card Area';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Card Area';
 
             if (res.success) {
                 if (bsModalEditArea) bsModalEditArea.hide();
@@ -1661,7 +1852,7 @@
         })
         .catch(function () {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Card Area';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Card Area';
             alert('Terjadi kesalahan jaringan.');
         });
     };

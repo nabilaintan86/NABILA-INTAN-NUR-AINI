@@ -64,31 +64,16 @@ class TopologyMapController extends Controller
         }
 
         return redirect()
-            ->route('admin.topology-maps.show', $map)
+            ->route('admin.monitoring', ['map' => $map->id])
             ->with('status', 'Maps berhasil dibuat.');
     }
 
     /**
-     * Halaman detail maps (topology view)
+     * Halaman detail maps (redirect ke Top View di Monitoring Jaringan)
      */
     public function show(TopologyMap $topologyMap)
     {
-        $topologyMap->load(['areas', 'devices.device', 'connections']);
-
-        // Semua maps (buat tabs di halaman detail)
-        $allMaps = TopologyMap::orderBy('name')->get();
-
-        // Device yang BELUM masuk map manapun
-        $usedDeviceIds = TopologyMapDevice::pluck('device_id');
-        $availableDevices = Device::whereNotIn('id', $usedDeviceIds)
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.topology-maps.show', [
-            'map'              => $topologyMap,
-            'allMaps'          => $allMaps,
-            'availableDevices' => $availableDevices,
-        ]);
+        return redirect()->route('admin.monitoring', ['map' => $topologyMap->id]);
     }
 
     /**

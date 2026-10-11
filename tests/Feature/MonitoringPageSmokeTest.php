@@ -39,8 +39,8 @@ class MonitoringPageSmokeTest extends TestCase
             });
         }
 
-        if (!Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table) {
+        if (!Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
                 $table->string('type')->default('ICMP');
@@ -50,6 +50,7 @@ class MonitoringPageSmokeTest extends TestCase
                 $table->string('pop_name')->nullable();
                 $table->integer('polls')->default(0);
                 $table->integer('alerts_count')->default(0);
+                $table->foreignId('network_area_id')->nullable();
                 $table->timestamps();
             });
         }
@@ -60,6 +61,8 @@ class MonitoringPageSmokeTest extends TestCase
                 $table->foreignId('from_device_id');
                 $table->foreignId('to_device_id');
                 $table->string('connection_type')->default('ethernet');
+                $table->foreignId('from_position_id')->nullable();
+                $table->foreignId('to_position_id')->nullable();
                 $table->timestamps();
             });
         }
@@ -77,6 +80,66 @@ class MonitoringPageSmokeTest extends TestCase
                 $table->integer('latency')->nullable();
                 $table->boolean('is_read')->default(false);
                 $table->timestamp('checked_at');
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('network_areas')) {
+            Schema::create('network_areas', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->string('code')->nullable();
+                $table->text('description')->nullable();
+                $table->integer('pos_x')->default(0);
+                $table->integer('pos_y')->default(0);
+                $table->integer('width')->default(200);
+                $table->integer('height')->default(150);
+                $table->string('border_color')->default('#1a8024');
+                $table->string('bg_color')->default('#f8fafc');
+                $table->string('title_color')->default('#1a8024');
+                $table->integer('sort_order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('device_positions')) {
+            Schema::create('device_positions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('device_id');
+                $table->foreignId('network_area_id')->nullable();
+                $table->integer('pos_x')->default(0);
+                $table->integer('pos_y')->default(0);
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('map_settings')) {
+            Schema::create('map_settings', function (Blueprint $table) {
+                $table->id();
+                $table->string('key')->unique();
+                $table->json('value')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('topology_maps')) {
+            Schema::create('topology_maps', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('slug')->nullable();
+                $table->text('description')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        if (!Schema::hasTable('monitoring_logs')) {
+            Schema::create('monitoring_logs', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('device_id')->nullable();
+                $table->string('status')->default('up');
+                $table->integer('latency')->nullable();
+                $table->timestamp('checked_at')->nullable();
                 $table->timestamps();
             });
         }
@@ -133,7 +196,7 @@ class MonitoringPageSmokeTest extends TestCase
 
         $this->get('/admin/monitoring')
             ->assertStatus(200)
-            ->assertSee('RADNET Wireless Network 2025', false);
+            ->assertSee('RADNET Wireless Network', false);
     }
 
     public function test_monitoring_data_is_valid_and_contained(): void

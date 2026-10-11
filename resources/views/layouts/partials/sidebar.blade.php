@@ -208,6 +208,22 @@
                         </a>
                     </li>
 
+                    {{-- Pengaturan Maps --}}
+                    <li class="nk-menu-item {{ request()->routeIs('admin.topology-maps*') ? 'active' : '' }}">
+                        <a
+                            href="{{ route('admin.topology-maps.index') }}"
+                            class="nk-menu-link"
+                        >
+                            <span class="nk-menu-icon">
+                                <em class="icon ni ni-map"></em>
+                            </span>
+
+                            <span class="nk-menu-text">
+                                Pengaturan Maps
+                            </span>
+                        </a>
+                    </li>
+
                     @auth
                         <li class="nk-menu-item">
                             <a

@@ -83,7 +83,7 @@ class TelegramUpdateHandler
                 $isNew = $user->wasRecentlyCreated;
                 $response = $user->is_approved
                     ? "✅ Anda sudah terdaftar dan disetujui.\n\nGunakan /help untuk melihat perintah."
-                    : "✅ Permintaan akses berhasil diterima.\n⏳ Menunggu persetujuan Super Admin.";
+                    : "✅ Permintaan akses berhasil diterima.\n⏳ Menunggu persetujuan admin.";
 
                 $this->telegram->sendToChat($chatId, $response);
                 $this->users->log($user, $chatId, $text, $response);

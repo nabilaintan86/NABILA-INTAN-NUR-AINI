@@ -18,7 +18,7 @@ return new class extends Migration
             return;
         }
 
-        Schema::create('device', function (Blueprint $table) {
+        Schema::create('devices', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('type')->default('Server');
@@ -44,6 +44,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('device');
+        Schema::dropIfExists('devices');
     }
 };

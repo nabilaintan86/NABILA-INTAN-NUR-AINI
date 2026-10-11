@@ -516,7 +516,7 @@
         document.getElementById('loginForm').addEventListener('submit', function () {
             const btn = document.getElementById('btnLogin');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Memproses...</span>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"><\/i><span>Memproses...<\/span>';
         });
     </script>
 

@@ -1787,7 +1787,7 @@
             var classLabel = classification === 'known' ? 'Known Device' : (classification === 'new' ? 'New Device' : 'Tidak Dikenali');
             var statusClass = status === 'aktif' ? 'badge-aktif' : (status === 'expired' ? 'badge-expired' : 'badge-unknown');
             var classClass = classification === 'known' ? 'badge-known' : (classification === 'new' ? 'badge-aktif' : 'badge-unknown');
-            document.getElementById('leaseModalBadges').innerHTML = '<span class="badge-lease ' + statusClass + '">' + statusLabel + '</span><span class="badge-lease ' + classClass + '">' + classLabel + '</span>';
+            document.getElementById('leaseModalBadges').innerHTML = '<span class="badge-lease ' + statusClass + '">' + statusLabel + '<\/span><span class="badge-lease ' + classClass + '">' + classLabel + '<\/span>';
             modalHead.className = 'modal-head-dhcp ' + (status === 'aktif' ? 'head-status-aktif' : (status === 'expired' ? 'head-status-expired' : 'head-status-unknown'));
 
             var deviceUrl = row.dataset.deviceUrl || '';

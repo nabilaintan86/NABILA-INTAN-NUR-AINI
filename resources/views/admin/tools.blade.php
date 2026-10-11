@@ -535,9 +535,9 @@
                                 <div class="custom-target-actions">
                                     <span class="custom-target-label">Eksekusi pada target kustom:</span>
                                     <button type="button" class="btn btn-sm btn-tool-ping" data-action="ping" data-custom="1"><em class="icon ni ni-send"></em>Ping</button>
-                                    <button type="button" class="btn btn-sm btn-tool-trace" data-action="trace" data-custom="1"><em class="icon ni ni-route"></em>Trace</button>
+                                    <button type="button" class="btn btn-sm btn-tool-trace" data-action="trace" data-custom="1"><em class="icon ni ni-swap"></em>Trace</button>
                                     <button type="button" class="btn btn-sm btn-tool-lookup" data-action="lookup" data-custom="1"><em class="icon ni ni-search"></em>Lookup</button>
-                                    <button type="button" class="btn btn-sm btn-tool-scan" data-action="scan" data-custom="1"><em class="icon ni ni-drag-alt"></em>Scan Port</button>
+                                    <button type="button" class="btn btn-sm btn-tool-scan" data-action="scan" data-custom="1"><em class="icon ni ni-scan"></em>Scan Port</button>
                                 </div>
                             </div>
 
@@ -606,7 +606,7 @@
                                     <span>Ping</span>
                                 </button>
                                 <button type="button" class="btn btn-primary btn-tool-trace" data-action="trace">
-                                    <em class="icon ni ni-route"></em>
+                                    <em class="icon ni ni-swap"></em>
                                     <span>Trace</span>
                                 </button>
                                 <button type="button" class="btn btn-primary btn-tool-lookup" data-action="lookup">
@@ -614,7 +614,7 @@
                                     <span>Lookup</span>
                                 </button>
                                 <button type="button" class="btn btn-primary btn-tool-scan" data-action="scan">
-                                    <em class="icon ni ni-drag-alt"></em>
+                                    <em class="icon ni ni-scan"></em>
                                     <span>Scan Port</span>
                                 </button>
                             </div>
@@ -762,7 +762,7 @@
     function escHTML(str) {
         return String(str)
             .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
+            .replace(/<\/g, '&lt;')
             .replace(/>/g, '&gt;');
     }
 
@@ -773,7 +773,7 @@
     function printLine(prefix, text, cls) {
         const line = document.createElement('div');
         line.className = cls;
-        const p = prefix ? '<span class="ns-line">[' + prefix + ']</span> ' : '';
+        const p = prefix ? '<span class="ns-line">[' + prefix + ']<\/span> ' : '';
         line.innerHTML = p + escHTML(text);
         output.appendChild(line);
         output.scrollTop = output.scrollHeight;
@@ -882,15 +882,15 @@
             : 'Aturan status (target bebas — bukan perangkat terdaftar): UP = 0% packet loss & latensi ≤ ' + HIGH_LATENCY_MS + ' ms · WARNING = ada packet loss sebagian atau latensi > ' + HIGH_LATENCY_MS + ' ms · DOWN = 100% packet loss / perangkat tidak merespons.';
 
         const source = info.source === 'database'
-            ? '<div class="ping-verdict-source">Sumber status: database perangkat (monitoring)</div>'
-            : '<div class="ping-verdict-source">Sumber status: hasil uji ping manual</div>';
+            ? '<div class="ping-verdict-source">Sumber status: database perangkat (monitoring)<\/div>'
+            : '<div class="ping-verdict-source">Sumber status: hasil uji ping manual<\/div>';
 
         box.innerHTML =
-            '<div class="ping-verdict-head"><span class="ping-verdict-dot"></span>Status: ' + labels[info.status] + '</div>' +
-            '<div class="ping-verdict-meta">' + escHTML(info.meta) + '</div>' +
-            '<div class="ping-verdict-text">' + escHTML(info.reason) + '</div>' +
+            '<div class="ping-verdict-head"><span class="ping-verdict-dot"><\/span>Status: ' + labels[info.status] + '<\/div>' +
+            '<div class="ping-verdict-meta">' + escHTML(info.meta) + '<\/div>' +
+            '<div class="ping-verdict-text">' + escHTML(info.reason) + '<\/div>' +
             source +
-            '<div class="ping-verdict-legend">' + escHTML(legend) + '</div>';
+            '<div class="ping-verdict-legend">' + escHTML(legend) + '<\/div>';
 
         output.appendChild(box);
         output.scrollTop = output.scrollHeight;
@@ -1062,9 +1062,9 @@
 
         const done = function () {
             const btn = document.getElementById('btnConsoleCopy');
-            btn.innerHTML = '<em class="icon ni ni-check-thick me-1"></em>Tersalin';
+            btn.innerHTML = '<em class="icon ni ni-check-thick me-1"><\/em>Tersalin';
             setTimeout(function () {
-                btn.innerHTML = '<em class="icon ni ni-copy me-1"></em>Salin';
+                btn.innerHTML = '<em class="icon ni ni-copy me-1"><\/em>Salin';
             }, 1800);
         };
 

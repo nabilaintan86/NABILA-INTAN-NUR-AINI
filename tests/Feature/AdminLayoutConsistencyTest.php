@@ -369,9 +369,22 @@ class AdminLayoutConsistencyTest extends TestCase
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
 
+        $allowedLibxmlHtml5Errors = [
+            'Tag canvas invalid',
+            'Tag svg invalid',
+            'Tag defs invalid',
+            'Tag g invalid',
+            'Tag aside invalid',
+        ];
+
+        $filteredErrors = array_filter(
+            array_map(fn ($error) => trim($error->message), $errors),
+            fn ($msg) => !in_array($msg, $allowedLibxmlHtml5Errors, true)
+        );
+
         $this->assertSame(
             [],
-            array_map(fn ($error) => trim($error->message), $errors),
+            array_values($filteredErrors),
             $route.': HTML tidak well-formed'
         );
 
@@ -410,7 +423,7 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->longText('payload');
                 $table->integer('last_activity')->index();
             },
-            'device' => function (Blueprint $table): void {
+            'devices' => function (Blueprint $table): void {
                 $table->id();
                 $table->string('name');
                 $table->string('ip_address')->nullable();
@@ -435,6 +448,23 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->integer('min_delay')->default(0);
                 $table->integer('max_delay')->default(0);
                 $table->string('status')->default('up');
+                $table->foreignId('network_area_id')->nullable();
+                $table->timestamps();
+            },
+            'network_areas' => function (Blueprint $table): void {
+                $table->id();
+                $table->string('name');
+                $table->string('code')->nullable();
+                $table->text('description')->nullable();
+                $table->integer('pos_x')->default(0);
+                $table->integer('pos_y')->default(0);
+                $table->integer('width')->default(200);
+                $table->integer('height')->default(150);
+                $table->string('border_color')->default('#1a8024');
+                $table->string('bg_color')->default('#f8fafc');
+                $table->string('title_color')->default('#1a8024');
+                $table->integer('sort_order')->default(0);
+                $table->boolean('is_active')->default(true);
                 $table->timestamps();
             },
             'device_notes' => function (Blueprint $table): void {

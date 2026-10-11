@@ -29,7 +29,7 @@ return new class extends Migration
         });
 
         if (Schema::hasTable('devices') && !Schema::hasColumn('devices', 'network_area_id')) {
-            Schema::table('device', function (Blueprint $table) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->foreignId('network_area_id')->nullable()->after('pop_name')->constrained('network_areas')->nullOnDelete();
             });
         }
@@ -41,7 +41,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('devices') && Schema::hasColumn('devices', 'network_area_id')) {
-            Schema::table('device', function (Blueprint $table) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->dropForeign(['network_area_id']);
                 $table->dropColumn('network_area_id');
             });

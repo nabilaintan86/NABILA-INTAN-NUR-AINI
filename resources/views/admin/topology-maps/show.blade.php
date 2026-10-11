@@ -1271,20 +1271,20 @@
 
         // ── POP List ──
         if (!state.areas.length) {
-            popsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada POP.</div>';
+            popsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada POP.<\/div>';
         } else {
             state.areas.forEach(a => {
                 const el = document.createElement('div');
                 el.className = 'topo-panel-item';
-                el.innerHTML = `<em class="icon ni ni-layers text-primary"></em>
-                                <span class="item-name">${escapeHtml(a.name)}</span>`;
+                el.innerHTML = `<em class="icon ni ni-layers text-primary"><\/em>
+                                <span class="item-name">${escapeHtml(a.name)}<\/span>`;
                 popsEl.appendChild(el);
             });
         }
 
         // ── Device List ──
         if (!state.devices.length) {
-            devsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada device. Klik <strong>+ Tambah Device</strong> untuk mulai.</div>';
+            devsEl.innerHTML = '<div class="topo-panel-empty-hint">Belum ada device. Klik <strong>+ Tambah Device<\/strong> untuk mulai.<\/div>';
         } else {
             state.devices.forEach(d => {
                 const isPlaced = d.pos_x !== null && d.pos_y !== null;
@@ -1297,10 +1297,10 @@
                              src="${ICON_BASE}/${getIconFile(d.type)}"
                              alt="${escapeHtml(d.type || '')}">
                         <div class="flex-grow-1 overflow-hidden">
-                            <div class="item-name">${escapeHtml(d.name)}</div>
-                            <div class="item-ip">${escapeHtml(d.ip_address || '')}</div>
-                        </div>
-                        <span class="badge-placed">✓</span>`;
+                            <div class="item-name">${escapeHtml(d.name)}<\/div>
+                            <div class="item-ip">${escapeHtml(d.ip_address || '')}<\/div>
+                        <\/div>
+                        <span class="badge-placed">✓<\/span>`;
                     el.addEventListener('click', () => openDeviceDetail(d.id));
                 } else {
                     el.setAttribute('draggable', 'true');
@@ -1309,9 +1309,9 @@
                              src="${ICON_BASE}/${getIconFile(d.type)}"
                              alt="${escapeHtml(d.type || '')}">
                         <div class="flex-grow-1 overflow-hidden">
-                            <div class="item-name">${escapeHtml(d.name)}</div>
-                            <div class="item-ip">${escapeHtml(d.ip_address || '')}</div>
-                        </div>`;
+                            <div class="item-name">${escapeHtml(d.name)}<\/div>
+                            <div class="item-ip">${escapeHtml(d.ip_address || '')}<\/div>
+                        <\/div>`;
 
                     el.addEventListener('dragstart', e => {
                         e.dataTransfer.setData('text/plain', d.id.toString());
@@ -1661,7 +1661,7 @@
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
         const original = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span>Menyimpan...';
 
         fetch(urls.storeArea, {
             method: 'POST',
@@ -1731,7 +1731,7 @@
 
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span>Menyimpan...';
 
         fetch(`/admin/topology-maps/${state.map.id}/devices/new`, {
             method: 'POST',
@@ -1745,7 +1745,7 @@
         .then(r => r.json())
         .then(res => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Perangkat';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Simpan Perangkat';
             if (res.success) {
                 state.devices.push(res.map_device);
                 toast(`${payload.name} ditambahkan. Drag ke canvas untuk menempatkan.`);
@@ -1758,7 +1758,7 @@
         })
         .catch(() => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Perangkat';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Simpan Perangkat';
             toast('Error koneksi', true);
         });
     });
@@ -1803,7 +1803,7 @@
             };
             const s = statusMap[d.status] || statusMap.unknown;
             document.getElementById('detailFieldStatus').innerHTML =
-                `<span style="color:${s.color};font-weight:800;">&bull; ${s.text}</span>`;
+                `<span style="color:${s.color};font-weight:800;">&bull; ${s.text}<\/span>`;
 
             document.getElementById('statProtocol').textContent  = d.protocol || '-';
             document.getElementById('statPolls').textContent     = d.polls || '0';
@@ -1822,11 +1822,11 @@
                               : l.status === 'up'   ? 'log-up'
                               : l.status === 'warning' ? 'log-warning'
                               : '';
-                    html += `<div><span class="text-muted">${l.time}</span> <span class="${cls}">[${(l.status || '').toUpperCase()}]</span> ${l.message}</div>`;
+                    html += `<div><span class="text-muted">${l.time}<\/span> <span class="${cls}">[${(l.status || '').toUpperCase()}]<\/span> ${l.message}<\/div>`;
                 });
                 logBox.innerHTML = html;
             } else {
-                logBox.innerHTML = '<div class="text-muted">Belum ada riwayat log.</div>';
+                logBox.innerHTML = '<div class="text-muted">Belum ada riwayat log.<\/div>';
             }
         })
         .catch(() => toast('Gagal memuat detail device', true));
@@ -1878,7 +1878,7 @@
 
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span>Menyimpan...';
 
         fetch(`/admin/topology-maps/${state.map.id}/devices/${id}`, {
             method: 'PUT',
@@ -1892,7 +1892,7 @@
         .then(r => r.json())
         .then(res => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Update Perangkat';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Update Perangkat';
 
             if (res.success) {
                 const idx = state.devices.findIndex(d => d.id === parseInt(id, 10));
@@ -1908,7 +1908,7 @@
         })
         .catch(() => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Update Perangkat';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Update Perangkat';
             toast('Error koneksi', true);
         });
     });
@@ -2031,7 +2031,7 @@
 
         const btn = this;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span>Menyimpan...';
 
         fetch(urls.storeConnection, {
             method: 'POST',
@@ -2050,7 +2050,7 @@
         .then(r => r.json())
         .then(res => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Relasi';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Simpan Relasi';
 
             if (res.success) {
                 state.connections.push(res.connection);
@@ -2063,7 +2063,7 @@
         })
         .catch(() => {
             btn.disabled = false;
-            btn.innerHTML = '<em class="icon ni ni-save me-1"></em>Simpan Relasi';
+            btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em>Simpan Relasi';
             toast('Error koneksi', true);
         });
     });
@@ -2132,7 +2132,7 @@
         const btn = this;
         const original = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span>Menyimpan...';
 
         const payload = {
             areas: state.areas.map(a => ({

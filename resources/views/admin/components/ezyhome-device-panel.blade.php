@@ -430,7 +430,7 @@
 
         var current = sel.value;
 
-        sel.innerHTML = '<option value="">— Tanpa area (langsung taruh bebas) —</option>';
+        sel.innerHTML = '<option value="">— Tanpa area (langsung taruh bebas) —<\/option>';
         areas.forEach(function (a) {
             var opt = document.createElement('option');
             opt.value = a.id;
@@ -443,7 +443,7 @@
 
     function escapeHtml(value) {
         return String(value === null || value === undefined ? '' : value)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/&/g, '&amp;').replace(/<\/g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
@@ -469,9 +469,9 @@
 
         if (!rows.length) {
             listEl.innerHTML = '<div class="ezy-devpanel-empty">'
-                + '<em class="icon ni ni-inbox fs-3 d-block mb-1"></em>'
+                + '<em class="icon ni ni-inbox fs-3 d-block mb-1"><\/em>'
                 + (devices.length ? 'Tidak ada device cocok.' : 'Belum ada perangkat.')
-                + '</div>';
+                + '<\/div>';
             return;
         }
 
@@ -481,10 +481,10 @@
             var actions = '';
             if (isSuperAdmin) {
                 actions = '<div class="ezy-dev-actions">'
-                    + '<button type="button" class="ezy-dev-btn" data-ezy-act="edit" data-id="' + d.id + '" title="Edit"><em class="icon ni ni-edit"></em></button>'
-                    + '<button type="button" class="ezy-dev-btn" data-ezy-act="focus" data-id="' + d.id + '" title="Sorot"><em class="icon ni ni-target"></em></button>'
-                    + '<button type="button" class="ezy-dev-btn danger" data-ezy-act="delete" data-id="' + d.id + '" title="Hapus"><em class="icon ni ni-trash"></em></button>'
-                    + '</div>';
+                    + '<button type="button" class="ezy-dev-btn" data-ezy-act="edit" data-id="' + d.id + '" title="Edit"><em class="icon ni ni-edit"><\/em><\/button>'
+                    + '<button type="button" class="ezy-dev-btn" data-ezy-act="focus" data-id="' + d.id + '" title="Sorot"><em class="icon ni ni-target"><\/em><\/button>'
+                    + '<button type="button" class="ezy-dev-btn danger" data-ezy-act="delete" data-id="' + d.id + '" title="Hapus"><em class="icon ni ni-trash"><\/em><\/button>'
+                    + '<\/div>';
             }
 
             html += '<div class="ezy-dev-item st-' + escapeHtml(st) + '"'
@@ -493,14 +493,14 @@
                 + (isSuperAdmin ? ' draggable="true"' : '') + '>'
                 + '<img class="ezy-dev-icon" src="' + iconBase + '/' + iconFile(d.icon) + '" alt="">'
                 + '<div class="ezy-dev-info">'
-                + '<div class="ezy-dev-name"><span class="ezy-dev-status ' + escapeHtml(st) + '"></span>'
-                + escapeHtml(d.name) + '</div>'
+                + '<div class="ezy-dev-name"><span class="ezy-dev-status ' + escapeHtml(st) + '"><\/span>'
+                + escapeHtml(d.name) + '<\/div>'
                 + '<div class="ezy-dev-meta">' + escapeHtml(d.ip || '-')
                 + ' • ' + escapeHtml(d.type || '-')
                 + ' • ' + escapeHtml(d.protocol || '-')
-                + '</div>'
-                + '</div>' + actions
-                + '</div>';
+                + '<\/div>'
+                + '<\/div>' + actions
+                + '<\/div>';
         });
         window.EzyHomeDeviceList = devices;
         listEl.innerHTML = html;
@@ -548,8 +548,8 @@
         var rect = vp.getBoundingClientRect();
         dropHint.style.left = (x - rect.left) + 'px';
         dropHint.style.top = (y - rect.top) + 'px';
-        dropHint.innerHTML = 'Taruh <strong>' + escapeHtml(deviceName) + '</strong>'
-            + (areaName ? ' di <span class="area">' + escapeHtml(areaName) + '</span>' : '');
+        dropHint.innerHTML = 'Taruh <strong>' + escapeHtml(deviceName) + '<\/strong>'
+            + (areaName ? ' di <span class="area">' + escapeHtml(areaName) + '<\/span>' : '');
         dropHint.classList.add('is-visible');
     }
 
@@ -659,7 +659,7 @@
             e.preventDefault();
             var btn = document.getElementById('ezyBtnSubmitAddDevice');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...';
 
             fetch(URLS.store, {
                 method: 'POST',
@@ -678,7 +678,7 @@
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Simpan';
                 if (res && res.success) {
                     if (res.devices) { devices = res.devices; render(); }
                     if (res.topology && window.EzyHomeTopology && window.EzyHomeTopology.render) {
@@ -694,7 +694,7 @@
             })
             .catch(function () {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Simpan';
                 showToast('Terjadi kesalahan.', true);
             });
         });

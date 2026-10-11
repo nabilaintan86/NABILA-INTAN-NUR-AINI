@@ -54,7 +54,7 @@ class SyncDevicesFromCsvCommandTest extends TestCase
 
         $this->assertSame(3, Device::count(), 'tidak ada baris yang ditambah');
         $this->assertSame('POP Lama', Device::where('ip_address', '10.0.0.1')->value('name'), 'nama tidak diubah');
-        $this->assertDatabaseHas('device', ['ip_address' => '10.0.0.99', 'name' => 'Dummy Note']);
+        $this->assertDatabaseHas('devices', ['ip_address' => '10.0.0.99', 'name' => 'Dummy Note']);
     }
 
     public function test_dry_run_lists_csv_row_missing_from_database(): void
@@ -67,7 +67,7 @@ class SyncDevicesFromCsvCommandTest extends TestCase
             ->assertSuccessful();
 
         // Tidak otomatis menambah device hanya agar angka cocok.
-        $this->assertDatabaseMissing('device', ['ip_address' => '10.0.0.7']);
+        $this->assertDatabaseMissing('devices', ['ip_address' => '10.0.0.7']);
     }
 
     public function test_apply_updates_names_to_follow_the_csv(): void
@@ -78,7 +78,7 @@ class SyncDevicesFromCsvCommandTest extends TestCase
 
         $this->assertSame('POP SBY', Device::where('ip_address', '10.0.0.1')->value('name'));
         $this->assertSame(3, Device::count(), 'apply tanpa --prune tidak menambah/menghapus baris');
-        $this->assertDatabaseHas('device', ['ip_address' => '10.0.0.99', 'name' => 'Dummy Note']);
+        $this->assertDatabaseHas('devices', ['ip_address' => '10.0.0.99', 'name' => 'Dummy Note']);
     }
 
     public function test_prune_requires_apply_and_removes_only_rows_outside_the_csv(): void
@@ -94,8 +94,8 @@ class SyncDevicesFromCsvCommandTest extends TestCase
         $this->artisan('devices:sync --apply --prune')->assertSuccessful();
 
         $this->assertSame(2, Device::count());
-        $this->assertDatabaseMissing('device', ['ip_address' => '10.0.0.99']);
-        $this->assertDatabaseHas('device', ['ip_address' => '10.0.0.1', 'name' => 'POP SBY']);
+        $this->assertDatabaseMissing('devices', ['ip_address' => '10.0.0.99']);
+        $this->assertDatabaseHas('devices', ['ip_address' => '10.0.0.1', 'name' => 'POP SBY']);
     }
 
     public function test_command_fails_clearly_when_the_csv_is_missing(): void

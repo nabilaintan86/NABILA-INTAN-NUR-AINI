@@ -64,16 +64,16 @@ trait CreatesDhcpTables
         }
 
         // Tabel known device (yang dicari DhcpRecognition).
-        if (! Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table) {
+        if (! Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
                 $table->string('ip_address')->nullable();
                 $table->string('pop_name')->nullable();
                 $table->timestamps();
             });
-        } elseif (! Schema::hasColumn('device', 'pop_name')) {
-            Schema::table('device', function (Blueprint $table) {
+        } elseif (! Schema::hasColumn('devices', 'pop_name')) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->string('pop_name')->nullable();
             });
         }

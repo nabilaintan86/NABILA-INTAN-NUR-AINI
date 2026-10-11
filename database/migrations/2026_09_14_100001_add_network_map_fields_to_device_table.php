@@ -19,7 +19,7 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('device', function (Blueprint $table) use ($missing) {
+        Schema::table('devices', function (Blueprint $table) use ($missing) {
             foreach ($missing as $column) {
                 $table->string($column)->nullable();
             }
@@ -28,7 +28,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('device', function (Blueprint $table) {
+        Schema::table('devices', function (Blueprint $table) {
             $table->dropColumn(['icon_type', 'pop_name']);
         });
     }

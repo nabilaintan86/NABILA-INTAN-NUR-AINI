@@ -160,7 +160,7 @@
             {{-- DRAWER KUSTOMISASI --}}
             <div class="ezy-custom-drawer" id="ezyCustomDrawer">
                 <div class="ezy-drawer-header">
-                    <div class="fw-bold"><em class="icon ni ni-sliders me-1"></em> Pengaturan Map 2026</div>
+                    <div class="fw-bold"><em class="icon ni ni-setting-alt me-1"></em> Pengaturan Map 2026</div>
                     <button type="button" class="btn btn-sm btn-icon text-white" id="btnCloseCustomDrawer">&times;</button>
                 </div>
                 <div class="ezy-drawer-body">
@@ -526,7 +526,7 @@
         var selectAreaEl = document.getElementById('selectCustomArea');
         if (selectAreaEl) {
             var prevVal = selectAreaEl.value;
-            selectAreaEl.innerHTML = '<option value="">-- Pilih Area --</option>';
+            selectAreaEl.innerHTML = '<option value="">-- Pilih Area --<\/option>';
             payload.areas.forEach(function (ar) {
                 var opt = document.createElement('option');
                 opt.value = ar.name; opt.textContent = ar.name + ' (' + ar.w + 'x' + ar.h + 'px)';
@@ -961,7 +961,7 @@
     window.triggerSaveFullLayout = function () {
         if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSaveFullLayout');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...'; }
         var areasPayload = currentAreas.map(function (ar) { return { name: ar.name, x: ar.x, y: ar.y, w: ar.w, h: ar.h }; });
         var devicesPayload = [];
         for (var dId in currentPos) {
@@ -971,11 +971,11 @@
         fetch(saveLayoutUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: JSON.stringify({ areas: areasPayload, devices: devicesPayload, arrow_settings: currentArrowSettings }) })
             .then(function (r) { return r.json(); })
             .then(function (res) {
-                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"></em> <span>Simpan Layout</span>'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"><\/em> <span>Simpan Layout<\/span>'; }
                 if (res.success) { showToast('Layout disimpan.'); if (customDrawer.classList.contains('is-open')) toggleCustomDrawer(); }
                 else alert(res.message || 'Gagal.');
             }).catch(function () {
-                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"></em> <span>Simpan Layout</span>'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"><\/em> <span>Simpan Layout<\/span>'; }
                 alert('Error.');
             });
     };
@@ -1025,7 +1025,7 @@
                 document.getElementById('detailPop').textContent = dev.pop_name || dev.area || '-';
                 var stText = (dev.status || 'up').toUpperCase();
                 var stColor = dev.status === 'up' ? '#16a34a' : (dev.status === 'down' ? '#dc2626' : '#d97706');
-                document.getElementById('detailStatusText').innerHTML = '<span style="color:' + stColor + '; font-weight:800;">&bull; ' + stText + '</span>';
+                document.getElementById('detailStatusText').innerHTML = '<span style="color:' + stColor + '; font-weight:800;">&bull; ' + stText + '<\/span>';
                 document.getElementById('detailLastPoll').textContent = st.last_poll || '-';
                 document.getElementById('statType').textContent = st.protocol || 'ICMP';
                 document.getElementById('statPolls').textContent = st.total_polls || '0';
@@ -1038,9 +1038,9 @@
                 var logBox = document.getElementById('detailLogs');
                 if (Array.isArray(data.logs) && data.logs.length) {
                     var h = '';
-                    data.logs.forEach(function (l) { h += '<div><span class="text-muted">' + l.time + '</span> [' + l.status.toUpperCase() + '] ' + l.message + '</div>'; });
+                    data.logs.forEach(function (l) { h += '<div><span class="text-muted">' + l.time + '<\/span> [' + l.status.toUpperCase() + '] ' + l.message + '<\/div>'; });
                     logBox.innerHTML = h;
-                } else logBox.innerHTML = '<div class="text-muted">Tidak ada log.</div>';
+                } else logBox.innerHTML = '<div class="text-muted">Tidak ada log.<\/div>';
                 detailLoading.style.display = 'none';
                 detailContent.style.display = 'block';
             }).catch(function () {

@@ -393,7 +393,7 @@ class DeviceNoteTest extends TestCase
             'ip_address' => '10.0.0.13',
         ])->assertRedirect(route('admin.kelola-router'));
 
-        $this->assertDatabaseHas('device', [
+        $this->assertDatabaseHas('devices', [
             'name' => 'OLT Baru',
             'type' => 'OLT',
             'protocol' => 'SNMP',

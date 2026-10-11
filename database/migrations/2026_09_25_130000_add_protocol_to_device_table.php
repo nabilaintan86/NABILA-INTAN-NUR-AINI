@@ -10,12 +10,12 @@ return new class extends Migration
     public function up(): void
     {
         if (! Schema::hasColumn('devices', 'protocol')) {
-            Schema::table('device', function (Blueprint $table) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->string('protocol', 32)->default('ICMP')->after('type');
             });
         }
 
-        Schema::table('device', function (Blueprint $table) {
+        Schema::table('devices', function (Blueprint $table) {
             $table->string('type')->default('Server')->change();
         });
 
@@ -49,7 +49,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasColumn('devices', 'protocol')) {
-            Schema::table('device', function (Blueprint $table) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->dropColumn('protocol');
             });
         }

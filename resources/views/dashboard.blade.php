@@ -654,65 +654,65 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="kpi-card-new up" onclick="showKpiDetail('up')">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-number-new" id="kpiUpNumber">${upCount}</div>
-                        <div class="kpi-label-new">Devices UP</div>
+                        <div class="kpi-number-new" id="kpiUpNumber">${upCount}<\/div>
+                        <div class="kpi-label-new">Devices UP<\/div>
                         <div class="kpi-sub-new">
-                            <i class="fas fa-arrow-up"></i>
+                            <i class="fas fa-arrow-up"><\/i>
                             ${total ? Math.round((upCount / total) * 100) : 0}% of monitored
-                        </div>
-                    </div>
-                    <div class="kpi-icon-circle"><i class="fas fa-check"></i></div>
-                </div>
-            </div>
-        </div>
+                        <\/div>
+                    <\/div>
+                    <div class="kpi-icon-circle"><i class="fas fa-check"><\/i><\/div>
+                <\/div>
+            <\/div>
+        <\/div>
 
         <div class="col-sm-6 col-xl-3">
             <div class="kpi-card-new down" onclick="showKpiDetail('down')">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-number-new" id="kpiDownNumber">${downCount}</div>
-                        <div class="kpi-label-new">Devices DOWN</div>
+                        <div class="kpi-number-new" id="kpiDownNumber">${downCount}<\/div>
+                        <div class="kpi-label-new">Devices DOWN<\/div>
                         <div class="kpi-sub-new">
-                            <i class="fas fa-exclamation-circle"></i>
+                            <i class="fas fa-exclamation-circle"><\/i>
                             ${downCount > 0 ? 'Perlu tindakan segera' : 'Semua device normal'}
-                        </div>
-                    </div>
-                    <div class="kpi-icon-circle"><i class="fas fa-power-off"></i></div>
-                </div>
-            </div>
-        </div>
+                        <\/div>
+                    <\/div>
+                    <div class="kpi-icon-circle"><i class="fas fa-power-off"><\/i><\/div>
+                <\/div>
+            <\/div>
+        <\/div>
 
         <div class="col-sm-6 col-xl-3">
             <div class="kpi-card-new warning" onclick="showKpiDetail('warning')">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-number-new" id="kpiWarningNumber">${warningCount}</div>
-                        <div class="kpi-label-new">Warning</div>
+                        <div class="kpi-number-new" id="kpiWarningNumber">${warningCount}<\/div>
+                        <div class="kpi-label-new">Warning<\/div>
                         <div class="kpi-sub-new">
-                            <i class="fas fa-exclamation-triangle"></i>
+                            <i class="fas fa-exclamation-triangle"><\/i>
                             ${warningCount > 0 ? 'Latency tinggi' : 'Tidak ada warning'}
-                        </div>
-                    </div>
-                    <div class="kpi-icon-circle"><i class="fas fa-exclamation"></i></div>
-                </div>
-            </div>
-        </div>
+                        <\/div>
+                    <\/div>
+                    <div class="kpi-icon-circle"><i class="fas fa-exclamation"><\/i><\/div>
+                <\/div>
+            <\/div>
+        <\/div>
 
         <div class="col-sm-6 col-xl-3">
             <div class="kpi-card-new availability" onclick="showKpiDetail('all')">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-number-new" id="kpiAvailabilityNumber">${availability.toFixed(1)}%</div>
-                        <div class="kpi-label-new">Availability</div>
+                        <div class="kpi-number-new" id="kpiAvailabilityNumber">${availability.toFixed(1)}%<\/div>
+                        <div class="kpi-label-new">Availability<\/div>
                         <div class="kpi-sub-new">
-                            <i class="fas fa-signal"></i>
+                            <i class="fas fa-signal"><\/i>
                             Last 24 hours
-                        </div>
-                    </div>
-                    <div class="kpi-icon-circle"><i class="fas fa-wifi"></i></div>
-                </div>
-            </div>
-        </div>
+                        <\/div>
+                    <\/div>
+                    <div class="kpi-icon-circle"><i class="fas fa-wifi"><\/i><\/div>
+                <\/div>
+            <\/div>
+        <\/div>
     `;
 
     /* ============================================================
@@ -837,23 +837,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('alertContainer').innerHTML = alerts.length === 0
     ? `<div class="text-center text-muted py-5">
-            <i class="fas fa-check-circle" style="font-size:42px;color:#10b981;display:block;margin-bottom:12px;"></i>
-            <div class="fw-semibold">Tidak ada alert aktif</div>
-            <div class="small mt-1">Semua device dalam kondisi normal</div>
-       </div>`
+            <i class="fas fa-check-circle" style="font-size:42px;color:#10b981;display:block;margin-bottom:12px;"><\/i>
+            <div class="fw-semibold">Tidak ada alert aktif<\/div>
+            <div class="small mt-1">Semua device dalam kondisi normal<\/div>
+       <\/div>`
     : alerts.map(d => `
         <div class="alert-item-new ${d.status === 'down' ? 'critical' : 'warning'}" onclick="showDetail('${d.id}')">
             <div class="alert-icon-new">
-                <i class="fas ${d.status === 'down' ? 'fa-times' : 'fa-exclamation'}"></i>
-            </div>
+                <i class="fas ${d.status === 'down' ? 'fa-times' : 'fa-exclamation'}"><\/i>
+            <\/div>
             <div style="flex:1;min-width:0;">
-                <div style="font-size:12.5px;font-weight:700;color:#0f172a;">${d.name}</div>
+                <div style="font-size:12.5px;font-weight:700;color:#0f172a;">${d.name}<\/div>
                 <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
                     ${d.ip} · ${d.avgDelay} ms · ${d.alerts} alerts
-                </div>
-            </div>
-            <div style="font-size:10.5px;color:#94a3b8;white-space:nowrap;">${d.period}</div>
-        </div>
+                <\/div>
+            <\/div>
+            <div style="font-size:10.5px;color:#94a3b8;white-space:nowrap;">${d.period}<\/div>
+        <\/div>
     `).join('');
 
     /* ============================================================
@@ -863,21 +863,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('activityContainer').innerHTML = activities.length === 0
         ? `<div class="text-center text-muted py-5">
-                <i class="fas fa-history" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
+                <i class="fas fa-history" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"><\/i>
                 Belum ada aktivitas tercatat
-           </div>`
+           <\/div>`
         : activities.map((d, i) => `
             <div class="feed-item-new" style="animation-delay:${i * 0.05}s" onclick="showDetail('${d.id}')">
-                <div style="min-width:60px;color:#64748b;font-size:11px;font-weight:700;padding-top:2px;">${d.period}</div>
-                <span style="width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${statusColor(d.status)};box-shadow:0 0 0 4px ${statusColor(d.status)}22;"></span>
+                <div style="min-width:60px;color:#64748b;font-size:11px;font-weight:700;padding-top:2px;">${d.period}<\/div>
+                <span style="width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${statusColor(d.status)};box-shadow:0 0 0 4px ${statusColor(d.status)}22;"><\/span>
                 <div style="flex:1;">
-                    <div style="font-weight:700;font-size:12.5px;color:#0f172a;">${d.name} · ${d.ip}</div>
+                    <div style="font-weight:700;font-size:12.5px;color:#0f172a;">${d.name} · ${d.ip}<\/div>
                     <div style="font-size:11px;color:#64748b;margin-top:3px;">
                         ${d.responded}% responded · ${d.avgDelay} ms avg
-                        <span class="badge bg-${statusBadge(d.status)} ms-2" style="font-size:9.5px;">${statusText(d.status)}</span>
-                    </div>
-                </div>
-            </div>
+                        <span class="badge bg-${statusBadge(d.status)} ms-2" style="font-size:9.5px;">${statusText(d.status)}<\/span>
+                    <\/div>
+                <\/div>
+            <\/div>
         `).join('');
 
     /* ============================================================
@@ -886,9 +886,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderDeviceTable(devices, options = {}) {
         if (devices.length === 0) {
             return `<div class="text-center text-muted py-5">
-                <i class="fas fa-inbox" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
-                <div class="fw-semibold">Tidak ada device</div>
-            </div>`;
+                <i class="fas fa-inbox" style="font-size:42px;color:#cbd5e1;display:block;margin-bottom:12px;"><\/i>
+                <div class="fw-semibold">Tidak ada device<\/div>
+            <\/div>`;
         }
 
         const sortBy = options.sortBy || null;
@@ -908,14 +908,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 <table class="table align-middle kpi-table mb-0">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Name</th><th>Type</th>
-                            <th class="text-end">Latency</th>
-                            <th class="text-end">Alerts</th>
-                            <th class="text-end">Responded</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
+                            <th>#<\/th>
+                            <th>Name<\/th><th>Type<\/th>
+                            <th class="text-end">Latency<\/th>
+                            <th class="text-end">Alerts<\/th>
+                            <th class="text-end">Responded<\/th>
+                            <th>Status<\/th>
+                        <\/tr>
+                    <\/thead>
                     <tbody>
                         ${devices.map((d, i) => {
                             const latColor = hasLatencyHighlight
@@ -925,30 +925,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             return `
                             <tr onclick="showDetail('${d.id}')">
-                                <td style="color:#94a3b8;font-weight:600;">${i + 1}</td>
+                                <td style="color:#94a3b8;font-weight:600;">${i + 1}<\/td>
                                 <td>
-                                    <div style="font-weight:700;color:#0f172a;">${d.name}</div>
-                                    <div style="font-family:monospace;font-size:11px;color:#64748b;">${d.ip}</div>
-                                </td>
-                                <td>${d.type}</td>
+                                    <div style="font-weight:700;color:#0f172a;">${d.name}<\/div>
+                                    <div style="font-family:monospace;font-size:11px;color:#64748b;">${d.ip}<\/div>
+                                <\/td>
+                                <td>${d.type}<\/td>
                                 <td class="text-end" style="color:${latColor};font-weight:${hasLatencyHighlight ? '700' : '500'};">
                                     ${d.avgDelay} ms
-                                </td>
+                                <\/td>
                                 <td class="text-end" style="color:${alertColor};font-weight:${hasAlertsHighlight ? '700' : '500'};">
                                     ${d.alerts}
-                                </td>
-                                <td class="text-end">${d.responded}%</td>
+                                <\/td>
+                                <td class="text-end">${d.responded}%<\/td>
                                 <td>
-                                    <span class="badge bg-${statusBadge(d.status)}">${statusText(d.status)}</span>
-                                </td>
-                            </tr>`;
+                                    <span class="badge bg-${statusBadge(d.status)}">${statusText(d.status)}<\/span>
+                                <\/td>
+                            <\/tr>`;
                         }).join('')}
-                    </tbody>
-                </table>
-            </div>
+                    <\/tbody>
+                <\/table>
+            <\/div>
             <div class="text-muted small mt-3">
-                <i class="fas fa-info-circle me-1"></i> Klik baris device untuk melihat detail monitoring.
-            </div>
+                <i class="fas fa-info-circle me-1"><\/i> Klik baris device untuk melihat detail monitoring.
+            <\/div>
         `;
     }
 
@@ -1012,31 +1012,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('detailModalBody').innerHTML = `
             <div class="row g-3 mb-3">
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold text-${badge}" style="font-size:1.3rem;">${statusText(device.status)}</div><div class="small text-muted mt-1">Current Status</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.responded}%</div><div class="small text-muted mt-1">Responded</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.missed}%</div><div class="small text-muted mt-1">Missed</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.alerts}</div><div class="small text-muted mt-1">Alerts</div></div></div>
-            </div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold text-${badge}" style="font-size:1.3rem;">${statusText(device.status)}<\/div><div class="small text-muted mt-1">Current Status<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.responded}%<\/div><div class="small text-muted mt-1">Responded<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.missed}%<\/div><div class="small text-muted mt-1">Missed<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);"><div class="fw-bold" style="font-size:1.3rem;">${device.alerts}<\/div><div class="small text-muted mt-1">Alerts<\/div><\/div><\/div>
+            <\/div>
             <div class="row g-3 mb-3">
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);"><div class="fw-bold" style="font-size:1.1rem;">${device.polls.toLocaleString()}</div><div class="small text-muted mt-1">Total Polls</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.avgDelay} ms</div><div class="small text-muted mt-1">Avg Delay</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.minDelay} ms</div><div class="small text-muted mt-1">Min Delay</div></div></div>
-                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);"><div class="fw-bold" style="font-size:1.1rem;">${device.maxDelay.toLocaleString()} ms</div><div class="small text-muted mt-1">Max Delay</div></div></div>
-            </div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);"><div class="fw-bold" style="font-size:1.1rem;">${device.polls.toLocaleString()}<\/div><div class="small text-muted mt-1">Total Polls<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.avgDelay} ms<\/div><div class="small text-muted mt-1">Avg Delay<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="fw-bold" style="font-size:1.1rem;">${device.minDelay} ms<\/div><div class="small text-muted mt-1">Min Delay<\/div><\/div><\/div>
+                <div class="col-md-3"><div class="text-center p-3 rounded-3" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);"><div class="fw-bold" style="font-size:1.1rem;">${device.maxDelay.toLocaleString()} ms<\/div><div class="small text-muted mt-1">Max Delay<\/div><\/div><\/div>
+            <\/div>
             <div class="rounded-3 p-3" style="background:#f8fafc;border:1px solid #eef2f7;">
                 <div class="row g-2">
-                    <div class="col-md-6"><strong class="small text-muted">Name:</strong> <span class="ms-2">${device.name}</span></div>
-                    <div class="col-md-6"><strong class="small text-muted">IP:</strong> <span class="ms-2" style="font-family:monospace;">${device.ip}</span></div>
-                    <div class="col-md-6"><strong class="small text-muted">Type:</strong> <span class="ms-2">${device.type}</span></div>
-                    <div class="col-md-6"><strong class="small text-muted">Down Time:</strong> <span class="ms-2">${device.downTime}</span></div>
-                </div>
-            </div>
-            <h6 class="mb-2 mt-4 fw-bold"><i class="fas fa-terminal text-primary me-2"></i>Recent Log Extract</h6>
+                    <div class="col-md-6"><strong class="small text-muted">Name:<\/strong> <span class="ms-2">${device.name}<\/span><\/div>
+                    <div class="col-md-6"><strong class="small text-muted">IP:<\/strong> <span class="ms-2" style="font-family:monospace;">${device.ip}<\/span><\/div>
+                    <div class="col-md-6"><strong class="small text-muted">Type:<\/strong> <span class="ms-2">${device.type}<\/span><\/div>
+                    <div class="col-md-6"><strong class="small text-muted">Down Time:<\/strong> <span class="ms-2">${device.downTime}<\/span><\/div>
+                <\/div>
+            <\/div>
+            <h6 class="mb-2 mt-4 fw-bold"><i class="fas fa-terminal text-primary me-2"><\/i>Recent Log Extract<\/h6>
             <pre style="background:#0f172a;color:#cbd5e1;padding:14px;border-radius:10px;font-size:11.5px;line-height:1.6;margin:0;">${
                 device.status === 'up' ? `UP ${device.name} (${device.ip}) avg=${device.avgDelay}ms` :
                 device.status === 'down' ? `DOWN ${device.name} (${device.ip}) - No response` :
                 `WARNING ${device.name} (${device.ip}) - High latency`
-            }</pre>
+            }<\/pre>
         `;
         new bootstrap.Modal(document.getElementById('routerDetailModal')).show();
     };

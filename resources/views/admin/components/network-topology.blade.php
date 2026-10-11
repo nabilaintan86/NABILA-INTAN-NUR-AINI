@@ -15,7 +15,7 @@
     $areaBoundsEndpoint  = $areaBoundsEndpoint ?? route('admin.monitoring.area.bounds', ['area' => '__AREA_ID__']);
     $saveLayoutEndpoint  = $saveLayoutEndpoint ?? route('admin.monitoring.map-layout.save');
     $resetLayoutEndpoint = $resetLayoutEndpoint ?? route('admin.monitoring.map-layout.reset');
-    $isSuperAdmin        = $isSuperAdmin ?? (auth()->check() && auth()->user()->role === 'super_admin');
+    $isSuperAdmin        = $isSuperAdmin ?? (auth()->check() && in_array(auth()->user()->role, ['super_admin', 'admin'], true));
     $title               = $title ?? 'Map: RADNET Wireless Network 2026';
 @endphp
 
@@ -134,62 +134,6 @@
             @endif
         </div>
         <div class="wug-header-actions">
-            {{-- DROPDOWN TOPOLOGY MAPS --}}
-            <div class="dropdown d-inline-block" id="wugMapsDropdownWrap">
-                <button type="button"
-                        class="wug-btn-hdr btn-maps-dropdown"
-                        id="wugMapsDropdownBtn"
-                        data-bs-toggle="dropdown"
-                        data-bs-auto-close="outside"
-                        aria-expanded="false"
-                        title="Pilih Maps">
-                    <em class="icon ni ni-map"></em>
-                    <span>Maps</span>
-                    <em class="icon ni ni-chevron-down ms-1" style="font-size:10px"></em>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-start shadow"
-                    aria-labelledby="wugMapsDropdownBtn"
-                    style="min-width:260px; max-height:400px; overflow-y:auto;">
-                    <li>
-                        <h6 class="dropdown-header text-uppercase fw-bold" style="font-size:11px; letter-spacing:.5px;">
-                            <em class="icon ni ni-map me-1"></em>Pilih Maps
-                        </h6>
-                    </li>
-
-                    @php
-                        $sidebarMaps = \App\Models\TopologyMap::orderBy('name')->get();
-                    @endphp
-
-                    @forelse($sidebarMaps as $sm)
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2"
-                               href="{{ route('admin.topology-maps.show', $sm) }}">
-                                <em class="icon ni ni-map-pin text-primary"></em>
-                                <span class="flex-grow-1">{{ $sm->name }}</span>
-                                <small class="text-muted">
-                                    {{ $sm->devices()->count() }} dev
-                                </small>
-                            </a>
-                        </li>
-                    @empty
-                        <li>
-                            <span class="dropdown-item text-muted small">
-                                Belum ada maps.
-                            </span>
-                        </li>
-                    @endforelse
-
-                    <li><hr class="dropdown-divider"></li>
-
-                    <li>
-                        <a class="dropdown-item text-success fw-bold"
-                           href="{{ route('admin.topology-maps.create') }}">
-                            <em class="icon ni ni-plus-circle me-1"></em>
-                            Tambah Maps Baru
-                        </a>
-                    </li>
-                </ul>
-            </div>
             @if($isSuperAdmin)
                 <button type="button" class="wug-btn-hdr btn-add-device" id="btnAddDevice" title="Tambah Perangkat Baru">
                     <em class="icon ni ni-plus"></em><span>Tambah Device</span>
@@ -211,6 +155,7 @@
             'areaOptions'    => $networkAreas ?? collect(),
             'isSuperAdmin'   => $isSuperAdmin,
             'deviceIconBase' => asset('images/devices'),
+            'mapId'          => $mapId ?? (!empty($currentMap) ? $currentMap->id : null),
         ])
 
         {{-- CANVAS VIEWPORT --}}
@@ -222,7 +167,7 @@
             {{-- DRAWER KUSTOMISASI --}}
             <div class="wug-custom-drawer" id="wugCustomDrawer">
                 <div class="wug-drawer-header">
-                    <div class="fw-bold"><em class="icon ni ni-sliders me-1"></em> Pengaturan Map 2026</div>
+                    <div class="fw-bold"><em class="icon ni ni-setting-alt me-1"></em> Pengaturan Map 2026</div>
                     <button type="button" class="btn btn-sm btn-icon text-white" id="btnCloseCustomDrawer">&times;</button>
                 </div>
                 <div class="wug-drawer-body">
@@ -299,6 +244,13 @@
                     <button type="button" class="btn btn-outline-primary btn-sm text-start" onclick="setConnectionDirection('bidirectional')"><strong>&harr; Dua Arah</strong></button>
                     <button type="button" class="btn btn-outline-secondary btn-sm text-start" onclick="setConnectionDirection('none')"><strong>&mdash; Tanpa Panah</strong></button>
                 </div>
+                @if($isSuperAdmin)
+                    <div class="border-top pt-2 mt-3 text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100" id="btnDeleteConnectionInModal" onclick="deleteCurrentConnection()">
+                            <em class="icon ni ni-trash me-1"></em> Hapus Relasi Ini
+                        </button>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -360,7 +312,7 @@
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2">&bull; <strong>Resize Area:</strong> Tarik handle di pojok kanan-bawah kotak area.</li>
                     <li class="mb-2">&bull; <strong>Jarak Jarum:</strong> Buka tombol "Kustomisasi Map" untuk slider.</li>
-                    <li class="mb-2">&bull; <strong>Drag & Drop:</strong> Geser bebas setiap router.</li>
+                    <li class="mb-2">&bull; <strong>Drag &amp; Drop:</strong> Geser bebas setiap router.</li>
                     <li class="mb-2">&bull; <strong>Simpan Layout:</strong> Super Admin bisa simpan permanen.</li>
                     <li class="mb-2">&bull; <strong>Tambah Device:</strong> Klik tombol oranye di header.</li>
                     <li class="mb-2">&bull; <strong>Hubungkan:</strong> Klik tombol lalu klik 2 device.</li>
@@ -383,14 +335,15 @@
 
     var iconBase = "{{ asset('images/devices') }}";
     var initialTopo = {!! json_encode($topology) !!};
-    var refreshUrl  = {!! json_encode($endpoint) !!};
-    var deviceUrlTemplate = {!! json_encode($deviceEndpoint) !!};
-    var positionUrlTemplate = {!! json_encode($positionEndpoint) !!};
-    var directionUrlTemplate = {!! json_encode($directionEndpoint) !!};
-    var areaBoundsUrlTemplate = {!! json_encode($areaBoundsEndpoint) !!};
-    var saveLayoutUrl = {!! json_encode($saveLayoutEndpoint) !!};
-    var resetLayoutUrl = {!! json_encode($resetLayoutEndpoint) !!};
+    var refreshUrl  = {!! json_encode($endpoint, JSON_UNESCAPED_SLASHES) !!};
+    var deviceUrlTemplate = {!! json_encode($deviceEndpoint, JSON_UNESCAPED_SLASHES) !!};
+    var positionUrlTemplate = {!! json_encode($positionEndpoint, JSON_UNESCAPED_SLASHES) !!};
+    var directionUrlTemplate = {!! json_encode($directionEndpoint, JSON_UNESCAPED_SLASHES) !!};
+    var areaBoundsUrlTemplate = {!! json_encode($areaBoundsEndpoint, JSON_UNESCAPED_SLASHES) !!};
+    var saveLayoutUrl = {!! json_encode($saveLayoutEndpoint, JSON_UNESCAPED_SLASHES) !!};
+    var resetLayoutUrl = {!! json_encode($resetLayoutEndpoint, JSON_UNESCAPED_SLASHES) !!};
     var isSuperAdmin = {!! json_encode($isSuperAdmin) !!};
+    var mapId = {!! json_encode($mapId ?? (!empty($currentMap) ? $currentMap->id : null)) !!};
     var csrfToken = "{{ csrf_token() }}";
 
     var ICON = 44;
@@ -588,7 +541,7 @@
         var selectAreaEl = document.getElementById('selectCustomArea');
         if (selectAreaEl) {
             var prevVal = selectAreaEl.value;
-            selectAreaEl.innerHTML = '<option value="">-- Pilih Area --</option>';
+            selectAreaEl.innerHTML = '<option value="">-- Pilih Area --<\/option>';
             payload.areas.forEach(function (ar) {
                 var opt = document.createElement('option');
                 opt.value = ar.name; opt.textContent = ar.name + ' (' + ar.w + 'x' + ar.h + 'px)';
@@ -774,6 +727,35 @@
                 showToast('Arah panah diubah & disimpan.');
             }
         }).catch(function () { alert('Gagal.'); });
+    };
+
+    window.deleteCurrentConnection = function () {
+        if (!activeEdgeConnection || !activeEdgeConnection.id) return;
+        if (!confirm('Yakin ingin menghapus relasi ini?')) return;
+        var connId = activeEdgeConnection.id;
+        var deleteUrl = {!! json_encode(route('admin.monitoring.connection.destroy', ['connection' => '__CONN_ID__']), JSON_UNESCAPED_SLASHES) !!}
+            .replace('__CONN_ID__', connId) + (mapId ? '?map_id=' + encodeURIComponent(mapId) : '');
+
+        fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res && res.success) {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('modalEdgeDirection'));
+                if (modal) modal.hide();
+                showToast('Relasi berhasil dihapus.');
+                if (res.topology) {
+                    render(res.topology);
+                } else if (activeEdgeConnection._pathEl) {
+                    activeEdgeConnection._pathEl.remove();
+                }
+            } else {
+                alert((res && res.message) || 'Gagal menghapus relasi.');
+            }
+        })
+        .catch(function () { alert('Terjadi kesalahan saat menghapus relasi.'); });
     };
 
     function applyTransform() { gRoot.setAttribute('transform', 'translate(' + panX.toFixed(1) + ',' + panY.toFixed(1) + ') scale(' + scale.toFixed(3) + ')'); }
@@ -1011,7 +993,7 @@
     window.triggerSaveFullLayout = function () {
         if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSaveFullLayout');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...'; }
         var areasPayload = currentAreas.map(function (ar) { return { name: ar.name, x: ar.x, y: ar.y, w: ar.w, h: ar.h }; });
         var devicesPayload = [];
         for (var dId in currentPos) {
@@ -1021,11 +1003,11 @@
         fetch(saveLayoutUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: JSON.stringify({ areas: areasPayload, devices: devicesPayload, arrow_settings: currentArrowSettings }) })
             .then(function (r) { return r.json(); })
             .then(function (res) {
-                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"></em> <span>Simpan Layout</span>'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"><\/em> <span>Simpan Layout<\/span>'; }
                 if (res.success) { showToast('Layout disimpan.'); if (customDrawer.classList.contains('is-open')) toggleCustomDrawer(); }
                 else alert(res.message || 'Gagal.');
             }).catch(function () {
-                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"></em> <span>Simpan Layout</span>'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<em class="icon ni ni-save"><\/em> <span>Simpan Layout<\/span>'; }
                 alert('Error.');
             });
     };
@@ -1075,7 +1057,7 @@
                 document.getElementById('detailPop').textContent = dev.pop_name || dev.area || '-';
                 var stText = (dev.status || 'up').toUpperCase();
                 var stColor = dev.status === 'up' ? '#16a34a' : (dev.status === 'down' ? '#dc2626' : '#d97706');
-                document.getElementById('detailStatusText').innerHTML = '<span style="color:' + stColor + '; font-weight:800;">&bull; ' + stText + '</span>';
+                document.getElementById('detailStatusText').innerHTML = '<span style="color:' + stColor + '; font-weight:800;">&bull; ' + stText + '<\/span>';
                 document.getElementById('detailLastPoll').textContent = st.last_poll || '-';
                 document.getElementById('statType').textContent = st.protocol || 'ICMP';
                 document.getElementById('statPolls').textContent = st.total_polls || '0';
@@ -1088,9 +1070,9 @@
                 var logBox = document.getElementById('detailLogs');
                 if (Array.isArray(data.logs) && data.logs.length) {
                     var h = '';
-                    data.logs.forEach(function (l) { h += '<div><span class="text-muted">' + l.time + '</span> [' + l.status.toUpperCase() + '] ' + l.message + '</div>'; });
+                    data.logs.forEach(function (l) { h += '<div><span class="text-muted">' + l.time + '<\/span> [' + l.status.toUpperCase() + '] ' + l.message + '<\/div>'; });
                     logBox.innerHTML = h;
-                } else logBox.innerHTML = '<div class="text-muted">Tidak ada log.</div>';
+                } else logBox.innerHTML = '<div class="text-muted">Tidak ada log.<\/div>';
                 detailLoading.style.display = 'none';
                 detailContent.style.display = 'block';
             }).catch(function () {

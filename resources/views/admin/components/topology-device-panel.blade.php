@@ -22,8 +22,9 @@
     $deviceTypes    = $deviceTypes ?? \App\Helpers\DeviceType::types();
     $protocols      = $protocols ?? \App\Helpers\DeviceType::protocols();
     $areaOptions    = $areaOptions ?? (isset($networkAreas) ? $networkAreas : collect());
-    $panelSuperAdmin = $isSuperAdmin ?? (auth()->check() && auth()->user()->role === 'super_admin');
+    $panelSuperAdmin = $isSuperAdmin ?? (auth()->check() && in_array(auth()->user()->role, ['super_admin', 'admin'], true));
     $deviceIconBase  = $deviceIconBase ?? asset('images/devices');
+    $mapId           = $mapId ?? request()->query('map') ?? request()->query('map_id') ?? null;
 @endphp
 
 <style>
@@ -336,7 +337,7 @@
     }
 </style>
 
-<aside class="wug-device-panel" id="wugDevicePanel">
+<div class="wug-device-panel" id="wugDevicePanel">
     <div class="wug-devpanel-head">
         <div class="wug-devpanel-head-text">
             <div class="wug-devpanel-title">
@@ -373,7 +374,7 @@
             <em class="icon ni ni-eye me-1"></em> Mode baca saja. Konfigurasi map hanya untuk Super Admin.
         @endif
     </div>
-</aside>
+</div>
 
 {{-- ============================================================
      MODAL: TAMBAH DEVICE
@@ -618,16 +619,22 @@
     ]) !!};
     var iconBase = {!! json_encode($deviceIconBase) !!};
     var isSuperAdmin = {!! json_encode($panelSuperAdmin) !!};
+    var mapId = {!! json_encode($mapId) !!};
+
+    function appendMapParam(url) {
+        if (!mapId) return url;
+        return url + (url.indexOf('?') === -1 ? '?' : '&') + 'map_id=' + encodeURIComponent(mapId);
+    }
 
     var URLS = {
-        list:        {!! json_encode(route('admin.monitoring.devices')) !!},
-        store:       {!! json_encode(route('admin.monitoring.device.store')) !!},
-        updateTpl:   {!! json_encode(route('admin.monitoring.device.update', ['device' => '__DEVICE_ID__'])) !!},
-        destroyTpl:  {!! json_encode(route('admin.monitoring.device.destroy', ['device' => '__DEVICE_ID__'])) !!},
-        positionTpl: {!! json_encode(route('admin.monitoring.device.position', ['device' => '__DEVICE_ID__'])) !!},
-        connection:  {!! json_encode(route('admin.monitoring.connection.store')) !!},
+        list:        appendMapParam({!! json_encode(route('admin.monitoring.devices')) !!}),
+        store:       appendMapParam({!! json_encode(route('admin.monitoring.device.store')) !!}),
+        updateTpl:   appendMapParam({!! json_encode(route('admin.monitoring.device.update', ['device' => '__DEVICE_ID__'])) !!}),
+        destroyTpl:  appendMapParam({!! json_encode(route('admin.monitoring.device.destroy', ['device' => '__DEVICE_ID__'])) !!}),
+        positionTpl: appendMapParam({!! json_encode(route('admin.monitoring.device.position', ['device' => '__DEVICE_ID__'])) !!}),
+        connection:  appendMapParam({!! json_encode(route('admin.monitoring.connection.store')) !!}),
         detailTpl:   {!! json_encode(route('admin.monitoring.device', ['device' => '__DEVICE_ID__'])) !!},
-        positionDestroyTpl: {!! json_encode(route('admin.monitoring.position.destroy', ['position' => '__POSITION_ID__'])) !!}
+        positionDestroyTpl: appendMapParam({!! json_encode(route('admin.monitoring.position.destroy', ['position' => '__POSITION_ID__'])) !!})
     };
     var csrfToken = @json(csrf_token());
 
@@ -655,9 +662,13 @@
     }
 
     function escapeHtml(value) {
-        return String(value === null || value === undefined ? '' : value)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .split('&').join('&amp;')
+            .split('<').join('&lt;')
+            .split('>').join('&gt;')
+            .split('"').join('&quot;')
+            .split("'").join('&#39;');
     }
 
     function statusClass(status) {
@@ -673,6 +684,9 @@
         var areaFilter = areaEl && areaEl.value ? areaEl.value : '';
 
         return devices.filter(function (d) {
+            // Perangkat yang sudah ditempatkan di map tidak ditampilkan di daftar panel samping
+            if (d.placed) return false;
+
             if (areaFilter === '__Belum ditempatkan') {
                 if (d.area) return false;
             } else if (areaFilter && d.area !== areaFilter) {
@@ -686,18 +700,31 @@
 
     function render() {
         if (!listEl) return;
+        var unplaced = devices.filter(function (d) { return !d.placed; });
         var rows = visibleDevices();
-        var placed = devices.filter(function (d) { return d.placed; }).length;
 
         if (countEl) {
-            countEl.textContent = devices.length + ' perangkat · ' + placed + ' di map';
+            countEl.textContent = unplaced.length > 0
+                ? unplaced.length + ' belum di map'
+                : 'Semua sudah di map';
+        }
+
+        if (unplaced.length === 0) {
+            listEl.innerHTML = '<div class="wug-devpanel-empty py-4 text-center">'
+                + '<em class="icon ni ni-check-circle text-success fs-1 d-block mb-2"><\/em>'
+                + '<strong class="text-dark d-block fs-13px">Semua Perangkat Sudah di Map<\/strong>'
+                + '<div class="small text-muted mt-1 px-3">Perangkat baru atau yang dikeluarkan dari map akan muncul di sini untuk ditempatkan.<\/div>'
+                + '<\/div>';
+            window.WugDeviceList = devices;
+            return;
         }
 
         if (!rows.length) {
-            listEl.innerHTML = '<div class="wug-devpanel-empty">'
-                + '<em class="icon ni ni-inbox fs-3 d-block mb-1"></em>'
-                + (devices.length ? 'Tidak ada device yang cocok dengan pencarian.' : 'Belum ada perangkat terdaftar.')
-                + '</div>';
+            listEl.innerHTML = '<div class="wug-devpanel-empty py-3 text-center">'
+                + '<em class="icon ni ni-search fs-3 d-block mb-1 text-muted"><\/em>'
+                + '<div class="small text-muted">Tidak ada perangkat yang cocok dengan pencarian.<\/div>'
+                + '<\/div>';
+            window.WugDeviceList = devices;
             return;
         }
 
@@ -705,42 +732,39 @@
         rows.forEach(function (d) {
             var st = statusClass(d.status);
             var areaTag = d.area
-                ? '<span class="wug-dev-tag area">' + escapeHtml(d.area) + '</span>'
-                : '<span class="wug-dev-tag unplaced">Belum di map</span>';
+                ? '<span class="wug-dev-tag area">' + escapeHtml(d.area) + '<\/span>'
+                : '<span class="wug-dev-tag unplaced">Belum di map<\/span>';
 
             var actions = '';
             if (isSuperAdmin) {
                 actions = '<div class="wug-dev-actions">'
                     + '<button type="button" class="wug-dev-btn" data-wug-act="edit" data-id="' + d.id + '" title="Edit perangkat">'
-                    + '<em class="icon ni ni-edit"></em></button>'
-                    + '<button type="button" class="wug-dev-btn" data-wug-act="focus" data-id="' + d.id + '" title="Sorot device di map">'
-                    + '<em class="icon ni ni-target"></em></button>'
-                    + '<button type="button" class="wug-dev-btn danger" data-wug-act="delete" data-id="' + d.id + '" title="Hapus perangkat">'
-                    + '<em class="icon ni ni-trash"></em></button>'
-                    + '</div>';
+                    + '<em class="icon ni ni-edit"><\/em><\/button>'
+                    + '<button type="button" class="wug-dev-btn danger" data-wug-act="delete" data-id="' + d.id + '" title="Hapus perangkat dari sistem">'
+                    + '<em class="icon ni ni-trash"><\/em><\/button>'
+                    + '<\/div>';
             }
-                html += '<div class="wug-dev-item st-' + escapeHtml(st) + '"'
+            html += '<div class="wug-dev-item st-' + escapeHtml(st) + '"'
                 + ' data-id="' + d.id + '"'
                 + ' data-position-id="' + (d.position_id || '') + '"'
                 + ' data-name="' + escapeHtml(d.name) + '"'
                 + (isSuperAdmin ? ' draggable="true"' : '') + '>'        
                 + '<img class="wug-dev-icon" src="' + iconBase + '/' + iconFile(d.icon) + '" alt="">'
                 + '<div class="wug-dev-info">'
-                + '<div class="wug-dev-name"><span class="wug-dev-status ' + escapeHtml(st) + '"></span>'
-                + escapeHtml(d.name) + '</div>'
+                + '<div class="wug-dev-name"><span class="wug-dev-status ' + escapeHtml(st) + '"><\/span>'
+                + escapeHtml(d.name) + '<\/div>'
                 + '<div class="wug-dev-meta">' + escapeHtml(d.ip || '-')
-                + '<span class="dot">•</span>' + escapeHtml(d.type || '-')
-                + '<span class="dot">•</span>' + escapeHtml(d.protocol || '-')
-                + (d.router_version ? '<span class="dot">•</span>' + escapeHtml(d.router_version) : '')
-                + '</div>'
+                + '<span class="dot">•<\/span>' + escapeHtml(d.type || '-')
+                + '<span class="dot">•<\/span>' + escapeHtml(d.protocol || '-')
+                + (d.router_version ? '<span class="dot">•<\/span>' + escapeHtml(d.router_version) : '')
+                + '<\/div>'
                 + '<div class="wug-dev-tags">' + areaTag
-                + (d.placed ? '<span class="wug-dev-tag placed">Map</span>' : '')
-                + '<span class="wug-dev-tag">' + escapeHtml(String(d.status || '-').toUpperCase()) + '</span>'
-                + '</div>'
-                + '</div>' + actions
-                + '</div>';
+                + '<span class="wug-dev-tag">' + escapeHtml(String(d.status || '-').toUpperCase()) + '<\/span>'
+                + '<\/div>'
+                + '<\/div>' + actions
+                + '<\/div>';
         });
-        window.WugDeviceList = devices;   // ← BARIS BARU
+        window.WugDeviceList = devices;
 
         listEl.innerHTML = html;
 
@@ -793,8 +817,8 @@
         var rect = vp.getBoundingClientRect();
         dropHint.style.left = (x - rect.left) + 'px';
         dropHint.style.top = (y - rect.top) + 'px';
-        dropHint.innerHTML = 'Taruh <strong>' + escapeHtml(deviceName) + '</strong>'
-            + (areaName ? ' di <span class="area">' + escapeHtml(areaName) + '</span>' : ' (luar area)');
+        dropHint.innerHTML = 'Taruh <strong>' + escapeHtml(deviceName) + '<\/strong>'
+            + (areaName ? ' di <span class="area">' + escapeHtml(areaName) + '<\/span>' : ' (luar area)');
         dropHint.classList.add('is-visible');
     }
 
@@ -878,6 +902,9 @@
         if (area && area.id) {
             body.network_area_id = area.id;
         }
+        if (mapId) {
+            body.map_id = mapId;
+        }
 
         var url = URLS.positionTpl.replace('__DEVICE_ID__', device.id);
 
@@ -935,7 +962,7 @@
             e.preventDefault();
             var btn = document.getElementById('wugBtnSubmitAddDevice');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...';
 
             fetch(URLS.store, {
                 method: 'POST',
@@ -946,13 +973,14 @@
                     protocol: addForm.protocol.value,
                     ip_address: addForm.ip_address.value,
                     router_version: addForm.router_version.value || null,
-                    network_area_id: addForm.network_area_id.value || null
+                    network_area_id: addForm.network_area_id.value || null,
+                    map_id: mapId || null
                 })
             })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan Perangkat';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Simpan Perangkat';
 
                 if (res && res.success) {
                     if (res.devices) { devices = res.devices; render(); }
@@ -968,7 +996,7 @@
             })
             .catch(function () {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Simpan Perangkat';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Simpan Perangkat';
                 showToast('Terjadi kesalahan saat menambah perangkat.', true);
             });
         });
@@ -984,14 +1012,29 @@
         if (!device) return;
         document.getElementById('wugEditDeviceId').value = device.id;
         document.getElementById('wugEditName').value = device.name || '';
-        document.getElementById('wugEditType').value = device.type || 'Server';
-        document.getElementById('wugEditProtocol').value = device.protocol || 'ICMP';
         document.getElementById('wugEditIp').value = device.ip || '';
         document.getElementById('wugEditRouterVersion').value = device.router_version || '';
         document.getElementById('wugEditArea').value = device.area_id || '';
         document.getElementById('wugEditDeviceHint').textContent = '#' + device.id + ' ' + device.name;
 
         var typeSel = document.getElementById('wugEditType');
+        var typeVal = String(device.type || 'Router').toLowerCase();
+        for (var i = 0; i < typeSel.options.length; i++) {
+            if (typeSel.options[i].value.toLowerCase() === typeVal) {
+                typeSel.selectedIndex = i;
+                break;
+            }
+        }
+
+        var protoSel = document.getElementById('wugEditProtocol');
+        var protoVal = String(device.protocol || 'ICMP').toLowerCase();
+        for (var j = 0; j < protoSel.options.length; j++) {
+            if (protoSel.options[j].value.toLowerCase() === protoVal) {
+                protoSel.selectedIndex = j;
+                break;
+            }
+        }
+
         var preview = document.getElementById('wugEditTypePreview');
         if (typeSel.selectedIndex >= 0 && preview) {
             preview.src = typeSel.options[typeSel.selectedIndex].dataset.icon || preview.src;
@@ -1013,7 +1056,7 @@
             var id = document.getElementById('wugEditDeviceId').value;
             var btn = document.getElementById('wugBtnSubmitEditDevice');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"><\/span> Menyimpan...';
 
             fetch(URLS.updateTpl.replace('__DEVICE_ID__', id), {
                 method: 'PUT',
@@ -1024,13 +1067,14 @@
                     protocol: editForm.protocol.value,
                     ip_address: editForm.ip_address.value,
                     router_version: editForm.router_version.value || null,
-                    network_area_id: editForm.network_area_id.value || null
+                    network_area_id: editForm.network_area_id.value || null,
+                    map_id: mapId || null
                 })
             })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Perangkat';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Perangkat';
 
                 if (res && res.success) {
                     if (res.devices) { devices = res.devices; render(); }
@@ -1045,7 +1089,7 @@
             })
             .catch(function () {
                 btn.disabled = false;
-                btn.innerHTML = '<em class="icon ni ni-save me-1"></em> Perbarui Perangkat';
+                btn.innerHTML = '<em class="icon ni ni-save me-1"><\/em> Perbarui Perangkat';
                 showToast('Terjadi kesalahan saat memperbarui perangkat.', true);
             });
         });
@@ -1055,13 +1099,22 @@
         if (!device) return;
 
         var posId = device.position_id || null;
+        var isPlaced = !!(device.placed || (posId && posId > 0) || mapId);
 
-        document.getElementById('wugDeleteTitle').textContent = 'Hapus ' + (device.name || 'perangkat') + '?';
-        document.getElementById('wugDeleteName').textContent = posId && posId > 0
-            ? 'Posisi di POP ini akan dihapus.'
-            : 'Yakin ingin menghapus perangkat ini?';
+        document.getElementById('wugDeleteTitle').textContent = isPlaced
+            ? 'Keluarkan ' + (device.name || 'perangkat') + ' dari Map?'
+            : 'Hapus ' + (device.name || 'perangkat') + '?';
 
-        pendingDelete = { device: device, posId: posId };
+        document.getElementById('wugDeleteName').textContent = isPlaced
+            ? 'Perangkat akan dikeluarkan dari map ini dan posisinya dilepas. Perangkat akan kembali berstatus bebas dan siap dipindahkan ke map lain atau dimasukkan kembali.'
+            : 'Yakin ingin menghapus perangkat ini secara permanen dari sistem?';
+
+        var btnConfirm = document.getElementById('wugBtnConfirmDelete');
+        if (btnConfirm) {
+            btnConfirm.textContent = isPlaced ? 'Keluarkan dari Map' : 'Hapus Permanen';
+        }
+
+        pendingDelete = { device: device, posId: posId, isPlaced: isPlaced };
         modalOf('wugModalConfirmDelete').show();
     }
 
@@ -1073,9 +1126,13 @@
             var pd = pendingDelete;
             pendingDelete = null;
 
-            var url = (pd.posId && pd.posId > 0)
-                ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.posId)
-                : URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id);
+            var url = (mapId)
+                ? URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id)
+                : ((pd.isPlaced && pd.posId && pd.posId > 0)
+                    ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.posId)
+                    : (pd.isPlaced
+                        ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.device.id)
+                        : URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id)));
 
             var modal = bootstrap.Modal.getInstance(document.getElementById('wugModalConfirmDelete'));
             if (modal) modal.hide();
@@ -1093,10 +1150,10 @@
                     }
                     showToast(res.message);
                 } else {
-                    showToast((res && res.message) || 'Gagal menghapus.', true);
+                    showToast((res && res.message) || 'Gagal memproses.', true);
                 }
             })
-            .catch(function () { showToast('Gagal menghapus.', true); });
+            .catch(function () { showToast('Gagal memproses permintaan.', true); });
         });
     }
 
@@ -1223,7 +1280,32 @@
             return devices.find(function (d) { return String(d.id) === String(id); }) || null;
         },
         openAdd: function () { modalOf('wugModalAddDevice').show(); },
-        openEdit: function (id) { openEditDevice(this.find(id)); },
+        openEdit: function (id) {
+            var dev = this.find(id);
+            if (dev) {
+                openEditDevice(dev);
+            } else {
+                fetch(URLS.detailTpl.replace('__DEVICE_ID__', id), { headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (res) {
+                        if (res && res.device) {
+                            var d = res.device;
+                            openEditDevice({
+                                id: d.id,
+                                name: d.name,
+                                type: d.type,
+                                protocol: d.protocol,
+                                ip: d.ip_address,
+                                router_version: d.router_version,
+                                area_id: d.network_area_id
+                            });
+                        }
+                    })
+                    .catch(function () {
+                        alert('Gagal mengambil data perangkat untuk diedit.');
+                    });
+            }
+        },
         deleteDevice: function (device) { destroyDevice(device); }
     };
 

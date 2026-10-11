@@ -1041,20 +1041,20 @@ document.addEventListener('DOMContentLoaded', function () {
             var cls = indicatorClass(n.status);
             html +=
                 '<div class="notif-item' + (n.read ? '' : ' unread') + '" data-id="' + n.id + '">' +
-                    (n.read ? '' : '<span class="unread-dot"></span>') +
+                    (n.read ? '' : '<span class="unread-dot"><\/span>') +
                     '<div class="notif-indicator ' + cls + '">' +
-                        '<em class="icon ' + iconFor(n.status) + '"></em>' +
-                    '</div>' +
+                        '<em class="icon ' + iconFor(n.status) + '"><\/em>' +
+                    '<\/div>' +
                     '<div class="notif-body">' +
-                        '<div class="notif-title">' + n.device + '</div>' +
-                        '<div class="notif-ip">' + n.ip + '</div>' +
-                        '<span class="notif-event ' + cls + '">' + n.event + '</span>' +
-                        '<div class="notif-message">' + n.message + '</div>' +
-                    '</div>' +
+                        '<div class="notif-title">' + n.device + '<\/div>' +
+                        '<div class="notif-ip">' + n.ip + '<\/div>' +
+                        '<span class="notif-event ' + cls + '">' + n.event + '<\/span>' +
+                        '<div class="notif-message">' + n.message + '<\/div>' +
+                    '<\/div>' +
                     '<div class="notif-meta">' +
-                        '<div class="notif-time">' + n.timeLabel + '</div>' +
-                    '</div>' +
-                '</div>';
+                        '<div class="notif-time">' + n.timeLabel + '<\/div>' +
+                    '<\/div>' +
+                '<\/div>';
         });
 
         notifList.innerHTML = html;
@@ -1236,19 +1236,19 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('notifDetailTitle').textContent = 'Detail Notifikasi';
 
         var latencyRow = n.latency !== null
-            ? '<div><div class="detail-label">Response / Latency</div><div class="detail-value">' + n.latency + ' ms</div></div>'
-            : '<div><div class="detail-label">Response / Latency</div><div class="detail-value text-muted">-</div></div>';
+            ? '<div><div class="detail-label">Response / Latency<\/div><div class="detail-value">' + n.latency + ' ms<\/div><\/div>'
+            : '<div><div class="detail-label">Response / Latency<\/div><div class="detail-value text-muted">-<\/div><\/div>';
 
         document.getElementById('notifDetailBody').innerHTML =
             '<div class="detail-grid">' +
-                '<div><div class="detail-label">Nama Perangkat</div><div class="detail-value">' + n.device + '</div></div>' +
-                '<div><div class="detail-label">IP Address</div><div class="detail-value"><code>' + n.ip + '</code></div></div>' +
-                '<div><div class="detail-label">Status</div><div class="detail-value"><span class="notif-event ' + cls + '">' + n.event + '</span></div></div>' +
-                '<div><div class="detail-label">Jenis Monitoring</div><div class="detail-value">' + n.monitorType + '</div></div>' +
-                '<div><div class="detail-label">Waktu Kejadian</div><div class="detail-value">' + new Date(n.time).toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) + '</div></div>' +
+                '<div><div class="detail-label">Nama Perangkat<\/div><div class="detail-value">' + n.device + '<\/div><\/div>' +
+                '<div><div class="detail-label">IP Address<\/div><div class="detail-value"><code>' + n.ip + '<\/code><\/div><\/div>' +
+                '<div><div class="detail-label">Status<\/div><div class="detail-value"><span class="notif-event ' + cls + '">' + n.event + '<\/span><\/div><\/div>' +
+                '<div><div class="detail-label">Jenis Monitoring<\/div><div class="detail-value">' + n.monitorType + '<\/div><\/div>' +
+                '<div><div class="detail-label">Waktu Kejadian<\/div><div class="detail-value">' + new Date(n.time).toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) + '<\/div><\/div>' +
                 latencyRow +
-                '<div class="detail-message"><div class="detail-label">Pesan / Keterangan</div><div class="detail-value mt-1">' + n.message + '</div></div>' +
-            '</div>';
+                '<div class="detail-message"><div class="detail-label">Pesan / Keterangan<\/div><div class="detail-value mt-1">' + n.message + '<\/div><\/div>' +
+            '<\/div>';
 
         var modal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
         modal.show();

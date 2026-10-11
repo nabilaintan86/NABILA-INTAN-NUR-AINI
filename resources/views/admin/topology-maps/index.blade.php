@@ -46,7 +46,7 @@
                         @foreach($maps as $map)
                             <tr>
                                 <td>
-                                    <a href="{{ route('admin.topology-maps.show', $map) }}" class="fw-bold text-decoration-none">
+                                    <a href="{{ route('admin.monitoring', ['map' => $map->id]) }}" class="fw-bold text-decoration-none">
                                         {{ $map->name }}
                                     </a>
                                 </td>
@@ -61,8 +61,8 @@
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('admin.topology-maps.show', $map) }}"
-                                       class="btn btn-sm btn-light" title="Lihat">
+                                    <a href="{{ route('admin.monitoring', ['map' => $map->id]) }}"
+                                       class="btn btn-sm btn-light" title="Lihat di Top View">
                                         <em class="icon ni ni-eye"></em>
                                     </a>
                                     <a href="{{ route('admin.topology-maps.edit', $map) }}"
