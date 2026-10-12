@@ -198,6 +198,12 @@ body, .nk-main { background: #f1f5fa; }
     transition: all .2s;
     font-size: 12.5px;
 }
+
+/* ── SPIN ANIMATION ── */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
 </style>
 @endpush
 
@@ -394,7 +400,7 @@ body, .nk-main { background: #f1f5fa; }
                             </button>
                         </div>
 
-                        <div id="testConnectionResult" class="d-none">
+                        <div id="testConnectionResult" style="display:none;">
                             {{-- filled by JS --}}
                         </div>
                     </div>
@@ -414,7 +420,7 @@ body, .nk-main { background: #f1f5fa; }
                         </div>
                         <div>
                             <div class="tg-card-title">Status Bot</div>
-                            <div class="tg-card-sub">Profil & koneksi bot saat ini</div>
+                            <div class="tg-card-sub">Profil &amp; koneksi bot saat ini</div>
                         </div>
                     </div>
                     @php $isOnline = $botProfile['ok'] ?? false; @endphp
@@ -525,21 +531,25 @@ body, .nk-main { background: #f1f5fa; }
                             </div>
                         </div>
                         {{-- Atur Webhook manual --}}
-                        <details style="font-size:12.5px;">
-                            <summary style="cursor:pointer;color:#4f46e5;font-weight:600;margin-bottom:10px;">
-                                <em class="icon ni ni-setting-alt me-1"></em> Atur Webhook (opsional)
-                            </summary>
-                            <form method="POST" action="{{ route('admin.telegram-users.set-webhook') }}" class="mt-2">
-                                @csrf
-                                <div class="tg-form-group mb-2">
-                                    <label class="tg-form-label">URL Webhook</label>
-                                    <input type="url" name="webhook_url" class="tg-input" placeholder="https://yourdomain.com/telegram/webhook" required>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-primary">
-                                    <em class="icon ni ni-link-alt"></em> Set Webhook
-                                </button>
-                            </form>
-                        </details>
+                        <div style="font-size:12.5px;">
+                            <button type="button"
+                                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('em').className=this.querySelector('em').className.includes('ni-plus')?this.querySelector('em').className.replace('ni-plus','ni-minus'):this.querySelector('em').className.replace('ni-minus','ni-plus')"
+                                class="btn btn-sm btn-outline-secondary mb-2" style="font-size:12px;">
+                                <em class="icon ni ni-plus me-1"></em> Atur Webhook (opsional)
+                            </button>
+                            <div style="display:none;">
+                                <form method="POST" action="{{ route('admin.telegram-users.set-webhook') }}" class="mt-1">
+                                    @csrf
+                                    <div class="tg-form-group mb-2">
+                                        <label class="tg-form-label">URL Webhook</label>
+                                        <input type="url" name="webhook_url" class="tg-input" placeholder="https://yourdomain.com/telegram/webhook" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <em class="icon ni ni-link-alt"></em> Set Webhook
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -787,10 +797,15 @@ async function testConnection() {
     const token = document.getElementById('botTokenInput').value.trim();
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin">⟳</span> Menguji...';
-    result.className = 'mt-3 p-3 rounded-3';
+    btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">⟳</span> Menguji...';
+
+    // Tampilkan dan reset result
+    result.style.display = 'block';
     result.style.background = '#f8fafc';
     result.style.border = '1px solid #e2e8f0';
+    result.style.borderRadius = '10px';
+    result.style.padding = '12px 16px';
+    result.style.marginTop = '12px';
     result.innerHTML = '<span style="font-size:12.5px;color:#64748b;">⟳ Menghubungi Telegram API...</span>';
 
     try {
@@ -814,9 +829,10 @@ async function testConnection() {
                     <span style="font-size:20px;">✅</span>
                     <div>
                         <div style="font-size:12.5px;font-weight:700;color:#15803d;">${data.message}</div>
-                        <div style="font-size:11px;color:#16a34a;margin-top:2px;">
-                            Bot ID: <code>${data.bot.id}</code> · 
-                            Latensi: <strong>${data.latency_ms} ms</strong>
+                        <div style="font-size:11px;color:#16a34a;margin-top:4px;">
+                            Bot: <strong>@${data.bot.username ?? 'bot'}</strong> &nbsp;·&nbsp;
+                            ID: <code>${data.bot.id ?? '-'}</code> &nbsp;·&nbsp;
+                            Latensi: <strong>${data.latency_ms ?? '?'} ms</strong>
                         </div>
                     </div>
                 </div>`;

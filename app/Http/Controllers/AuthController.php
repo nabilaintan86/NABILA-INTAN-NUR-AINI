@@ -9,8 +9,26 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+    /**
+     * Redirect ke halaman yang sesuai berdasarkan role user.
+     */
+    private function redirectByRole(): \Illuminate\Http\RedirectResponse
+    {
+        $role = Auth::user()->role ?? 'staff';
+
+        return match ($role) {
+            'super_admin', 'admin' => redirect()->route('admin.dashboard'),
+            default                => redirect()->route('admin.monitoring'),
+        };
+    }
+
     public function showLoginForm()
     {
+        // Jika sudah login, langsung redirect ke dashboard sesuai role
+        if (Auth::check()) {
+            return $this->redirectByRole();
+        }
+
         return view('auth.login');
     }
 
@@ -30,7 +48,14 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->intended('/admin');
+            // Jika ada intended URL (dari middleware auth), gunakan itu
+            // Jika tidak ada, arahkan sesuai role
+            $intended = session()->pull('url.intended');
+            if ($intended) {
+                return redirect($intended);
+            }
+
+            return $this->redirectByRole();
         }
 
         return back()
@@ -59,7 +84,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect('/admin')
+        return $this->redirectByRole()
             ->with('success', 'Akun berhasil dibuat. Selamat datang!');
     }
 
