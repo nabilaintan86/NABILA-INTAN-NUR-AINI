@@ -39,7 +39,7 @@ class AdminLayoutConsistencyTest extends TestCase
         'admin.tools'              => ['Network Tools', 'Network Tools'],
         'admin.kelola-user'        => ['Kelola User', 'Kelola User'],
         'admin.kelola-user.create' => ['Tambah User', 'Tambah User'],
-        'admin.telegram-users'     => ['Telegram Users', 'Telegram Users'],
+        'admin.telegram-users'     => ['Telegram Bot', 'Telegram Bot'],
     ];
 
     protected function setUp(): void

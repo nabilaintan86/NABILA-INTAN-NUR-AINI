@@ -407,6 +407,21 @@ Route::prefix('admin')
             Route::get('/telegram-users', [TelegramUserController::class, 'index'])
                 ->name('telegram-users');
 
+            Route::post('/telegram-users/settings', [TelegramUserController::class, 'updateSettings'])
+                ->name('telegram-users.settings');
+
+            Route::post('/telegram-users/test-connection', [TelegramUserController::class, 'testConnection'])
+                ->name('telegram-users.test-connection');
+
+            Route::post('/telegram-users/test-send', [TelegramUserController::class, 'testSend'])
+                ->name('telegram-users.test-send');
+
+            Route::post('/telegram-users/set-webhook', [TelegramUserController::class, 'setWebhook'])
+                ->name('telegram-users.set-webhook');
+
+            Route::post('/telegram-users/delete-webhook', [TelegramUserController::class, 'deleteWebhook'])
+                ->name('telegram-users.delete-webhook');
+
             Route::post('/telegram-users/{telegramUser}/approve', [TelegramUserController::class, 'approve'])
                 ->name('telegram-users.approve');
 
