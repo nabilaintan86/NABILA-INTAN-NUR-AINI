@@ -2,20 +2,11 @@
     PANEL "DAFTAR DEVICE" — sisi kiri workspace Map Monitoring (RADNET 2026).
 
     Berfungsi sebagai workspace=device & topology map:
-      1. Menampilkan device yang terdaftar di tabel `device` (TANPA data dummy),
-         lengkap dengan icon, tipe, IP, protocol, status UP/DOWN, dan POP/area.
-      2. Device bisa di-drag ke kanvas map untuk ditempatkan (posisi X/Y +
-         pengaitan ke POP/area disimpan ke database).
-      3. Device bisa ditambah, diedit, dan dihapus dari sini (Super Admin),
-         memakai DeviceRegistrar yang sama dengan halaman Kelola Router.
-      4. Mode "Hubungkan" untuk membuat relasi langsung dari map (Super Admin),
-         menulis ke tabel `device_connections` yang sudah ada.
-
-    Semua operasi konfigurasi hanya tersedia untuk Super Admin. Admin/Staff
-    tetap melihat panel ini sebagai daftar read-only.
-
-    Data & endpoint sudah disediakan oleh MonitoringController dan
-    NetworkTopologyService.
+      1. Menampilkan SEMUA device (yang di map maupun belum).
+      2. Device bisa di-drag ke kanvas map untuk ditempatkan.
+      3. Device bisa ditambah, diedit, dan dihapus permanen dari sini.
+      4. Hapus dari sidebar = HAPUS PERMANEN (cascade ke semua map).
+         Hapus dari canvas = keluarkan dari map saja.
 --}}
 @php
     $deviceList     = $deviceList ?? [];
@@ -37,7 +28,7 @@
         min-height: 0;
         position: relative;
     }
-        .wug-device-panel {
+    .wug-device-panel {
         width: 286px;
         flex: 0 0 286px;
         background: #ffffff;
@@ -50,6 +41,107 @@
         overflow: hidden;
         transition: width .2s ease, flex-basis .2s ease;
         z-index: 20;
+    }
+        .wug-fullscreen-btn {
+        position: absolute;
+        right: 14px;
+        top: 14px;        
+        z-index: 300;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid rgba(15,23,42,.18);
+        background: rgba(255,255,255,.95);
+        color: #0f172a;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        box-shadow: 0 4px 12px rgba(15,23,42,.18);
+        transition: transform .12s ease, background .12s ease, color .12s ease;
+        min-width: 40px;
+        max-width: 40px;
+        min-height: 40px;
+        max-height: 40px;
+        box-sizing: border-box;
+    }
+    .wug-fullscreen-btn:hover {
+        background: #0066cc;
+        color: #fff;
+        border-color: #0066cc;
+        transform: translateY(-1px);
+    }
+    .wug-fullscreen-btn.is-active {
+        background: #0066cc;
+        color: #fff;
+        border-color: #0066cc;
+    }
+    @media (max-width: 575.98px) {
+        .wug-fullscreen-btn {
+            width: 34px;
+            height: 34px;
+            right: 10px;
+            top: 10px;
+            font-size: 15px;
+        }
+    }
+        .wug-map-body:fullscreen .wug-fullscreen-btn,
+    .wug-map-body:-webkit-full-screen .wug-fullscreen-btn {
+        width: 40px !important;
+        height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+    
+    .wug-map-body:fullscreen,
+    .wug-map-body:-webkit-full-screen,
+    .wug-map-body:-moz-full-screen,
+    .wug-map-body:-ms-fullscreen {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        min-height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #f1f5f9 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        overflow: hidden !important;
+    }
+    .wug-map-body:fullscreen .wug-device-panel,
+    .wug-map-body:-webkit-full-screen .wug-device-panel {
+        height: 100vh !important;
+        max-height: 100vh !important;
+    }
+    .wug-map-body:fullscreen > *:not(.wug-fullscreen-btn),
+    .wug-map-body:-webkit-full-screen > *:not(.wug-fullscreen-btn) {
+        height: 100vh !important;
+        max-height: 100vh !important;
+    }
+    .wug-map-body:fullscreen .wug-canvas-viewport,
+    .wug-map-body:fullscreen .wug-map-container,
+    .wug-map-body:fullscreen #wugViewport,
+    .wug-map-body:-webkit-full-screen .wug-canvas-viewport,
+    .wug-map-body:-webkit-full-screen .wug-map-container,
+    .wug-map-body:-webkit-full-screen #wugViewport {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+    }
+    .wug-map-body:fullscreen svg,
+    .wug-map-body:-webkit-full-screen svg {
+        height: 100% !important;
+        width: 100% !important;
     }
     .wug-device-panel.is-collapsed {
         width: 44px;
@@ -76,9 +168,7 @@
         gap: 6px;
         flex-shrink: 0;
     }
-    .wug-devpanel-head-text {
-        min-width: 0;
-    }
+    .wug-devpanel-head-text { min-width: 0; }
     .wug-devpanel-title {
         font-size: 12.5px;
         font-weight: 700;
@@ -108,9 +198,7 @@
         flex-shrink: 0;
         font-size: 13px;
     }
-    .wug-devpanel-toggle:hover {
-        background: rgba(255,255,255,.3);
-    }
+    .wug-devpanel-toggle:hover { background: rgba(255,255,255,.3); }
 
     .wug-devpanel-search {
         padding: 8px 10px;
@@ -147,12 +235,41 @@
         border-color: #94a3b8;
         box-shadow: 0 2px 8px rgba(15,23,42,.12);
     }
-    .wug-dev-item.is-dragging {
-        opacity: .45;
+    .wug-dev-item.is-dragging { opacity: .45; }
+    .wug-dev-item.st-up      { border-left-color: #22c55e; }
+    .wug-dev-item.st-down    { border-left-color: #dc2626; background: #fef2f2; }
+    .wug-dev-item.st-warning { border-left-color: #f59e0b; background: #fffbeb; }
+    .wug-dev-item.is-placed {
+        background: #f1f5f9;
+        border-left-color: #22c55e;
+        cursor: not-allowed !important;
     }
-    .wug-dev-item.st-up     { border-left-color: #22c55e; }
-    .wug-dev-item.st-down   { border-left-color: #dc2626; background: #fef2f2; }
-    .wug-dev-item.st-warning{ border-left-color: #f59e0b; background: #fffbeb; }
+    .wug-dev-item.is-placed .wug-dev-icon,
+    .wug-dev-item.is-placed .wug-dev-info {
+        opacity: .55;
+    }
+    .wug-dev-item.is-placed:hover {
+        box-shadow: none;
+        border-color: #e2e8f0;
+        border-left-color: #22c55e;
+    }
+    /* Tombol edit & hapus tetap full opacity walau item disable */
+    .wug-dev-item.is-placed .wug-dev-actions {
+        opacity: 1;
+    }
+    .wug-dev-item.is-placed .wug-dev-btn {
+        background: #fff;
+        border-color: #cbd5e1;
+    }
+    .wug-dev-item.is-placed .wug-dev-btn:hover {
+        background: #0066cc;
+        color: #fff;
+        border-color: #0066cc;
+    }
+    .wug-dev-item.is-placed .wug-dev-btn.danger:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+    }
 
     .wug-dev-icon {
         width: 30px;
@@ -160,10 +277,7 @@
         flex: 0 0 30px;
         object-fit: contain;
     }
-    .wug-dev-info {
-        min-width: 0;
-        flex: 1 1 auto;
-    }
+    .wug-dev-info { min-width: 0; flex: 1 1 auto; }
     .wug-dev-name {
         font-size: 12px;
         font-weight: 700;
@@ -182,10 +296,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .wug-dev-meta .dot {
-        margin: 0 3px;
-        color: #cbd5e1;
-    }
+    .wug-dev-meta .dot { margin: 0 3px; color: #cbd5e1; }
     .wug-dev-tags {
         display: flex;
         align-items: center;
@@ -259,7 +370,6 @@
         flex-shrink: 0;
     }
 
-    /* Drop indicator saat device di-drag ke kanvas */
     .wug-canvas-viewport.is-drop-target {
         outline: 2px dashed #2563eb;
         outline-offset: -6px;
@@ -283,10 +393,7 @@
     .wug-drop-hint.is-visible { display: block; }
     .wug-drop-hint .area { color: #93c5fd; }
 
-    /* Mode Hubungkan */
-    .wug-map-container.connect-mode .topo-node {
-        cursor: crosshair;
-    }
+    .wug-map-container.connect-mode .topo-node { cursor: crosshair; }
     .wug-map-container.connect-mode .topo-node:hover image {
         filter: drop-shadow(0 0 6px #f59e0b) brightness(1.15);
     }
@@ -318,9 +425,7 @@
         cursor: pointer;
         color: #000;
     }
-    .wug-node-selected {
-        filter: drop-shadow(0 0 7px #f59e0b);
-    }
+    .wug-node-selected { filter: drop-shadow(0 0 7px #f59e0b); }
 
     @media (max-width: 991.98px) {
         .wug-device-panel {
@@ -359,6 +464,7 @@
                 <option value="{{ $ar->name }}">{{ $ar->name }}</option>
             @endforeach
             <option value="__Belum ditempatkan">Belum ditempatkan</option>
+            <option value="__Di map">Di Map</option>
         </select>
     </div>
 
@@ -369,7 +475,7 @@
     <div class="wug-devpanel-foot">
         @if($panelSuperAdmin)
             <em class="icon ni ni-info me-1"></em> Seret device ke kanvas untuk menempatkan posisinya.
-            Device baru langsung ikut monitoring &amp; ping otomatis.
+            Tombol <em class="icon ni ni-trash"></em> = hapus permanen dari sistem.
         @else
             <em class="icon ni ni-eye me-1"></em> Mode baca saja. Konfigurasi map hanya untuk Super Admin.
         @endif
@@ -533,8 +639,10 @@
         </div>
     </div>
 </div>
-{{-- MODAL: KONFIRMASI HAPUS --}}
 
+{{-- ============================================================
+     MODAL: KONFIRMASI HAPUS
+     ============================================================ --}}
 <div class="modal fade" id="wugModalConfirmDelete" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -557,7 +665,36 @@
 </div>
 
 {{-- ============================================================
-     MODAL: HUBUNGKAN DUA DEVICE (dipanggil dari mode Hubungkan di map)
+     MODAL: INFO — Device sudah ada di map
+     ============================================================ --}}
+<div class="modal fade" id="wugModalAlreadyPlaced" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white py-2">
+                <h6 class="modal-title text-white fs-14px">
+                    <em class="icon ni ni-info me-1"></em> Device Sudah Ada di Map
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-3 text-center">
+                <em class="icon ni ni-map-pin fs-1 text-info d-block mb-2"></em>
+                <p class="mb-1 small text-muted">Device:</p>
+                <p class="fw-bold text-dark mb-2" id="wugAlreadyPlacedName">-</p>
+                <p class="mb-1 small text-muted">Sudah ditempatkan di:</p>
+                <p class="fw-bold text-primary mb-0" id="wugAlreadyPlacedArea">-</p>
+                <p class="text-muted small mt-3 mb-0">
+                    Keluarkan device ini dari canvas jika ingin memindahkannya.
+                </p>
+            </div>
+            <div class="modal-footer py-2 justify-content-center">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">OK, Mengerti</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ============================================================
+     MODAL: HUBUNGKAN DUA DEVICE
      ============================================================ --}}
 <div class="modal fade" id="wugModalConnect" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -657,6 +794,36 @@
     var pendingConnect = null;
     var pendingDelete = null;
 
+    function fsElement() {
+        return document.fullscreenElement
+            || document.webkitFullscreenElement
+            || document.mozFullScreenElement
+            || document.msFullscreenElement
+            || null;
+    }
+
+    function enterFullscreen(el) {
+        if (!el) return;
+        var fn = el.requestFullscreen
+            || el.webkitRequestFullscreen
+            || el.mozRequestFullScreen
+            || el.msRequestFullscreen;
+        if (!fn) return;
+        var p = fn.call(el);
+        if (p && typeof p.catch === 'function') {
+            p.catch(function () { /* browser tolak, diamkan */ });
+        }
+    }
+
+    function exitFullscreen() {
+        if (!fsElement()) return;
+        var fn = document.exitFullscreen
+            || document.webkitExitFullscreen
+            || document.mozCancelFullScreen
+            || document.msExitFullscreen;
+        if (fn) fn.call(document);
+    }
+
     function iconFile(key) {
         return ICONS[String(key || '').toLowerCase()] || 'server.png';
     }
@@ -671,24 +838,29 @@
             .split("'").join('&#39;');
     }
 
-    function statusClass(status) {
-        var s = String(status || '').toLowerCase();
-        return s === 'up' ? 'up' : (s === 'down' ? 'down' : (s === 'warning' ? 'warning' : 'other'));
+    function isPlacedDevice(d) {
+        return !!(d.placed || (d.position_id && d.position_id > 0));
     }
 
-    /* ------------------------------------------------------------------
-       RENDER DAFTAR DEVICE (sumber: tabel `device`, bukan data dummy)
-       ------------------------------------------------------------------ */
-    function visibleDevices() {
+    function statusClass(status) {
+        var s = String(status || '').toLowerCase();
+        if (s === 'up' || s === 'online' || s === 'active') return 'up';
+        if (s === 'down' || s === 'offline') return 'down';
+        if (s === 'warning' || s === 'degraded') return 'warning';
+        return 'other';
+    }
+
+        function visibleDevices() {
         var q = (searchEl && searchEl.value || '').toLowerCase().trim();
         var areaFilter = areaEl && areaEl.value ? areaEl.value : '';
 
         return devices.filter(function (d) {
-            // Perangkat yang sudah ditempatkan di map tidak ditampilkan di daftar panel samping
-            if (d.placed) return false;
+            var placed = isPlacedDevice(d);
 
             if (areaFilter === '__Belum ditempatkan') {
-                if (d.area) return false;
+                if (placed) return false;
+            } else if (areaFilter === '__Di map') {
+                if (!placed) return false;
             } else if (areaFilter && d.area !== areaFilter) {
                 return false;
             }
@@ -700,29 +872,18 @@
 
     function render() {
         if (!listEl) return;
-        var unplaced = devices.filter(function (d) { return !d.placed; });
+        var placed   = devices.filter(function (d) { return isPlacedDevice(d); });
+        var unplaced = devices.filter(function (d) { return !isPlacedDevice(d); });
         var rows = visibleDevices();
 
         if (countEl) {
-            countEl.textContent = unplaced.length > 0
-                ? unplaced.length + ' belum di map'
-                : 'Semua sudah di map';
-        }
-
-        if (unplaced.length === 0) {
-            listEl.innerHTML = '<div class="wug-devpanel-empty py-4 text-center">'
-                + '<em class="icon ni ni-check-circle text-success fs-1 d-block mb-2"><\/em>'
-                + '<strong class="text-dark d-block fs-13px">Semua Perangkat Sudah di Map<\/strong>'
-                + '<div class="small text-muted mt-1 px-3">Perangkat baru atau yang dikeluarkan dari map akan muncul di sini untuk ditempatkan.<\/div>'
-                + '<\/div>';
-            window.WugDeviceList = devices;
-            return;
+            countEl.textContent = devices.length + ' total (' + placed.length + ' di map)';
         }
 
         if (!rows.length) {
-            listEl.innerHTML = '<div class="wug-devpanel-empty py-3 text-center">'
-                + '<em class="icon ni ni-search fs-3 d-block mb-1 text-muted"><\/em>'
-                + '<div class="small text-muted">Tidak ada perangkat yang cocok dengan pencarian.<\/div>'
+            listEl.innerHTML = '<div class="wug-devpanel-empty py-4 text-center">'
+                + '<em class="icon ni ni-search fs-2 d-block mb-2 text-muted"><\/em>'
+                + '<div class="small text-muted">Tidak ada perangkat yang cocok.<\/div>'
                 + '<\/div>';
             window.WugDeviceList = devices;
             return;
@@ -731,24 +892,43 @@
         var html = '';
         rows.forEach(function (d) {
             var st = statusClass(d.status);
-            var areaTag = d.area
-                ? '<span class="wug-dev-tag area">' + escapeHtml(d.area) + '<\/span>'
-                : '<span class="wug-dev-tag unplaced">Belum di map<\/span>';
+            var isPlaced = isPlacedDevice(d);
 
+            // Badge: kalau placed → tampilkan nama area/Map
+            var areaTag;
+            if (isPlaced) {
+                var areaName = d.area ? escapeHtml(d.area) : 'Map';
+                areaTag = '<span class="wug-dev-tag placed" title="Sudah ada di: ' + areaName + '">'
+                    + '✓ Di Map: ' + areaName + '<\/span>';
+            } else if (d.area) {
+                areaTag = '<span class="wug-dev-tag area">' + escapeHtml(d.area) + '<\/span>';
+            } else {
+                areaTag = '<span class="wug-dev-tag unplaced">Belum di map<\/span>';
+            }
+
+            // Tombol edit & hapus — selalu ada untuk Super Admin
             var actions = '';
             if (isSuperAdmin) {
                 actions = '<div class="wug-dev-actions">'
                     + '<button type="button" class="wug-dev-btn" data-wug-act="edit" data-id="' + d.id + '" title="Edit perangkat">'
                     + '<em class="icon ni ni-edit"><\/em><\/button>'
-                    + '<button type="button" class="wug-dev-btn danger" data-wug-act="delete" data-id="' + d.id + '" title="Hapus perangkat dari sistem">'
+                    + '<button type="button" class="wug-dev-btn danger" data-wug-act="delete" data-id="' + d.id + '" title="Hapus permanen dari sistem">'
                     + '<em class="icon ni ni-trash"><\/em><\/button>'
                     + '<\/div>';
             }
-            html += '<div class="wug-dev-item st-' + escapeHtml(st) + '"'
+
+            // 🔑 Device yang sudah di map: TIDAK draggable
+            //    Tapi tetap punya draggable="true" supaya bisa intercept dragstart
+            //    dan tampilkan popup info (lihat bindDrag).
+            var canDrag = isSuperAdmin;
+
+            html += '<div class="wug-dev-item st-' + escapeHtml(st)
+                + (isPlaced ? ' is-placed' : '') + '"'
                 + ' data-id="' + d.id + '"'
                 + ' data-position-id="' + (d.position_id || '') + '"'
                 + ' data-name="' + escapeHtml(d.name) + '"'
-                + (isSuperAdmin ? ' draggable="true"' : '') + '>'        
+                + ' data-placed="' + (isPlaced ? '1' : '0') + '"'
+                + (canDrag ? ' draggable="true"' : '') + '>'
                 + '<img class="wug-dev-icon" src="' + iconBase + '/' + iconFile(d.icon) + '" alt="">'
                 + '<div class="wug-dev-info">'
                 + '<div class="wug-dev-name"><span class="wug-dev-status ' + escapeHtml(st) + '"><\/span>'
@@ -790,7 +970,16 @@
        ------------------------------------------------------------------ */
     function bindDrag(item) {
         item.addEventListener('dragstart', function (e) {
-            draggedDevice = devices.find(function (d) { return String(d.id) === item.dataset.id; }) || null;
+            var dev = devices.find(function (d) { return String(d.id) === item.dataset.id; }) || null;
+
+            // 🚫 Device yang sudah di map → blokir drag + tampilkan popup info
+            if (dev && isPlacedDevice(dev)) {
+                e.preventDefault();
+                showAlreadyPlaced(dev);
+                return false;
+            }
+
+            draggedDevice = dev;
             item.classList.add('is-dragging');
             e.dataTransfer.effectAllowed = 'move';
             try {
@@ -806,7 +995,6 @@
             if (viewport) viewport.classList.remove('is-drop-target');
         });
     }
-
     function hideDropHint() {
         dropHint.classList.remove('is-visible');
     }
@@ -822,10 +1010,6 @@
         dropHint.classList.add('is-visible');
     }
 
-    /* ------------------------------------------------------------------
-       DRAG & DROP — pakai document + delegation, karena #wugViewport
-       belum ada saat panel di-include (panel di atas viewport).
-       ------------------------------------------------------------------ */
     function getViewport() {
         return document.getElementById('wugViewport');
     }
@@ -884,17 +1068,12 @@
         var pt = topo.getSvgPoint(e);
         placeDevice(device, Math.round(pt.x), Math.round(pt.y));
     });
+        function placeDevice(device, x, y) {
+        if (isPlacedDevice(device)) {
+            showAlreadyPlaced(device);
+            return;
+        }
 
-    /**
-     * Simpan posisi device ke database lewat endpoint posisi yang sudah ada
-     * (`device.pos_x` / `device.pos_y` / `device.map_positioned`).
-     *
-     * Area/POP ikut dikaitkan memakai `device.network_area_id` yang juga dipakai
-     * NetworkTopologyService untuk mengelompokkan device ke panel area.
-     * Bila device dilepas di luar semua kotak area, area terdekat yang dipilih
-     * supaya device tetap tampil sebagai anggota area tersebut.
-     */
-    function placeDevice(device, x, y) {
         var topo = window.WugTopology;
         var area = topo && topo.areaAt ? topo.areaAt(x, y) : null;
 
@@ -938,6 +1117,15 @@
             return;
         }
         alert(message);
+    }
+
+    function showAlreadyPlaced(device) {
+        if (!device) return;
+        var nameEl = document.getElementById('wugAlreadyPlacedName');
+        var areaEl = document.getElementById('wugAlreadyPlacedArea');
+        if (nameEl) nameEl.textContent = device.name || 'Device';
+        if (areaEl) areaEl.textContent = device.area || 'Map (area tidak diketahui)';
+        modalOf('wugModalAlreadyPlaced').show();
     }
 
     function modalOf(id) {
@@ -1095,30 +1283,54 @@
         });
     }
 
-    function destroyDevice(device) {
+    /* ============================================================
+       FIX #3: destroyDevice(device, mode)
+       mode = 'sidebar' → HAPUS PERMANEN
+       mode = 'canvas'  → KELUARKAN dari map
+       ============================================================ */
+    function destroyDevice(device, mode) {
         if (!device) return;
 
+        mode = mode || 'sidebar';
         var posId = device.position_id || null;
-        var isPlaced = !!(device.placed || (posId && posId > 0) || mapId);
+        var isPlaced = isPlacedDevice(device);
+        var isPermanent = (mode === 'sidebar');
 
-        document.getElementById('wugDeleteTitle').textContent = isPlaced
-            ? 'Keluarkan ' + (device.name || 'perangkat') + ' dari Map?'
-            : 'Hapus ' + (device.name || 'perangkat') + '?';
-
-        document.getElementById('wugDeleteName').textContent = isPlaced
-            ? 'Perangkat akan dikeluarkan dari map ini dan posisinya dilepas. Perangkat akan kembali berstatus bebas dan siap dipindahkan ke map lain atau dimasukkan kembali.'
-            : 'Yakin ingin menghapus perangkat ini secara permanen dari sistem?';
-
+        var titleEl = document.getElementById('wugDeleteTitle');
+        var nameEl  = document.getElementById('wugDeleteName');
         var btnConfirm = document.getElementById('wugBtnConfirmDelete');
-        if (btnConfirm) {
-            btnConfirm.textContent = isPlaced ? 'Keluarkan dari Map' : 'Hapus Permanen';
+
+        if (isPermanent) {
+            if (titleEl) titleEl.textContent = 'Hapus ' + (device.name || 'perangkat') + ' Permanen?';
+            if (nameEl) {
+                nameEl.innerHTML = 'Perangkat <strong>' + escapeHtml(device.name || '') + '</strong> akan dihapus '
+                    + '<span class="text-danger fw-bold">PERMANEN</span> dari sistem, termasuk dari '
+                    + '<strong>SEMUA map</strong> yang memuatnya.<br><br>'
+                    + '<span class="text-muted small">Tindakan ini tidak bisa dibatalkan.</span>';
+            }
+            if (btnConfirm) btnConfirm.textContent = 'Hapus Permanen';
+        } else {
+            if (titleEl) titleEl.textContent = 'Keluarkan ' + (device.name || 'perangkat') + ' dari Map?';
+            if (nameEl) {
+                nameEl.innerHTML = 'Perangkat akan dikeluarkan dari map ini dan posisinya dilepas.<br><br>'
+                    + '<span class="text-muted small">Perangkat <strong>tetap ada di sistem</strong> dan bisa dimasukkan kembali ke map kapan saja.</span>';
+            }
+            if (btnConfirm) btnConfirm.textContent = 'Keluarkan dari Map';
         }
 
-        pendingDelete = { device: device, posId: posId, isPlaced: isPlaced };
+        pendingDelete = {
+            device: device,
+            posId: posId,
+            isPlaced: isPlaced,
+            mode: mode,
+            isPermanent: isPermanent,
+        };
         modalOf('wugModalConfirmDelete').show();
     }
 
-    // Handler tombol "Hapus" di modal konfirmasi
+    /* ============================================================
+       FIX #4: Handler btnConfirmDelete — pakai pd.mode
+       ============================================================ */
     var btnConfirmDelete = document.getElementById('wugBtnConfirmDelete');
     if (btnConfirmDelete) {
         btnConfirmDelete.addEventListener('click', function () {
@@ -1126,13 +1338,15 @@
             var pd = pendingDelete;
             pendingDelete = null;
 
-            var url = (mapId)
-                ? URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id)
-                : ((pd.isPlaced && pd.posId && pd.posId > 0)
-                    ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.posId)
-                    : (pd.isPlaced
-                        ? URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.device.id)
-                        : URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id)));
+            var url;
+            if (pd.mode === 'canvas') {
+                // DARI CANVAS → keluarkan dari map saja
+                url = URLS.positionDestroyTpl.replace('__POSITION_ID__', pd.posId || pd.device.id);
+            } else {
+                // DARI SIDEBAR → HAPUS PERMANEN dari sistem
+                url = URLS.destroyTpl.replace('__DEVICE_ID__', pd.device.id);
+                url += (url.indexOf('?') === -1 ? '?' : '&') + 'permanent=1';
+            }
 
             var modal = bootstrap.Modal.getInstance(document.getElementById('wugModalConfirmDelete'));
             if (modal) modal.hide();
@@ -1157,13 +1371,13 @@
         });
     }
 
-    /* ------------------------------------------------------------------
-       AKSI DI DALAM PANEL
-       ------------------------------------------------------------------ */
+    /* ============================================================
+       FIX #5: AKSI DI DALAM PANEL — kirim mode 'sidebar'
+       ============================================================ */
     if (listEl) {
         listEl.addEventListener('click', function (e) {
             var btn = e.target.closest('[data-wug-act]');
-                if (btn) {
+            if (btn) {
                 var itemEl = btn.closest('.wug-dev-item');
                 var posId = itemEl ? itemEl.dataset.positionId : '';
                 var device = devices.find(function (d) {
@@ -1171,7 +1385,7 @@
                         && (posId ? String(d.position_id) === String(posId) : true);
                 });
                 if (btn.dataset.wugAct === 'edit') openEditDevice(device);
-                if (btn.dataset.wugAct === 'delete') destroyDevice(device);
+                if (btn.dataset.wugAct === 'delete') destroyDevice(device, 'sidebar');
                 if (btn.dataset.wugAct === 'focus' && window.WugTopology) {
                     window.WugTopology.focusNode(parseInt(btn.dataset.id, 10));
                 }
@@ -1190,20 +1404,78 @@
 
     if (searchEl) searchEl.addEventListener('input', render);
     if (areaEl) areaEl.addEventListener('change', render);
-
-    var panelToggle = document.getElementById('btnToggleDevicePanel');
+        var panelToggle = document.getElementById('btnToggleDevicePanel');
     if (panelToggle) {
         panelToggle.addEventListener('click', function () {
             var collapsed = panelEl.classList.toggle('is-collapsed');
-            var icon = document.getElementById('iconToggleDevicePanel');
-            if (icon) icon.className = collapsed ? 'icon ni ni-align-right' : 'icon ni ni-align-left';
             var iconEl = this.querySelector('em');
             if (iconEl) iconEl.className = collapsed ? 'icon ni ni-align-right' : 'icon ni ni-align-left';
+
+            // Trigger resize biar SVG canvas re-layout setelah lebar berubah
+            setTimeout(function () {
+                window.dispatchEvent(new Event('resize'));
+                if (window.WugTopology && window.WugTopology.refresh) {
+                    try { window.WugTopology.refresh(); } catch (e) {}
+                }
+            }, 220);
         });
     }
 
+    /* ============================================================
+       TOMBOL FULLSCREEN MANUAL — Floating di pojok kanan bawah map
+       ============================================================ */
+    (function initFullscreenButton() {
+        var mapBody = document.querySelector('.wug-map-body');
+        if (!mapBody) return;
+
+        // Cegah duplikat kalau file di-include lebih dari sekali
+        if (mapBody.querySelector('.wug-fullscreen-btn')) return;
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'wug-fullscreen-btn';
+        btn.title = 'Fullscreen map (ESC untuk keluar)';
+        btn.innerHTML = '<em class="icon ni ni-expand"></em>';
+        mapBody.appendChild(btn);
+
+        btn.addEventListener('click', function () {
+            if (fsElement()) {
+                exitFullscreen();
+            } else {
+                enterFullscreen(mapBody);
+            }
+        });
+
+        function syncBtn() {
+            var active = !!fsElement();
+            btn.classList.toggle('is-active', active);
+            var icon = btn.querySelector('em');
+            if (icon) {
+                icon.className = active
+                    ? 'icon ni ni-shrink'
+                    : 'icon ni ni-expand';
+            }
+            btn.title = active ? 'Keluar fullscreen (ESC)' : 'Fullscreen map';
+        }
+
+        ['fullscreenchange', 'webkitfullscreenchange',
+         'mozfullscreenchange', 'MSFullscreenChange'].forEach(function (evt) {
+            document.addEventListener(evt, function () {
+                syncBtn();
+                setTimeout(function () {
+                    window.dispatchEvent(new Event('resize'));
+                    if (window.WugTopology && window.WugTopology.refresh) {
+                        try { window.WugTopology.refresh(); } catch (e) {}
+                    }
+                }, 120);
+            });
+        });
+
+        syncBtn();
+    })();
+
     /* ------------------------------------------------------------------
-       MODE HUBUNGKAN — Super Admin membuat relasi langsung dari map
+       MODE HUBUNGKAN
        ------------------------------------------------------------------ */
     window.WugConnectRequested = function (fromNode, toNode) {
         pendingConnect = { from: fromNode, to: toNode };
@@ -1229,7 +1501,7 @@
                 fetch(URLS.connection, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                                body: JSON.stringify({
+                    body: JSON.stringify({
                         from_device_id: pendingConnect.from.device_id || pendingConnect.from.id,
                         to_device_id: pendingConnect.to.device_id || pendingConnect.to.id,
                         from_position_id: pendingConnect.from.id > 0 ? pendingConnect.from.id : null,
@@ -1269,9 +1541,9 @@
         });
     }
 
-    /* ------------------------------------------------------------------
-       JEMBATAN UNTUK KOMPONEN MAP
-       ------------------------------------------------------------------ */
+    /* ============================================================
+       FIX #6: JEMBATAN UNTUK KOMPONEN MAP — deleteDevice mode 'canvas'
+       ============================================================ */
     window.WugDevicePanel = {
         refresh: refreshDevices,
         render: render,
@@ -1306,10 +1578,12 @@
                     });
             }
         },
-        deleteDevice: function (device) { destroyDevice(device); }
+        // Dipanggil dari canvas (tombol hapus di detail modal map)
+        // → mode 'canvas' = keluarkan dari map saja
+        deleteDevice: function (device) { destroyDevice(device, 'canvas'); }
     };
 
-    // Render awal + refresh berkala agar status & device baru selalu sinkron.
+    // Render awal + refresh berkala
     render();
     setInterval(refreshDevices, 30000);
 })();

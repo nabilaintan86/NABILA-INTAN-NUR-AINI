@@ -271,21 +271,18 @@ class MonitoringController extends Controller
         ]);
     }
 
-    /**
-     * Hapus perangkat beserta relasinya (Super Admin).
-     *
-     * Jika request membawa `map_id`, perangkat hanya dikeluarkan dari custom map
-     * tersebut (record master Device tetap aman) agar bisa dipindahkan ke map lain.
-     * Jika tanpa `map_id`, perangkat dihapus permanen dari sistem.
-     */
-    public function destroyDevice(Request $request, Device $device)
+        public function destroyDevice(Request $request, Device $device)
     {
         if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus perangkat.')) {
             return $forbidden;
         }
 
         $mapId = $request->query('map_id') ?: $request->input('map_id');
-        if ($mapId && \Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')) {
+        $permanent = $request->query('permanent') ?: $request->input('permanent');
+        $isPermanent = filter_var($permanent, FILTER_VALIDATE_BOOLEAN);
+
+        // ── KALAU BUKAN HAPUS PERMANEN → cuma keluarkan dari map ──
+        if (!$isPermanent && $mapId && \Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')) {
             $topologyMap = \App\Models\TopologyMap::find($mapId);
             if ($topologyMap) {
                 $mapDevice = \App\Models\TopologyMapDevice::where('topology_map_id', $mapId)
@@ -311,6 +308,7 @@ class MonitoringController extends Controller
             }
         }
 
+        // ── HAPUS PERMANEN dari sistem ──
         $name = $device->name;
 
         if (\Illuminate\Support\Facades\Schema::hasTable('topology_map_devices')) {
@@ -331,10 +329,7 @@ class MonitoringController extends Controller
             'topology' => $this->topologyService->build(),
         ]);
     }
-
-    /**
-     * Hapus SATU POSISI / keluarkan device dari map (device tetap ada di DB).
-     */
+    
     public function destroyPosition(Request $request, $position)
     {
         if ($forbidden = $this->guardSuperAdmin('Hanya Super Admin yang dapat menghapus posisi perangkat.')) {
