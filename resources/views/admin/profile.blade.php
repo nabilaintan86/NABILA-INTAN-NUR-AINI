@@ -167,7 +167,7 @@
 
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-outline-primary" id="profilePhotoPickButton">
-                            <em class="icon ni ni-pick"></em>
+                            <em class="icon ni ni-camera"></em>
                             Ganti Foto
                         </button>
                         <button type="submit" class="btn btn-primary">

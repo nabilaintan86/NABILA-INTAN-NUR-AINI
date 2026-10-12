@@ -13,7 +13,7 @@ trait CreatesDeviceTables
 {
     protected function createDeviceTables(): void
     {
-        foreach (['device', 'device_connections', 'monitoring_logs'] as $table) {
+        foreach (['devices', 'device_connections', 'monitoring_logs'] as $table) {
             Schema::dropIfExists($table);
         }
 
@@ -35,7 +35,7 @@ trait CreatesDeviceTables
             });
         }
 
-        Schema::create('device', function (Blueprint $table) {
+        Schema::create('devices', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->string('ip_address')->nullable();
@@ -46,8 +46,28 @@ trait CreatesDeviceTables
             $table->float('avg_delay')->default(0);
             $table->float('responded_percentage')->default(0);
             $table->unsignedInteger('alerts_count')->default(0);
+            $table->unsignedBigInteger('network_area_id')->nullable();
             $table->timestamps();
         });
+
+        if (! Schema::hasTable('network_areas')) {
+            Schema::create('network_areas', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->string('code')->nullable();
+                $table->text('description')->nullable();
+                $table->integer('pos_x')->default(20);
+                $table->integer('pos_y')->default(20);
+                $table->integer('width')->default(280);
+                $table->integer('height')->default(220);
+                $table->string('border_color', 20)->default('#1a8024');
+                $table->string('bg_color', 20)->default('#f8fafc');
+                $table->string('title_color', 20)->default('#1a8024');
+                $table->integer('sort_order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
 
         Schema::create('device_connections', function (Blueprint $table) {
             $table->id();

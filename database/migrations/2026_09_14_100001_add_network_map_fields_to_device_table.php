@@ -12,14 +12,14 @@ return new class extends Migration
         // jadi dilewati bila sudah ada (pola yang dipakai migration lain).
         $missing = array_values(array_filter(
             ['icon_type', 'pop_name'],
-            fn (string $column): bool => ! Schema::hasColumn('device', $column)
+            fn (string $column): bool => ! Schema::hasColumn('devices', $column)
         ));
 
         if ($missing === []) {
             return;
         }
 
-        Schema::table('device', function (Blueprint $table) use ($missing) {
+        Schema::table('devices', function (Blueprint $table) use ($missing) {
             foreach ($missing as $column) {
                 $table->string($column)->nullable();
             }
@@ -28,7 +28,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('device', function (Blueprint $table) {
+        Schema::table('devices', function (Blueprint $table) {
             $table->dropColumn(['icon_type', 'pop_name']);
         });
     }

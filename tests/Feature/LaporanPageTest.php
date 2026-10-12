@@ -87,8 +87,8 @@ class LaporanPageTest extends TestCase
             });
         }
 
-        if (! Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table) {
+        if (! Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
                 $table->string('ip_address')->nullable();

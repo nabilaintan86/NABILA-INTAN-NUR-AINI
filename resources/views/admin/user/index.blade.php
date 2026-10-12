@@ -86,9 +86,6 @@
                 <div class="col-md-8 col-lg-10">
                     <div class="form-group">
                         <div class="form-control-wrap">
-                            <div class="form-icon form-icon-left">
-                                <em class="icon ni ni-search"></em>
-                            </div>
                             <input type="text"
                                    name="search"
                                    value="{{ $search }}"

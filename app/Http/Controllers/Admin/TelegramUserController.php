@@ -91,9 +91,11 @@ class TelegramUserController extends Controller
 
     public function approve(Request $request, TelegramUser $telegramUser, TelegramService $telegram, TelegramUserService $users)
     {
+        $role = $request->input('role', $telegramUser->role === 'pending' ? 'staff' : $telegramUser->role);
+
         $telegramUser->update([
             'is_approved' => true,
-            'role' => $telegramUser->role === 'pending' ? 'staff' : $telegramUser->role,
+            'role' => $role,
         ]);
 
         $message = "🎉 Akses Telegram RADNET Anda telah disetujui!\n\n".

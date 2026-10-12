@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table): void {
+        if (! Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table): void {
                 $table->id();
                 $table->string('name');
                 $table->string('ip_address')->nullable();
@@ -74,11 +74,11 @@ return new class extends Migration
         ];
 
         foreach ($columns as $name => $definition) {
-            if (Schema::hasColumn('device', $name)) {
+            if (Schema::hasColumn('devices', $name)) {
                 continue;
             }
 
-            Schema::table('device', function (Blueprint $table) use ($definition): void {
+            Schema::table('devices', function (Blueprint $table) use ($definition): void {
                 $definition($table);
             });
         }
@@ -86,5 +86,6 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('devices');
     }
 };

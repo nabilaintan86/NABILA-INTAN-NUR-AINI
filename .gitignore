@@ -23,5 +23,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# Aplikasi editor curah (bukan bagian proyek)
-cursor-latest.AppImage
+# Backup files
+*.bak
+*.bak2
+*.bak-restore
+device_monitoring
+device_monitoring.bak

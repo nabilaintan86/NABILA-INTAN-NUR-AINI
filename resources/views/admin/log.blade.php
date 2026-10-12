@@ -302,7 +302,7 @@
             if (to)   params.set('to', to);
 
             archiveContainer.innerHTML = '<div class="text-center text-muted py-5">' +
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></div>';
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"><\/span><\/div>';
 
             fetch('{{ route('admin.log.archive') }}?' + params.toString(), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -352,7 +352,7 @@
             document.getElementById('logDetailModalLabel').textContent = 'Detail Log';
             document.getElementById('logDetailBody').innerHTML =
                 '<div class="text-center text-muted py-4">' +
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></div>';
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"><\/span><\/div>';
 
             modal.show();
 
@@ -367,7 +367,7 @@
                 })
                 .catch(function () {
                     document.getElementById('logDetailBody').innerHTML =
-                        '<p class="text-center text-danger py-4 mb-0">Gagal memuat detail log.</p>';
+                        '<p class="text-center text-danger py-4 mb-0">Gagal memuat detail log.<\/p>';
                 });
         }
 
@@ -379,23 +379,23 @@
                                            : 'text-bg-warning-soft';
 
             let html = '<div class="d-flex align-items-center gap-3 mb-3">' +
-                '<span class="badge ' + badgeCls + ' fs-6">' + st.toUpperCase() + '</span>' +
+                '<span class="badge ' + badgeCls + ' fs-6">' + st.toUpperCase() + '<\/span>' +
                 '<div>' +
-                    '<div class="fw-semibold text-body">' + escapeHtml(log.device_name) + '</div>' +
-                    '<div class="small text-muted">' + escapeHtml(log.ip_address) + ' \u2022 ' + escapeHtml(log.checked_at) + '</div>' +
-                '</div>' +
-            '</div>';
+                    '<div class="fw-semibold text-body">' + escapeHtml(log.device_name) + '<\/div>' +
+                    '<div class="small text-muted">' + escapeHtml(log.ip_address) + ' \u2022 ' + escapeHtml(log.checked_at) + '<\/div>' +
+                '<\/div>' +
+            '<\/div>';
 
             html += '<table class="table table-sm table-bordered align-middle mb-3">' +
                 '<tbody>' +
-                    '<tr><td class="fw-semibold">Waktu</td><td>' + escapeHtml(log.checked_at) + '</td></tr>' +
-                    '<tr><td class="fw-semibold">IP Address</td><td><code>' + escapeHtml(log.ip_address) + '</code></td></tr>' +
-                    '<tr><td class="fw-semibold">Response Time</td><td>' +
+                    '<tr><td class="fw-semibold">Waktu<\/td><td>' + escapeHtml(log.checked_at) + '<\/td><\/tr>' +
+                    '<tr><td class="fw-semibold">IP Address<\/td><td><code>' + escapeHtml(log.ip_address) + '<\/code><\/td><\/tr>' +
+                    '<tr><td class="fw-semibold">Response Time<\/td><td>' +
                         (log.response_time !== null && log.response_time !== undefined
                             ? escapeHtml(String(log.response_time)) + ' ms' : '\u2014') +
-                    '</td></tr>' +
-                '</tbody>' +
-            '</table>';
+                    '<\/td><\/tr>' +
+                '<\/tbody>' +
+            '<\/table>';
 
             if (data.device) {
                 const dev = data.device;
@@ -404,28 +404,28 @@
                                                              : 'text-bg-warning-soft';
 
                 html += '<div class="d-flex align-items-center justify-content-between mb-2">' +
-                    '<h6 class="text-uppercase small text-muted mb-0">Detail Device</h6>' +
-                    '<span class="badge ' + devStatusColor + '">' + escapeHtml(String(dev.status).toUpperCase()) + '</span>' +
-                '</div>';
+                    '<h6 class="text-uppercase small text-muted mb-0">Detail Device<\/h6>' +
+                    '<span class="badge ' + devStatusColor + '">' + escapeHtml(String(dev.status).toUpperCase()) + '<\/span>' +
+                '<\/div>';
 
                 html += '<table class="table table-sm table-bordered table-striped align-middle mb-0">' +
                     '<tbody>' +
-                        '<tr><td class="fw-semibold w-50">Nama</td><td>' + escapeHtml(dev.name) + '</td></tr>' +
-                        '<tr><td class="fw-semibold">Tipe</td><td>' + escapeHtml(dev.type || '\u2014') + '</td></tr>' +
-                        '<tr><td class="fw-semibold">IP Address</td><td><code>' + escapeHtml(dev.ip_address) + '</code></td></tr>' +
-                        '<tr><td class="fw-semibold">Total Polls</td><td>' + numberFormat(dev.polls) + '</td></tr>' +
-                        '<tr><td class="fw-semibold">% Responded</td><td>' + dev.responded_percentage + '%</td></tr>' +
-                        '<tr><td class="fw-semibold">% Missed</td><td>' + dev.missed_percentage + '%</td></tr>' +
-                        '<tr><td class="fw-semibold">Avg Latency</td><td>' + numberFormat(dev.avg_delay) + ' ms</td></tr>' +
-                        '<tr><td class="fw-semibold">Min Latency</td><td>' + numberFormat(dev.min_delay) + ' ms</td></tr>' +
-                        '<tr><td class="fw-semibold">Max Latency</td><td>' + numberFormat(dev.max_delay) + ' ms</td></tr>' +
-                        '<tr><td class="fw-semibold">Down Time</td><td>' + escapeHtml(dev.down_time || '\u2014') + '</td></tr>' +
-                        '<tr><td class="fw-semibold">Periode</td><td>' + escapeHtml(dev.period || '\u2014') + '</td></tr>' +
-                        '<tr><td class="fw-semibold">Jumlah Alert</td><td>' + numberFormat(dev.alerts_count) + '</td></tr>' +
-                    '</tbody>' +
-                '</table>';
+                        '<tr><td class="fw-semibold w-50">Nama<\/td><td>' + escapeHtml(dev.name) + '<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Tipe<\/td><td>' + escapeHtml(dev.type || '\u2014') + '<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">IP Address<\/td><td><code>' + escapeHtml(dev.ip_address) + '<\/code><\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Total Polls<\/td><td>' + numberFormat(dev.polls) + '<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">% Responded<\/td><td>' + dev.responded_percentage + '%<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">% Missed<\/td><td>' + dev.missed_percentage + '%<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Avg Latency<\/td><td>' + numberFormat(dev.avg_delay) + ' ms<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Min Latency<\/td><td>' + numberFormat(dev.min_delay) + ' ms<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Max Latency<\/td><td>' + numberFormat(dev.max_delay) + ' ms<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Down Time<\/td><td>' + escapeHtml(dev.down_time || '\u2014') + '<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Periode<\/td><td>' + escapeHtml(dev.period || '\u2014') + '<\/td><\/tr>' +
+                        '<tr><td class="fw-semibold">Jumlah Alert<\/td><td>' + numberFormat(dev.alerts_count) + '<\/td><\/tr>' +
+                    '<\/tbody>' +
+                '<\/table>';
             } else {
-                html += '<p class="small text-muted mb-0">Perangkat sudah tidak terdaftar lagi.</p>';
+                html += '<p class="small text-muted mb-0">Perangkat sudah tidak terdaftar lagi.<\/p>';
             }
 
             return html;

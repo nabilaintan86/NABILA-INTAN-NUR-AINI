@@ -23,8 +23,8 @@ class NotifikasiPageTest extends TestCase
         // Test ini menguji notifikasi, bukan sumber data: tabel device = daftar resmi.
         $this->treatDeviceTableAsOfficialRegistry();
 
-        if (! Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table) {
+        if (! Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
                 $table->string('type')->default('ICMP');

@@ -14,11 +14,11 @@ return new class extends Migration
         // Migrasi ini duplikat dari 2026_09_10_122528_create_device_table.
         // Kalau tabel sudah dibuat lebih dulu, jangan buat ulang supaya
         // skema resmi (protocol, hostname, icon_type, ...) tidak tertimpa.
-        if (Schema::hasTable('device')) {
+        if (Schema::hasTable('devices')) {
             return;
         }
 
-        Schema::create('device', function (Blueprint $table) {
+        Schema::create('devices', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('type')->default('Server');
@@ -44,6 +44,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('device');
+        Schema::dropIfExists('devices');
     }
 };

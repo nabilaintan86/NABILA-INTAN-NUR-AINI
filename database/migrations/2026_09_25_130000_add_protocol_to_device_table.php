@@ -9,17 +9,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn('device', 'protocol')) {
-            Schema::table('device', function (Blueprint $table) {
+        if (! Schema::hasColumn('devices', 'protocol')) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->string('protocol', 32)->default('ICMP')->after('type');
             });
         }
 
-        Schema::table('device', function (Blueprint $table) {
+        Schema::table('devices', function (Blueprint $table) {
             $table->string('type')->default('Server')->change();
         });
 
-        $rows = DB::table('device')->select(['id', 'name', 'type', 'icon_type', 'protocol'])->get();
+        $rows = DB::table('devices')->select(['id', 'name', 'type', 'icon_type', 'protocol'])->get();
 
         foreach ($rows as $row) {
             $legacyType = strtoupper(trim((string) $row->type));
@@ -37,7 +37,7 @@ return new class extends Migration
                 ? $this->typeFromLegacyDevice($row->name, $row->icon_type)
                 : $this->normalizeType($row->type);
 
-            DB::table('device')
+            DB::table('devices')
                 ->where('id', $row->id)
                 ->update([
                     'type' => $type,
@@ -48,8 +48,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasColumn('device', 'protocol')) {
-            Schema::table('device', function (Blueprint $table) {
+        if (Schema::hasColumn('devices', 'protocol')) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->dropColumn('protocol');
             });
         }

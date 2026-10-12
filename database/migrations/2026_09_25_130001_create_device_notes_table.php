@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('device_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('device_id')->constrained('device')->cascadeOnDelete();
+            $table->foreignId('device_id')->constrained('devices')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->dateTime('tanggal')->index();
             $table->text('catatan');

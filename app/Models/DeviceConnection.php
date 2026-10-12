@@ -13,7 +13,9 @@ class DeviceConnection extends Model
 
     protected $fillable = [
         'from_device_id',
+        'from_position_id',
         'to_device_id',
+        'to_position_id',
         'connection_type',
         'direction', // 'forward' (->), 'reverse' (<-), 'bidirectional' (<->), 'none' (--)
     ];

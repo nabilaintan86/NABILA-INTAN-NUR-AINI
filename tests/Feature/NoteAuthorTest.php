@@ -34,7 +34,7 @@ class NoteAuthorTest extends TestCase
             $table->timestamps();
         });
 
-        $this->createSchema('device', function (Blueprint $table): void {
+        $this->createSchema('devices', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->string('type')->default('Router');

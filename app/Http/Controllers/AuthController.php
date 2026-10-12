@@ -72,4 +72,20 @@ class AuthController extends Controller
 
         return redirect('/login');
     }
+public function showForgotForm()
+{
+    return view('auth.forgot-password');
+}
+
+public function sendResetLink(Request $request)
+{
+    $request->validate(['email' => 'required|email']);
+
+    // Untuk saat ini, tidak kirim email beneran.
+    // Cukup tampilkan pesan ke user.
+    return back()->with(
+        'status',
+        'Permintaan reset password sudah tercatat. Silakan hubungi Admin IT untuk proses lebih lanjut.'
+    );
+}
 }

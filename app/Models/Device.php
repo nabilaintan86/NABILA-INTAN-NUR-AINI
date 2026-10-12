@@ -12,7 +12,7 @@ class Device extends Model
 {
     use HasFactory;
 
-    protected $table = 'device';
+    protected $table = 'devices';
 
     protected $fillable = [
         'name',
@@ -147,4 +147,10 @@ class Device extends Model
     {
         return $this->belongsTo(NetworkArea::class, 'network_area_id');
     }
+
+public function topologyMapDevice()
+{
+    return $this->hasOne(\App\Models\TopologyMapDevice::class, 'device_id');
+}
+
 }

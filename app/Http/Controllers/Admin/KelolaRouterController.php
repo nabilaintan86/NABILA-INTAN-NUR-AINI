@@ -31,7 +31,7 @@ class KelolaRouterController extends Controller
             'name' => 'required|string|max:255',
             'type' => ['required', 'string', Rule::in(DeviceType::types())],
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
-            'ip_address' => 'required|ip|unique:device,ip_address',
+            'ip_address' => 'required|ip|unique:devices,ip_address',
             'router_version' => 'nullable|string|max:255',
         ]);
 
@@ -53,7 +53,7 @@ class KelolaRouterController extends Controller
             'name' => 'required|string|max:255',
             'type' => ['required', 'string', Rule::in(DeviceType::types())],
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
-            'ip_address' => 'required|ip|unique:device,ip_address,'.$device->id,
+            'ip_address' => 'required|ip|unique:devices,ip_address,'.$device->id,
             'router_version' => 'nullable|string|max:255',
         ]);
 

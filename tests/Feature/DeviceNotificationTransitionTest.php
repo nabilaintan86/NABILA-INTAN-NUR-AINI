@@ -25,8 +25,8 @@ class DeviceNotificationTransitionTest extends TestCase
         parent::setUp();
         $this->treatDeviceTableAsOfficialRegistry();
 
-        if (! Schema::hasTable('device')) {
-            Schema::create('device', function (Blueprint $table): void {
+        if (! Schema::hasTable('devices')) {
+            Schema::create('devices', function (Blueprint $table): void {
                 $table->id();
                 $table->string('name');
                 $table->string('type')->default('Router');

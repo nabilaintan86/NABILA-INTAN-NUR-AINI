@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn('device', 'router_version')) {
-            Schema::table('device', function (Blueprint $table) {
+        if (! Schema::hasColumn('devices', 'router_version')) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->string('router_version')->nullable()->after('icon_type');
             });
         }
@@ -17,8 +17,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasColumn('device', 'router_version')) {
-            Schema::table('device', function (Blueprint $table) {
+        if (Schema::hasColumn('devices', 'router_version')) {
+            Schema::table('devices', function (Blueprint $table) {
                 $table->dropColumn('router_version');
             });
         }
