@@ -457,7 +457,6 @@
                         <input type="checkbox" name="remember" id="remember">
                         <label for="remember">Ingat saya</label>
                     </div>
-                    <a href="#" class="forgot-link">Lupa password?</a>
                 </div>
 
                 <button type="submit" class="btn-login" id="btnLogin">

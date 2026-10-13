@@ -83,6 +83,12 @@
     .topo-node-name-bg { fill: #fff; stroke: #1e293b; stroke-width: 1; vector-effect: non-scaling-stroke; }
     .topo-node-name-text { font-family: 'Segoe UI',sans-serif; font-size: 11px; font-weight: 700; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
     .topo-node-ip-text { font-family: 'Segoe UI',sans-serif; font-size: 9.5px; font-weight: 600; fill: #475569; text-anchor: middle; pointer-events: none; }
+    .topo-node.is-down image {
+        filter: url(#deviceRedFilter) drop-shadow(0 0 6px rgba(220,38,38,.8));
+    }
+    .topo-node.is-down .outage-blast {
+        opacity: 0.85;
+    }
 
     @keyframes wugPulseFast { 0% { transform: scale(1); opacity: .95; } 50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 10px #ef4444); } 100% { transform: scale(1); opacity: .95; } }
     .outage-blast { transform-origin: 0 -2px; animation: wugPulseFast 1.4s infinite ease-in-out; }
@@ -492,7 +498,6 @@
         document.body.appendChild(t);
         setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; setTimeout(function () { t.remove(); }, 400); }, 3000);
     }
-
     function setupDefs() {
         defs.innerHTML = '';
         var nSize = currentArrowSettings.needle_size || 7;
@@ -507,6 +512,16 @@
 
         var mStartDown = createSvgEl('marker', { id: 'topoEdgeArrowStartDown', viewBox: '0 0 14 14', refX: '2', refY: '7', markerWidth: nSize, markerHeight: nSize, orient: 'auto' });
         mStartDown.appendChild(createSvgEl('path', { d: 'M 13 2 L 1 7 L 13 12 z', fill: '#dc2626' })); defs.appendChild(mStartDown);
+
+        var redFilter = createSvgEl('filter', {
+            id: 'deviceRedFilter',
+            x: '-30%', y: '-30%', width: '160%', height: '160%'
+        });
+        redFilter.appendChild(createSvgEl('feColorMatrix', {
+            type: 'matrix',
+            values: '1.3 0 0 0 0.3   0 0.05 0 0 0   0 0 0.05 0 0   0 0 0 1 0'
+        }));
+        defs.appendChild(redFilter);
     }
 
     function computeEdgePath(a, b, clearance) {
@@ -634,9 +649,13 @@
         });
 
         payload.areas.forEach(function (area) {
-            (area.nodes || []).forEach(function (n) {
-                var g = createSvgEl('g', { id: 'node-g-' + n.id, 'class': 'topo-node', transform: 'translate(' + n.x + ',' + n.y + ')' });
-                g.appendChild(createSvgEl('rect', { x: -36, y: -36, width: 72, height: 80, fill: '#000', 'fill-opacity': 0, 'pointer-events': 'all' }));
+                (area.nodes || []).forEach(function (n) {
+                var g = createSvgEl('g', {
+                    id: 'node-g-' + n.id,
+                    'class': 'topo-node' + (n.status === 'down' ? ' is-down' : ''),
+                    transform: 'translate(' + n.x + ',' + n.y + ')'
+                });
+              g.appendChild(createSvgEl('rect', { x: -36, y: -36, width: 72, height: 80, fill: '#000', 'fill-opacity': 0, 'pointer-events': 'all' }));
 
                 if (n.status === 'down') {
                     g.appendChild(createSvgEl('path', { d: starburstPath(0, -2, 28, 16, 16), fill: '#dc2626', stroke: '#991b1b', 'stroke-width': '1.5', 'class': 'outage-blast' }));

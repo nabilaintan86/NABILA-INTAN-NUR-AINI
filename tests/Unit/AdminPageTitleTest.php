@@ -39,7 +39,7 @@ class AdminPageTitleTest extends TestCase
             '/admin/kelola-user' => 'Kelola User',
             '/admin/kelola-user/create' => 'Tambah User',
             '/admin/kelola-user/3/edit' => 'Edit User',
-            '/admin/telegram-users' => 'Telegram Users',
+            '/admin/telegram-users' => 'Telegram Bot',
             '/admin/device/5/detail' => 'Detail Device',
         ];
 

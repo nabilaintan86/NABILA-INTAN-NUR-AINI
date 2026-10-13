@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\MapSetting;
 use App\Models\TelegramSubscriber;
 use App\Models\TelegramUser;
 use Illuminate\Support\Facades\Http;
@@ -14,10 +15,47 @@ class TelegramService
 
     protected ?string $chatId;
 
+    protected ?string $webhookSecret;
+
     public function __construct()
     {
-        $this->botToken = config('services.telegram.bot_token');
-        $this->chatId = config('services.telegram.chat_id');
+        $this->reloadConfig();
+    }
+
+    public function reloadConfig(): void
+    {
+        $dbToken = null;
+        $dbChatId = null;
+        $dbSecret = null;
+
+        try {
+            if (Schema::hasTable('map_settings')) {
+                $dbToken = MapSetting::get('telegram_bot_token');
+                $dbChatId = MapSetting::get('telegram_chat_id');
+                $dbSecret = MapSetting::get('telegram_webhook_secret');
+            }
+        } catch (\Throwable $e) {
+            // Ignore when database is not ready
+        }
+
+        $this->botToken = ! empty($dbToken) ? (string) $dbToken : (string) config('services.telegram.bot_token');
+        $this->chatId = ! empty($dbChatId) ? (string) $dbChatId : (string) config('services.telegram.chat_id');
+        $this->webhookSecret = ! empty($dbSecret) ? (string) $dbSecret : (string) config('services.telegram.webhook_secret');
+    }
+
+    public function getBotToken(): ?string
+    {
+        return $this->botToken;
+    }
+
+    public function getChatId(): ?string
+    {
+        return $this->chatId;
+    }
+
+    public function getWebhookSecret(): ?string
+    {
+        return $this->webhookSecret;
     }
 
     public function isConfigured(): bool
@@ -405,5 +443,274 @@ class TelegramService
             'failed' => $failed,
             'target_count' => count($targets),
         ];
+    }
+
+    /**
+     * Panggil getMe untuk memeriksa token bot dan mengambil data profil bot.
+     *
+     * @return array{ok: bool, bot: ?array, description: ?string, status: ?int}
+     */
+    public function getMe(?string $customToken = null): array
+    {
+        $token = $customToken ?: $this->botToken;
+
+        if (empty($token)) {
+            return [
+                'ok' => false,
+                'bot' => null,
+                'description' => 'Bot token belum dikonfigurasi.',
+                'status' => null,
+            ];
+        }
+
+        try {
+            $response = Http::timeout(10)
+                ->get("https://api.telegram.org/bot{$token}/getMe");
+
+            $json = $response->json();
+            $ok = $response->successful() && ! empty($json['ok']);
+
+            return [
+                'ok' => $ok,
+                'bot' => $ok ? ($json['result'] ?? null) : null,
+                'description' => $json['description'] ?? ($ok ? 'Bot terhubung.' : 'Gagal menghubungi Telegram API.'),
+                'status' => $response->status(),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'bot' => null,
+                'description' => $this->sanitize($e->getMessage()),
+                'status' => null,
+            ];
+        }
+    }
+
+    /**
+     * Dapatkan informasi webhook yang sedang aktif dari Telegram API.
+     */
+    public function getWebhookInfo(?string $customToken = null): array
+    {
+        $token = $customToken ?: $this->botToken;
+
+        if (empty($token)) {
+            return [
+                'ok' => false,
+                'info' => null,
+                'description' => 'Bot token belum dikonfigurasi.',
+            ];
+        }
+
+        try {
+            $response = Http::timeout(10)
+                ->get("https://api.telegram.org/bot{$token}/getWebhookInfo");
+
+            $json = $response->json();
+            $ok = $response->successful() && ! empty($json['ok']);
+
+            return [
+                'ok' => $ok,
+                'info' => $ok ? ($json['result'] ?? null) : null,
+                'description' => $json['description'] ?? null,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'info' => null,
+                'description' => $this->sanitize($e->getMessage()),
+            ];
+        }
+    }
+
+    /**
+     * Daftarkan webhook Telegram.
+     */
+    public function setWebhook(string $url, ?string $secretToken = null, bool $dropPendingUpdates = true): array
+    {
+        if (! $this->isConfigured()) {
+            return [
+                'ok' => false,
+                'description' => 'Bot token belum dikonfigurasi.',
+            ];
+        }
+
+        $payload = [
+            'url' => $url,
+            'drop_pending_updates' => $dropPendingUpdates,
+        ];
+
+        $secret = $secretToken ?: $this->webhookSecret;
+        if (! empty($secret)) {
+            $payload['secret_token'] = $secret;
+        }
+
+        try {
+            $response = Http::timeout(15)
+                ->post("https://api.telegram.org/bot{$this->botToken}/setWebhook", $payload);
+
+            $json = $response->json();
+            $ok = $response->successful() && ! empty($json['ok']);
+
+            return [
+                'ok' => $ok,
+                'description' => $json['description'] ?? ($ok ? 'Webhook berhasil disetel.' : 'Gagal menyetel webhook.'),
+                'status' => $response->status(),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'description' => $this->sanitize($e->getMessage()),
+                'status' => null,
+            ];
+        }
+    }
+
+    /**
+     * Hapus webhook Telegram dengan detail respons.
+     */
+    public function deleteWebhookWithDetails(bool $dropPendingUpdates = true): array
+    {
+        if (! $this->isConfigured()) {
+            return [
+                'ok' => false,
+                'description' => 'Bot token belum dikonfigurasi.',
+            ];
+        }
+
+        try {
+            $response = Http::timeout(15)
+                ->post("https://api.telegram.org/bot{$this->botToken}/deleteWebhook", [
+                    'drop_pending_updates' => $dropPendingUpdates,
+                ]);
+
+            $json = $response->json();
+            $ok = $response->successful() && ! empty($json['ok']);
+
+            return [
+                'ok' => $ok,
+                'description' => $json['description'] ?? ($ok ? 'Webhook berhasil dihapus.' : 'Gagal menghapus webhook.'),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'description' => $this->sanitize($e->getMessage()),
+            ];
+        }
+    }
+
+    /**
+     * Kirim pesan uji coba ke target chat tertentu atau default chatId.
+     */
+    public function sendTestMessage(?string $targetChatId = null): array
+    {
+        $target = $targetChatId ?: $this->chatId;
+
+        if (empty($target)) {
+            return [
+                'ok' => false,
+                'description' => 'Chat ID tujuan belum ditentukan.',
+            ];
+        }
+
+        if (! $this->isConfigured()) {
+            return [
+                'ok' => false,
+                'description' => 'Bot token belum dikonfigurasi.',
+            ];
+        }
+
+        $now = now()->setTimezone('Asia/Jakarta')->format('d M Y H:i:s');
+        $text = "🔔 <b>UJI COBA KONEKSI BOT TELEGRAM RADNET NOC</b>\n\n"
+            ."✅ Bot Telegram berhasil terhubung dengan sistem monitoring jaringan RadneXt.\n\n"
+            ."📡 <b>Status:</b> Siap menerima notifikasi dan perintah.\n"
+            ."🕐 <b>Waktu:</b> {$now} WIB\n"
+            ."💬 <b>Target Chat ID:</b> <code>{$target}</code>\n"
+            ."════════════════════════════";
+
+        try {
+            $response = Http::timeout(10)
+                ->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
+                    'chat_id' => (string) $target,
+                    'text' => $text,
+                    'parse_mode' => 'HTML',
+                ]);
+
+            $json = $response->json();
+            $ok = $response->successful() && ! empty($json['ok']);
+
+            return [
+                'ok' => $ok,
+                'description' => $ok ? 'Pesan uji coba berhasil dikirim!' : ($json['description'] ?? 'Gagal mengirim pesan.'),
+                'status' => $response->status(),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'description' => $this->sanitize($e->getMessage()),
+            ];
+        }
+    }
+
+    /**
+     * Simpan pengaturan bot ke database dan sinkronisasi ke file .env.
+     */
+    public function saveSettings(array $data, ?int $userId = null): void
+    {
+        if (Schema::hasTable('map_settings')) {
+            if (array_key_exists('bot_token', $data)) {
+                MapSetting::set('telegram_bot_token', $data['bot_token'], $userId);
+            }
+            if (array_key_exists('chat_id', $data)) {
+                MapSetting::set('telegram_chat_id', $data['chat_id'], $userId);
+            }
+            if (array_key_exists('webhook_secret', $data)) {
+                MapSetting::set('telegram_webhook_secret', $data['webhook_secret'], $userId);
+            }
+            if (array_key_exists('bot_info', $data)) {
+                MapSetting::set('telegram_bot_info', $data['bot_info'], $userId);
+            }
+        }
+
+        $this->syncToEnv([
+            'TELEGRAM_BOT_TOKEN' => $data['bot_token'] ?? null,
+            'TELEGRAM_CHAT_ID' => $data['chat_id'] ?? null,
+            'TELEGRAM_WEBHOOK_SECRET' => $data['webhook_secret'] ?? null,
+        ]);
+
+        $this->reloadConfig();
+    }
+
+    /**
+     * Sinkronisasi nilai kredensial ke file .env bila writable.
+     */
+    protected function syncToEnv(array $pairs): void
+    {
+        $envPath = base_path('.env');
+        if (! file_exists($envPath) || ! is_writable($envPath)) {
+            return;
+        }
+
+        try {
+            $content = file_get_contents($envPath);
+            foreach ($pairs as $key => $val) {
+                if ($val === null) {
+                    continue;
+                }
+                $valStr = (string) $val;
+                $escaped = (str_contains($valStr, ' ') || str_contains($valStr, '#'))
+                    ? '"'.addcslashes($valStr, '"\\').'"'
+                    : $valStr;
+
+                $pattern = "/^{$key}=.*/m";
+                if (preg_match($pattern, $content)) {
+                    $content = preg_replace($pattern, "{$key}={$escaped}", $content);
+                } else {
+                    $content = rtrim($content)."\n{$key}={$escaped}\n";
+                }
+            }
+            file_put_contents($envPath, $content);
+        } catch (\Throwable $e) {
+            Log::warning('Gagal sinkronisasi .env untuk Telegram: '.$e->getMessage());
+        }
     }
 }

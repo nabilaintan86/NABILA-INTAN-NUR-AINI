@@ -24,7 +24,7 @@ class AdminPageTitle
         'admin.kelola-user' => 'Kelola User',
         'admin.kelola-user.create' => 'Tambah User',
         'admin.kelola-user.edit' => 'Edit User',
-        'admin.telegram-users' => 'Telegram Users',
+        'admin.telegram-users' => 'Telegram Bot',
         'admin.device.detail' => 'Detail Device',
     ];
 
@@ -45,7 +45,7 @@ class AdminPageTitle
         'admin/tools' => 'Network Tools',
         'admin/troubleshooting' => 'Troubleshooting',
         'admin/kelola-user' => 'Kelola User',
-        'admin/telegram-users' => 'Telegram Users',
+        'admin/telegram-users' => 'Telegram Bot',
     ];
 
     /**

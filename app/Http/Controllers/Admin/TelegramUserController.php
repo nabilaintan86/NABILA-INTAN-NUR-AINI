@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MapSetting;
 use App\Models\TelegramLog;
 use App\Models\TelegramSubscriber;
 use App\Models\TelegramUser;
 use App\Services\TelegramService;
 use App\Services\TelegramUserService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class TelegramUserController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, TelegramService $telegram)
     {
         $query = trim((string) $request->query('q', ''));
         $status = (string) $request->query('status', 'all');
@@ -29,6 +31,36 @@ class TelegramUserController extends Controller
             $role = 'all';
         }
 
+        $botToken = $telegram->getBotToken();
+        $chatId = $telegram->getChatId();
+        $webhookSecret = $telegram->getWebhookSecret();
+
+        $botProfile = [
+            'ok' => false,
+            'bot' => null,
+            'description' => 'Bot token belum dikonfigurasi.',
+        ];
+        $webhookInfo = [
+            'ok' => false,
+            'info' => null,
+        ];
+
+        if ($telegram->isConfigured()) {
+            $botProfile = Cache::remember('telegram_bot_profile', 30, fn () => $telegram->getMe());
+            $webhookInfo = Cache::remember('telegram_webhook_info', 30, fn () => $telegram->getWebhookInfo());
+        }
+
+        $kpi = [
+            'total' => 0,
+            'pending' => 0,
+            'approved' => 0,
+            'active_today' => 0,
+            'super_admin' => 0,
+            'admin' => 0,
+            'staff' => 0,
+            'subscribers' => 0,
+        ];
+
         if (! Schema::hasTable('telegram_users')) {
             return view('admin.telegram-users', [
                 'telegramUsers' => new LengthAwarePaginator([], 0, 15, 1, [
@@ -36,15 +68,15 @@ class TelegramUserController extends Controller
                     'query' => $request->query(),
                 ]),
                 'logs' => collect(),
-                'kpi' => [
-                    'total' => 0,
-                    'pending' => 0,
-                    'approved' => 0,
-                    'active_today' => 0,
-                ],
+                'kpi' => $kpi,
                 'q' => $query,
                 'status' => $status,
                 'role' => $role,
+                'botToken' => $botToken,
+                'chatId' => $chatId,
+                'webhookSecret' => $webhookSecret,
+                'botProfile' => $botProfile,
+                'webhookInfo' => $webhookInfo,
             ]);
         }
 
@@ -73,6 +105,12 @@ class TelegramUserController extends Controller
                 ->whereNotNull('last_active_at')
                 ->where('last_active_at', '>=', now()->startOfDay())
                 ->count(),
+            'super_admin' => TelegramUser::query()->where('role', 'super_admin')->where('is_approved', true)->count(),
+            'admin' => TelegramUser::query()->where('role', 'admin')->where('is_approved', true)->count(),
+            'staff' => TelegramUser::query()->where('role', 'staff')->where('is_approved', true)->count(),
+            'subscribers' => Schema::hasTable('telegram_subscribers')
+                ? TelegramSubscriber::query()->where('is_active', true)->count()
+                : 0,
         ];
 
         $logs = Schema::hasTable('telegram_logs')
@@ -86,6 +124,11 @@ class TelegramUserController extends Controller
             'q' => $query,
             'status' => $status,
             'role' => $role,
+            'botToken' => $botToken,
+            'chatId' => $chatId,
+            'webhookSecret' => $webhookSecret,
+            'botProfile' => $botProfile,
+            'webhookInfo' => $webhookInfo,
         ]);
     }
 
@@ -213,5 +256,144 @@ class TelegramUserController extends Controller
             ->with($result['sent'] > 0 ? 'success' : 'error', $result['sent'] > 0
                 ? "Broadcast dikirim ke {$result['sent']} user."
                 : 'Broadcast tidak memiliki penerima aktif.');
+    }
+
+    public function updateSettings(Request $request, TelegramService $telegram)
+    {
+        $validated = $request->validate([
+            'bot_token' => ['nullable', 'string', 'max:255'],
+            'chat_id' => ['nullable', 'string', 'max:100'],
+            'webhook_secret' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $botToken = trim((string) ($validated['bot_token'] ?? ''));
+        $chatId = trim((string) ($validated['chat_id'] ?? ''));
+        $webhookSecret = trim((string) ($validated['webhook_secret'] ?? ''));
+
+        Cache::forget('telegram_bot_profile');
+        Cache::forget('telegram_webhook_info');
+
+        $botInfo = null;
+        $connectionNotice = '';
+
+        if ($botToken !== '') {
+            $test = $telegram->getMe($botToken);
+            if ($test['ok']) {
+                $botInfo = $test['bot'];
+                $username = $test['bot']['username'] ?? 'bot';
+                $firstName = $test['bot']['first_name'] ?? 'Bot';
+                $connectionNotice = " Terhubung ke bot @{$username} ({$firstName}).";
+            } else {
+                $connectionNotice = ' Peringatan: Token tersimpan, tetapi verifikasi Telegram gagal: '.($test['description'] ?? 'Token tidak valid.');
+            }
+        }
+
+        $telegram->saveSettings([
+            'bot_token' => $botToken,
+            'chat_id' => $chatId,
+            'webhook_secret' => $webhookSecret,
+            'bot_info' => $botInfo,
+        ], auth()->id());
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengaturan Telegram berhasil disimpan.'.$connectionNotice,
+                'bot' => $botInfo,
+            ]);
+        }
+
+        return redirect()->route('admin.telegram-users')
+            ->with('success', 'Pengaturan bot Telegram berhasil disimpan.'.$connectionNotice);
+    }
+
+    public function testConnection(Request $request, TelegramService $telegram)
+    {
+        $token = $request->input('bot_token');
+        $startTime = microtime(true);
+        $result = $telegram->getMe($token ?: null);
+        $latencyMs = round((microtime(true) - $startTime) * 1000);
+
+        Cache::forget('telegram_bot_profile');
+        if ($result['ok'] && ! empty($result['bot'])) {
+            Cache::put('telegram_bot_profile', $result, 60);
+        }
+
+        $bot = $result['bot'] ?? null;
+        $message = $result['ok']
+            ? "Terkoneksi ke bot: @".($bot['username'] ?? 'bot')." (".($bot['first_name'] ?? 'Bot').") — Latensi {$latencyMs} ms"
+            : 'Gagal terhubung: '.($result['description'] ?? 'Token tidak valid.');
+
+        $data = [
+            'success' => $result['ok'],
+            'message' => $message,
+            'bot' => $bot,
+            'latency_ms' => $latencyMs,
+            'status' => $result['status'] ?? null,
+        ];
+
+        if ($request->expectsJson()) {
+            return response()->json($data, $result['ok'] ? 200 : 422);
+        }
+
+        return redirect()->route('admin.telegram-users')
+            ->with($result['ok'] ? 'success' : 'error', $message);
+    }
+
+    public function testSend(Request $request, TelegramService $telegram)
+    {
+        $targetChatId = $request->input('chat_id');
+        $result = $telegram->sendTestMessage($targetChatId ?: null);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $result['ok'],
+                'message' => $result['description'],
+            ], $result['ok'] ? 200 : 422);
+        }
+
+        return redirect()->route('admin.telegram-users')
+            ->with($result['ok'] ? 'success' : 'error', $result['description']);
+    }
+
+    public function setWebhook(Request $request, TelegramService $telegram)
+    {
+        $validated = $request->validate([
+            'webhook_url' => ['required', 'url'],
+            'secret_token' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $result = $telegram->setWebhook($validated['webhook_url'], $validated['secret_token'] ?? null);
+        Cache::forget('telegram_webhook_info');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $result['ok'],
+                'message' => $result['description'],
+            ], $result['ok'] ? 200 : 422);
+        }
+
+        return redirect()->route('admin.telegram-users')
+            ->with($result['ok'] ? 'success' : 'error', $result['description']);
+    }
+
+    public function deleteWebhook(Request $request, TelegramService $telegram)
+    {
+        $result = $telegram->deleteWebhookWithDetails(true);
+        Cache::forget('telegram_webhook_info');
+
+        $message = $result['ok']
+            ? 'Webhook berhasil dihapus. Bot siap menggunakan mode long polling.'
+            : ($result['description'] ?? 'Gagal menghapus webhook.');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $result['ok'],
+                'message' => $message,
+            ], $result['ok'] ? 200 : 422);
+        }
+
+        return redirect()->route('admin.telegram-users')
+            ->with($result['ok'] ? 'success' : 'error', $message);
     }
 }
