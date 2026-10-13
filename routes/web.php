@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceDetailController;
 use App\Http\Controllers\Admin\DeviceNoteController;
-use App\Http\Controllers\Admin\DhcpLeaseController;
 use App\Http\Controllers\Admin\EzyHomeController;
 use App\Http\Controllers\Admin\KelolaRouterController;
 use App\Http\Controllers\Admin\LaporanController;
@@ -41,7 +40,6 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -129,47 +127,47 @@ Route::prefix('admin')
         | Topology Maps (CRUD) — BARU
         |----------------------------------------------------------------------
         */
-    Route::get('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'showDevice'])->name('devices.show');
-    Route::put('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'updateDevice'])->name('devices.update');
+        Route::get('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'showDevice'])->name('devices.show');
+        Route::put('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'updateDevice'])->name('devices.update');
 
         Route::prefix('topology-maps')->name('topology-maps.')->group(function () {
-        Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
+            Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
             // Device detail, edit, update
-            Route::get('/{topologyMap}/devices/{mapDevice}',    [TopologyMapController::class, 'showDevice'])->name('devices.show');
-            Route::put('/{topologyMap}/devices/{mapDevice}',    [TopologyMapController::class, 'updateDevice'])->name('devices.update');
+            Route::get('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'showDevice'])->name('devices.show');
+            Route::put('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'updateDevice'])->name('devices.update');
 
             // Ubah arah panah relasi
             Route::post('/{topologyMap}/connections/{mapConnection}/direction', [TopologyMapController::class, 'updateConnectionDirection'])->name('connections.direction');
 
             /* -------- MAPS CRUD (utama) -------- */
-            Route::get('/',           [TopologyMapController::class, 'index'])->name('index');
-            Route::get('/create',     [TopologyMapController::class, 'create'])->name('create');
-            Route::post('/',          [TopologyMapController::class, 'store'])->name('store');
+            Route::get('/', [TopologyMapController::class, 'index'])->name('index');
+            Route::get('/create', [TopologyMapController::class, 'create'])->name('create');
+            Route::post('/', [TopologyMapController::class, 'store'])->name('store');
             Route::post('/{topologyMap}/save-layout', [TopologyMapController::class, 'saveLayout'])->name('save-layout');
             /* -------- DETAIL MAPS (harus di atas /{topologyMap}) -------- */
-            Route::get('/{topologyMap}',      [TopologyMapController::class, 'show'])->name('show');
+            Route::get('/{topologyMap}', [TopologyMapController::class, 'show'])->name('show');
             Route::get('/{topologyMap}/edit', [TopologyMapController::class, 'edit'])->name('edit');
-            Route::put('/{topologyMap}',      [TopologyMapController::class, 'update'])->name('update');
-            Route::delete('/{topologyMap}',   [TopologyMapController::class, 'destroy'])->name('destroy');
+            Route::put('/{topologyMap}', [TopologyMapController::class, 'update'])->name('update');
+            Route::delete('/{topologyMap}', [TopologyMapController::class, 'destroy'])->name('destroy');
 
             /* -------- JSON DATA (buat canvas & tabs) -------- */
-            Route::get('/{topologyMap}/data',              [TopologyMapController::class, 'mapData'])->name('data');
+            Route::get('/{topologyMap}/data', [TopologyMapController::class, 'mapData'])->name('data');
             Route::get('/{topologyMap}/available-devices', [TopologyMapController::class, 'availableDevices'])->name('available-devices');
 
             /* -------- DEVICE DI DALAM MAP -------- */
-            Route::post('/{topologyMap}/devices',                                   [TopologyMapController::class, 'storeDevice'])->name('devices.store');
+            Route::post('/{topologyMap}/devices', [TopologyMapController::class, 'storeDevice'])->name('devices.store');
             Route::post('/{topologyMap}/devices/new', [TopologyMapController::class, 'storeNewDevice'])->name('devices.new');
-            Route::patch('/{topologyMap}/devices/{mapDevice}/position',             [TopologyMapController::class, 'updateDevicePosition'])->name('devices.position');
-            Route::delete('/{topologyMap}/devices/{mapDevice}',                     [TopologyMapController::class, 'destroyDevice'])->name('devices.destroy');
+            Route::patch('/{topologyMap}/devices/{mapDevice}/position', [TopologyMapController::class, 'updateDevicePosition'])->name('devices.position');
+            Route::delete('/{topologyMap}/devices/{mapDevice}', [TopologyMapController::class, 'destroyDevice'])->name('devices.destroy');
 
             /* -------- AREA / POP DI DALAM MAP -------- */
-            Route::post('/{topologyMap}/areas',              [TopologyMapController::class, 'storeArea'])->name('areas.store');
-            Route::put('/{topologyMap}/areas/{mapArea}',     [TopologyMapController::class, 'updateArea'])->name('areas.update');
-            Route::delete('/{topologyMap}/areas/{mapArea}',  [TopologyMapController::class, 'destroyArea'])->name('areas.destroy');
+            Route::post('/{topologyMap}/areas', [TopologyMapController::class, 'storeArea'])->name('areas.store');
+            Route::put('/{topologyMap}/areas/{mapArea}', [TopologyMapController::class, 'updateArea'])->name('areas.update');
+            Route::delete('/{topologyMap}/areas/{mapArea}', [TopologyMapController::class, 'destroyArea'])->name('areas.destroy');
 
             /* -------- CONNECTION / RELASI -------- */
-            Route::post('/{topologyMap}/connections',                    [TopologyMapController::class, 'storeConnection'])->name('connections.store');
-            Route::delete('/{topologyMap}/connections/{mapConnection}',  [TopologyMapController::class, 'destroyConnection'])->name('connections.destroy');
+            Route::post('/{topologyMap}/connections', [TopologyMapController::class, 'storeConnection'])->name('connections.store');
+            Route::delete('/{topologyMap}/connections/{mapConnection}', [TopologyMapController::class, 'destroyConnection'])->name('connections.destroy');
         });
         /*
         |----------------------------------------------------------------------
@@ -321,21 +319,6 @@ Route::prefix('admin')
 
         /*
         |----------------------------------------------------------------------
-        | DHCP Lease
-        |----------------------------------------------------------------------
-        */
-
-        Route::get('/dhcp-lease', [DhcpLeaseController::class, 'index'])
-            ->name('dhcp-lease');
-
-        Route::post('/dhcp-lease/upload', [DhcpLeaseController::class, 'upload'])
-            ->name('dhcp-lease.upload');
-
-        Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])
-            ->name('dhcp-lease.import');
-
-        /*
-        |----------------------------------------------------------------------
         | Laporan
         |----------------------------------------------------------------------
         */
@@ -356,20 +339,36 @@ Route::prefix('admin')
         |----------------------------------------------------------------------
         */
 
-        Route::get('/tools', [ToolsController::class, 'index'])
-            ->name('tools');
+        /*
+         * Network Tools dapat dipakai penuh oleh staff maupun Super Admin:
+         * halaman, ping, trace, lookup, scan, dan tanya-jawab asisten semua
+         * berada di grup yang sama. Hanya pembersihan riwayat (aksi
+         * destruktif) yang tetap dibatasi Super Admin di grup terpisah.
+         */
+        Route::middleware(['auth', 'role:super_admin,staff'])->group(function () {
+            Route::get('/tools', [ToolsController::class, 'index'])
+                ->name('tools');
 
-        Route::post('/tools/ping', [ToolsController::class, 'ping'])
-            ->name('tools.ping');
+            Route::post('/tools/ping', [ToolsController::class, 'ping'])
+                ->name('tools.ping');
 
-        Route::post('/tools/trace', [ToolsController::class, 'trace'])
-            ->name('tools.trace');
+            Route::post('/tools/trace', [ToolsController::class, 'trace'])
+                ->name('tools.trace');
 
-        Route::post('/tools/lookup', [ToolsController::class, 'lookup'])
-            ->name('tools.lookup');
+            Route::post('/tools/lookup', [ToolsController::class, 'lookup'])
+                ->name('tools.lookup');
 
-        Route::post('/tools/scan', [ToolsController::class, 'scan'])
-            ->name('tools.scan');
+            Route::post('/tools/scan', [ToolsController::class, 'scan'])
+                ->name('tools.scan');
+
+            Route::post('/tools/ask', [ToolsController::class, 'ask'])
+                ->name('tools.ask');
+        });
+
+        Route::middleware(['auth', 'role:super_admin'])->group(function () {
+            Route::post('/tools/purge-all', [ToolsController::class, 'purgeAll'])
+                ->name('tools.purge-all');
+        });
 
         /*
         |----------------------------------------------------------------------
