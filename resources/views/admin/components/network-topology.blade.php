@@ -191,6 +191,7 @@
                         <input type="range" class="form-range" id="rangeNeedleWidth" min="1.0" max="5.5" step="0.2" value="2.2">
                     </div>
 
+                     @if($isSuperAdmin)
                     <h6 class="text-primary fw-bold text-uppercase mb-2 mt-4">2. Pembatas Router</h6>
                     <div class="mb-3">
                         <label class="form-label fw-bold mb-1">Pilih Area:</label>
@@ -202,6 +203,7 @@
                         <div class="col-6"><label class="small fw-bold">W:</label><input type="number" class="form-control form-control-sm" id="inputAreaW" min="80" step="10"></div>
                         <div class="col-6"><label class="small fw-bold">H:</label><input type="number" class="form-control form-control-sm" id="inputAreaH" min="80" step="10"></div>
                     </div>
+                    @endif
 
                     @if($isSuperAdmin)
                         <div class="mt-4 pt-3 border-top">
@@ -579,8 +581,9 @@
             var areaGroup = createSvgEl('g', { id: 'area-group-' + safeName, 'class': 'topo-area-group' });
             areaGroup.appendChild(createSvgEl('rect', { id: 'area-rect-' + safeName, x: area.x, y: area.y, width: area.w, height: area.h, rx: 10, 'class': 'topo-area-box', stroke: borderColor, fill: bgColor }));
 
-            var dragBar = createSvgEl('rect', { id: 'area-header-' + safeName, x: area.x, y: area.y, width: area.w, height: 34, rx: 10, 'class': 'topo-area-header-bar', fill: 'rgba(0,0,0,.04)', cursor: 'move' });
+            var dragBar = createSvgEl('rect', { id: 'area-header-' + safeName, x: area.x, y: area.y, width: area.w, height: 34, rx: 10, 'class': 'topo-area-header-bar', fill: 'rgba(0,0,0,.04)', cursor: (isSuperAdmin ? 'move' : 'default') });
             dragBar.addEventListener('mousedown', function (e) {
+                if (!isSuperAdmin) return;   // 🔒 Staff gak boleh drag POP
                 if (e.button !== 0) return;
                 e.stopPropagation(); e.preventDefault();
                 isDraggingArea = true; draggedArea = area;
@@ -592,24 +595,27 @@
             areaGroup.appendChild(dragBar);
             areaGroup.appendChild(createSvgEl('text', { id: 'area-title-' + safeName, x: area.x + 14, y: area.y + 22, fill: titleColor, 'class': 'topo-area-title' }, area.name));
 
-            var resizeHandle = createSvgEl('circle', { id: 'area-resize-' + safeName, cx: area.x + area.w - 6, cy: area.y + area.h - 6, r: 8, 'class': 'topo-area-resize-handle' });
-            var resizeHitbox = createSvgEl('circle', { id: 'area-resize-hitbox-' + safeName, cx: area.x + area.w - 6, cy: area.y + area.h - 6, r: 16, fill: 'transparent', cursor: 'nwse-resize', 'pointer-events': 'all' });
+                        if (isSuperAdmin) {
+                var resizeHandle = createSvgEl('circle', { id: 'area-resize-' + safeName, cx: area.x + area.w - 6, cy: area.y + area.h - 6, r: 8, 'class': 'topo-area-resize-handle' });
+                var resizeHitbox = createSvgEl('circle', { id: 'area-resize-hitbox-' + safeName, cx: area.x + area.w - 6, cy: area.y + area.h - 6, r: 16, fill: 'transparent', cursor: 'nwse-resize', 'pointer-events': 'all' });
 
-            var onResizeStart = function (e) {
-                if (e.button !== 0) return;
-                e.stopPropagation(); e.preventDefault();
-                isResizingArea = true; resizedArea = area;
-                resizeHandle.classList.add('active-hover');
-                var pt = getSvgPoint(e);
-                resizeStart = { x: pt.x, y: pt.y, initialW: area.w, initialH: area.h };
-            };
-            resizeHandle.addEventListener('mousedown', onResizeStart);
-            resizeHitbox.addEventListener('mousedown', onResizeStart);
-            resizeHitbox.addEventListener('mouseenter', function () { resizeHandle.classList.add('active-hover'); });
-            resizeHitbox.addEventListener('mouseleave', function () { if (!isResizingArea) resizeHandle.classList.remove('active-hover'); });
+                var onResizeStart = function (e) {
+                    if (!isSuperAdmin) return;
+                    if (e.button !== 0) return;
+                    e.stopPropagation(); e.preventDefault();
+                    isResizingArea = true; resizedArea = area;
+                    resizeHandle.classList.add('active-hover');
+                    var pt = getSvgPoint(e);
+                    resizeStart = { x: pt.x, y: pt.y, initialW: area.w, initialH: area.h };
+                };
+                resizeHandle.addEventListener('mousedown', onResizeStart);
+                resizeHitbox.addEventListener('mousedown', onResizeStart);
+                resizeHitbox.addEventListener('mouseenter', function () { resizeHandle.classList.add('active-hover'); });
+                resizeHitbox.addEventListener('mouseleave', function () { if (!isResizingArea) resizeHandle.classList.remove('active-hover'); });
 
-            areaGroup.appendChild(resizeHandle);
-            areaGroup.appendChild(resizeHitbox);
+                areaGroup.appendChild(resizeHandle);
+                areaGroup.appendChild(resizeHitbox);
+            }
             gRoot.appendChild(areaGroup);
         });
 
@@ -988,27 +994,43 @@
         });
     });
 
-    var selectArea = document.getElementById('selectCustomArea');
+        var selectArea = document.getElementById('selectCustomArea');
     var boxAreaSizeControls = document.getElementById('boxAreaSizeControls');
     var inputAreaW = document.getElementById('inputAreaW');
     var inputAreaH = document.getElementById('inputAreaH');
 
-    selectArea.addEventListener('change', function () {
-        var val = this.value;
-        if (!val) { boxAreaSizeControls.style.display = 'none'; return; }
-        var t = currentAreas.find(function (a) { return a.name === val; });
-        if (t) { boxAreaSizeControls.style.display = 'flex'; inputAreaW.value = t.w; inputAreaH.value = t.h; }
-    });
-
-    function autoSaveAreaBoundsFromDrawer(t) {
-        if (!t || !t.id) return;
-        fetch(areaBoundsUrlTemplate.replace('__AREA_ID__', t.id), { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: JSON.stringify({ pos_x: t.x, pos_y: t.y, width: t.w, height: t.h }) })
-            .then(function (r) { return r.json(); })
-            .then(function (res) { if (res.success) showToast('Ukuran area ' + t.name + ' disimpan.'); }).catch(function () {});
+    if (selectArea) {
+        selectArea.addEventListener('change', function () {
+            var val = this.value;
+            if (!val) { boxAreaSizeControls.style.display = 'none'; return; }
+            var t = currentAreas.find(function (a) { return a.name === val; });
+            if (t) { boxAreaSizeControls.style.display = 'flex'; inputAreaW.value = t.w; inputAreaH.value = t.h; }
+        });
     }
-    inputAreaW.addEventListener('change', function () { var a = currentAreas.find(function (x) { return x.name === selectArea.value; }); if (a) autoSaveAreaBoundsFromDrawer(a); });
-    inputAreaH.addEventListener('change', function () { var a = currentAreas.find(function (x) { return x.name === selectArea.value; }); if (a) autoSaveAreaBoundsFromDrawer(a); });
-
+    function autoSaveAreaBoundsFromDrawer(t) {
+        if (!isSuperAdmin) return;
+        if (!t || !t.id) return;
+        fetch(areaBoundsUrlTemplate.replace('__AREA_ID__', t.id), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: JSON.stringify({ pos_x: t.x, pos_y: t.y, width: t.w, height: t.h })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) { if (res.success) showToast('Ukuran area ' + t.name + ' disimpan.'); })
+        .catch(function () {});
+    }
+    if (inputAreaW) {
+        inputAreaW.addEventListener('change', function () {
+            var a = currentAreas.find(function (x) { return x.name === selectArea.value; });
+            if (a) autoSaveAreaBoundsFromDrawer(a);
+        });
+    }
+    if (inputAreaH) {
+        inputAreaH.addEventListener('change', function () {
+            var a = currentAreas.find(function (x) { return x.name === selectArea.value; });
+            if (a) autoSaveAreaBoundsFromDrawer(a);
+        });
+    }
     window.triggerSaveFullLayout = function () {
         if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSaveFullLayout');

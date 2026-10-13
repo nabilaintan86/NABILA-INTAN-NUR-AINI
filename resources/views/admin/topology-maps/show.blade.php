@@ -349,9 +349,11 @@
             {{ $m->name }}
         </a>
     @endforeach
-    <a href="{{ route('admin.topology-maps.create') }}" class="topo-tab-add">
-        <em class="icon ni ni-plus"></em> Maps Baru
-    </a>
+        @if(auth()->user()->role === 'super_admin')
+        <a href="{{ route('admin.topology-maps.create') }}" class="topo-tab-add">
+            <em class="icon ni ni-plus"></em> Maps Baru
+        </a>
+    @endif
 </div>
 
 {{-- ══════════════════════════════════════════════════════

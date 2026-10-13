@@ -258,10 +258,12 @@
                 @endforeach
             @endif
 
-            <button type="button" class="topo-tab-add" data-bs-toggle="modal" data-bs-target="#modalQuickAddMap" title="Tambah Maps Baru Langsung">
-                <em class="icon ni ni-plus"></em>
-                <span>Maps Baru</span>
-            </button>
+                        @if(auth()->user()->role === 'super_admin')
+                <button type="button" class="topo-tab-add" data-bs-toggle="modal" data-bs-target="#modalQuickAddMap" title="Tambah Maps Baru Langsung">
+                    <em class="icon ni ni-plus"></em>
+                    <span>Maps Baru</span>
+                </button>
+            @endif
 
             <a href="{{ route('admin.topology-maps.index') }}" class="topo-tab-manage ms-auto" title="Kelola &amp; Pengaturan Semua Maps">
                 <em class="icon ni ni-setting"></em>
@@ -658,19 +660,22 @@
                 <h5 class="mb-0 text-white"><em class="icon ni ni-network"></em> Tabel Relasi &amp; Koneksi Antar-Perangkat</h5>
                 <small class="text-white-50">Kelola sambungan, arah panah, dan dependensi antar perangkat topologi jaringan 2026</small>
             </div>
-            <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-white text-primary fw-bold" id="relasiCountBadge">{{ count($connections) }} Total Relasi</span>
-                <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddRelasi">
-                    <em class="icon ni ni-plus-circle me-1"></em> Tambah Relasi Baru
-                </button>
+
+                @if(auth()->user()->role === 'super_admin')
+                    <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddRelasi">
+                        <em class="icon ni ni-plus-circle me-1"></em> Tambah Relasi Baru
+                    </button>
+                @endif
             </div>
         </div>
         <div class="card-body border-bottom bg-light py-2">
             <div class="row g-2 align-items-center">
-                <div class="col-md-4 col-sm-6">
-                    <div class="form-control-wrap">
-                        <div class="form-icon form-icon-left"><em class="icon ni ni-search"></em></div>
-                        <input type="text" class="form-control form-control-sm" id="searchRelasi" placeholder="Cari nama perangkat atau IP address...">
+                    <div class="col-md-4 col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><em class="icon ni ni-search"></em></span>
+                        <input type="text" class="form-control" id="searchRelasi" placeholder="Cari nama perangkat atau IP address...">
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
@@ -709,7 +714,9 @@
                             <th>Area / POP</th>
                             <th>Tipe Media</th>
                             <th>Status Link</th>
-                            <th style="width: 140px; text-align: center;">Aksi</th>
+                            @if(auth()->user()->role === 'super_admin')
+                                <th style="width: 140px; text-align: center;">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody id="relasiTableBody">
@@ -735,18 +742,30 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-center">
-                                    <div class="d-inline-flex align-items-center gap-1">
-                                        <select class="form-select form-select-sm py-0 px-2 fw-bold border-secondary-subtle"
-                                                style="font-size: 12px; width: 140px;"
-                                                title="Ubah arah panah langsung (tersimpan seketika di database &amp; map)"
-                                                onchange="quickChangeDirection({{ $conn->id }}, this.value, this)">
-                                            <option value="forward" {{ $conn->direction === 'forward' ? 'selected' : '' }}>&rarr; Forward</option>
-                                            <option value="reverse" {{ $conn->direction === 'reverse' ? 'selected' : '' }}>&larr; Reverse</option>
-                                            <option value="bidirectional" {{ $conn->direction === 'bidirectional' ? 'selected' : '' }}>&harr; Dua Arah</option>
-                                            <option value="none" {{ $conn->direction === 'none' ? 'selected' : '' }}>&mdash; Tanpa Panah</option>
-                                        </select>
-                                    </div>
+                                                    <td class="text-center">
+                                    @if(auth()->user()->role === 'super_admin')
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <select class="form-select form-select-sm py-0 px-2 fw-bold border-secondary-subtle"
+                                                    style="font-size: 12px; width: 140px;"
+                                                    title="Ubah arah panah langsung (tersimpan seketika di database &amp; map)"
+                                                    onchange="quickChangeDirection({{ $conn->id }}, this.value, this)">
+                                                <option value="forward" {{ $conn->direction === 'forward' ? 'selected' : '' }}>&rarr; Forward</option>
+                                                <option value="reverse" {{ $conn->direction === 'reverse' ? 'selected' : '' }}>&larr; Reverse</option>
+                                                <option value="bidirectional" {{ $conn->direction === 'bidirectional' ? 'selected' : '' }}>&harr; Dua Arah</option>
+                                                <option value="none" {{ $conn->direction === 'none' ? 'selected' : '' }}>&mdash; Tanpa Panah</option>
+                                            </select>
+                                        </div>
+                                    @else
+                                        @php
+                                            $dirLabel = [
+                                                'forward' => '→ Forward',
+                                                'reverse' => '← Reverse',
+                                                'bidirectional' => '↔ Dua Arah',
+                                                'none' => '— Tanpa Panah',
+                                            ][$conn->direction] ?? $conn->direction;
+                                        @endphp
+                                        <span class="badge bg-secondary-subtle text-dark border fw-bold">{{ $dirLabel }}</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="dev-badge-cell">
@@ -770,29 +789,31 @@
                                         <span class="badge bg-success"><em class="icon ni ni-check-circle"></em> Normal</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-xs btn-outline-primary"
-                                                onclick="locateDeviceOnMap({{ $conn->from_device_id }})"
-                                                title="Lihat posisi di Map View">
-                                            <em class="icon ni ni-map-pin"></em>
-                                        </button>
-                                        <button type="button" class="btn btn-xs btn-outline-warning"
-                                                onclick="openEditRelasiModal({{ $conn->id }}, {{ $conn->from_device_id }}, {{ $conn->to_device_id }}, '{{ $conn->direction }}', '{{ $conn->connection_type ?? 'ethernet' }}')"
-                                                title="Edit Relasi">
-                                            <em class="icon ni ni-edit"></em>
-                                        </button>
-                                        <button type="button" class="btn btn-xs btn-outline-danger"
-                                                onclick="deleteRelasi({{ $conn->id }}, '{{ addslashes($fromDev?->name ?? 'Device #'.$conn->from_device_id) }} &rarr; {{ addslashes($toDev?->name ?? 'Device #'.$conn->to_device_id) }}')"
-                                                title="Hapus Relasi">
-                                            <em class="icon ni ni-trash"></em>
-                                        </button>
-                                    </div>
-                                </td>
+                                @if(auth()->user()->role === 'super_admin')
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-xs btn-outline-primary"
+                                                    onclick="locateDeviceOnMap({{ $conn->from_device_id }})"
+                                                    title="Lihat posisi di Map View">
+                                                <em class="icon ni ni-map-pin"></em>
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-outline-warning"
+                                                    onclick="openEditRelasiModal({{ $conn->id }}, {{ $conn->from_device_id }}, {{ $conn->to_device_id }}, '{{ $conn->direction }}', '{{ $conn->connection_type ?? 'ethernet' }}')"
+                                                    title="Edit Relasi">
+                                                <em class="icon ni ni-edit"></em>
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-outline-danger"
+                                                    onclick="deleteRelasi({{ $conn->id }}, '{{ addslashes($fromDev?->name ?? 'Device #'.$conn->from_device_id) }} &rarr; {{ addslashes($toDev?->name ?? 'Device #'.$conn->to_device_id) }}')"
+                                                    title="Hapus Relasi">
+                                                <em class="icon ni ni-trash"></em>
+                                            </button>
+                                        </div>
+                                    </td>
+                                @endif
                             </tr>
                         @empty
                             <tr id="rowEmptyRelasi">
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="{{ auth()->user()->role === 'super_admin' ? 8 : 7 }}" class="text-center py-4 text-muted">
                                     <p class="mb-0">Belum ada data relasi perangkat terdaftar.</p>
                                 </td>
                             </tr>
@@ -814,24 +835,27 @@
                 <h5 class="mb-0 text-white"><em class="icon ni ni-layers"></em> Kelola Card Area &amp; Pembatas Router (POP) 2026</h5>
                 <small class="text-white-50">Dinamisasi ukuran kotak pembatas (Width x Height), koordinat awal canvas, dan palet warna card POP</small>
             </div>
-            <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-primary text-white fw-bold" id="areaCountBadge">{{ count($networkAreas) }} Total Card Area</span>
+
+                @if(auth()->user()->role === 'super_admin')
                     <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm me-1"
                         onclick="openAddAreaModal('monitoring')">
-                    <em class="icon ni ni-plus-circle me-1"></em> Card Area Monitoring
-                </button>
-                <button type="button" class="btn btn-sm btn-primary fw-bold shadow-sm"
-                        onclick="openAddAreaModal('ezyhome')">
-                    <em class="icon ni ni-plus-circle me-1"></em> Card Area EzyHome
-                </button>
+                        <em class="icon ni ni-plus-circle me-1"></em> Card Area Monitoring
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary fw-bold shadow-sm"
+                            onclick="openAddAreaModal('ezyhome')">
+                        <em class="icon ni ni-plus-circle me-1"></em> Card Area EzyHome
+                    </button>
+                @endif
             </div>
         </div>
         <div class="card-body border-bottom bg-light py-2">
             <div class="row g-2 align-items-center">
-                <div class="col-md-6">
-                    <div class="form-control-wrap">
-                        <div class="form-icon form-icon-left"><em class="icon ni ni-search"></em></div>
-                        <input type="text" class="form-control form-control-sm" id="searchAreaInput" oninput="filterAreaTable()" placeholder="Cari nama area atau kode POP...">
+                    <div class="col-md-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><em class="icon ni ni-search"></em></span>
+                        <input type="text" class="form-control" id="searchAreaInput" oninput="filterAreaTable()" placeholder="Cari nama area atau kode POP...">
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
@@ -854,7 +878,9 @@
                             <th style="text-align: center;">Koordinat Canvas (X, Y)</th>
                             <th>Palet Warna (Border / BG / Judul)</th>
                             <th style="text-align: center;">Perangkat Terhubung</th>
-                            <th style="width: 140px; text-align: center;">Aksi</th>
+                            @if(auth()->user()->role === 'super_admin')
+                                <th style="width: 140px; text-align: center;">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody id="areaTableBody">
@@ -914,20 +940,22 @@
                                 <td class="text-center">
                                     <span class="badge bg-info-dim text-info fw-bold">{{ $ar->_device_count }} Device</span>
                                 </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-warning" title="Edit Card Area &amp; Ukuran" onclick='openEditAreaModal(@json($ar), "{{ $ar->_scope }}")'>
-                                            <em class="icon ni ni-edit"></em>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" title="Hapus Area" onclick="deleteArea({{ $ar->id }}, '{{ addslashes($ar->name) }}', '{{ $ar->_scope }}')">
-                                            <em class="icon ni ni-trash"></em>
-                                        </button>
-                                    </div>
-                                </td>
+                                                @if(auth()->user()->role === 'super_admin')
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-warning" title="Edit Card Area &amp; Ukuran" onclick='openEditAreaModal(@json($ar), "{{ $ar->_scope }}")'>
+                                                <em class="icon ni ni-edit"></em>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" title="Hapus Area" onclick="deleteArea({{ $ar->id }}, '{{ addslashes($ar->name) }}', '{{ $ar->_scope }}')">
+                                                <em class="icon ni ni-trash"></em>
+                                            </button>
+                                        </div>
+                                    </td>
+                                @endif
                             </tr>
                         @empty
-                            <tr id="rowEmptyArea">
-                                <td colspan="9" class="text-center py-4 text-muted">
+                                    <tr id="rowEmptyArea">
+                                <td colspan="{{ auth()->user()->role === 'super_admin' ? 9 : 8 }}" class="text-center py-4 text-muted">
                                     <p class="mb-0">Belum ada card area POP terdaftar.</p>
                                 </td>
                             </tr>
@@ -1248,6 +1276,8 @@
 {{-- ═══════════════════════════════════════════════════
      MODAL TAMBAH MAPS BARU (QUICK ADD MAPS)
 ═══════════════════════════════════════════════════ --}}
+
+@if(auth()->user()->role === 'super_admin')
 <div class="modal fade" id="modalQuickAddMap" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1292,6 +1322,7 @@
         </div>
     </div>
 </div>
+@endif  
 
 {{-- FOOTER WHATSUP GOLD --}}
 <div class="wug-footer">
@@ -1310,7 +1341,7 @@
 
 @push('scripts')
 <script>
-    // Tab switching logic
+    var isSuperAdmin = {!! json_encode(auth()->check() && auth()->user()->role === 'super_admin') !!};
     function switchWugTab(tabName) {
         var tabs = ['topview', 'summary', 'logs', 'outage', 'stats', 'relasi', 'area'];
         tabs.forEach(function (t) {
@@ -1440,8 +1471,8 @@
     // Quick Change Direction via Inline Dropdown
     var directionUrlTemplate = "{{ route('admin.monitoring.connection.direction', ['connection' => '__CONN_ID__']) }}";
     var csrfToken = "{{ csrf_token() }}";
-
     window.quickChangeDirection = function (connId, dir, selectEl) {
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); if (selectEl) selectEl.value = selectEl.dataset.prev || 'forward'; return; }
         var url = directionUrlTemplate.replace('__CONN_ID__', connId);
         var originalBg = selectEl.style.backgroundColor;
         selectEl.style.backgroundColor = '#fef3c7';
@@ -1484,8 +1515,10 @@
     var modalEditRelasiEl = document.getElementById('modalEditRelasi');
     var bsModalEditRelasi = modalEditRelasiEl ? new bootstrap.Modal(modalEditRelasiEl) : null;
     var updateUrlTemplate = "{{ route('admin.monitoring.connection.update', ['connection' => '__CONN_ID__']) }}";
+    var destroyUrlTemplate = "{{ route('admin.monitoring.connection.destroy', ['connection' => '__CONN_ID__']) }}";
 
     window.openEditRelasiModal = function (id, fromId, toId, direction, connType) {
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         document.getElementById('edit_conn_id').value = id;
         document.getElementById('edit_from_device_id').value = fromId;
         document.getElementById('edit_to_device_id').value = toId;
@@ -1500,6 +1533,7 @@
     // Submit Tambah Relasi
     window.submitAddRelasi = function (e) {
         e.preventDefault();
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var form = document.getElementById('formAddRelasi');
         var btn = document.getElementById('btnSubmitAddRelasi');
         var fromId = document.getElementById('add_from_device_id').value;
@@ -1558,6 +1592,7 @@
     // Submit Edit Relasi
     window.submitEditRelasi = function (e) {
         e.preventDefault();
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSubmitEditRelasi');
         var connId = document.getElementById('edit_conn_id').value;
         var fromId = document.getElementById('edit_from_device_id').value;
@@ -1614,12 +1649,11 @@
     };
 
     // Hapus Relasi
-    var destroyUrlTemplate = "{{ route('admin.monitoring.connection.destroy', ['connection' => '__CONN_ID__']) }}";
     window.deleteRelasi = function (connId, label) {
+        if (!isSuperAdmin) return;
         if (!confirm('Apakah Anda yakin ingin menghapus relasi koneksi WhatsUp Gold ini:\n\n' + label + '\n\nRelasi ini akan dihapus dari peta topologi.')) {
             return;
         }
-
         var url = destroyUrlTemplate.replace('__CONN_ID__', connId);
         fetch(url, {
             method: 'POST',
@@ -1688,6 +1722,7 @@
     var modalEditAreaEl = document.getElementById('modalEditArea');
     var bsModalEditArea = modalEditAreaEl ? new bootstrap.Modal(modalEditAreaEl) : null;
     window.openAddAreaModal = function (scope) {
+        if (!isSuperAdmin) { alert('Hanya Super Admin yang dapat menambah Card Area.'); return; }
         scope = scope || 'monitoring';
         currentAreaScope = scope;
 
@@ -1713,8 +1748,8 @@
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAddArea'));
         modal.show();
     };
-
     window.openEditAreaModal = function (area, scope) {
+        if (!isSuperAdmin) { alert('Hanya Super Admin yang dapat mengedit Card Area.'); return; }
         if (!area) return;
         currentAreaScope = scope || 'monitoring';
         document.getElementById('edit_area_id').value = area.id;
@@ -1740,6 +1775,7 @@
     // Submit Tambah Area
     window.submitAddArea = function (e) {
         e.preventDefault();
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSubmitAddArea');
         var name = document.getElementById('add_area_name').value;
         var code = document.getElementById('add_area_code').value;
@@ -1799,6 +1835,7 @@
     // Submit Edit Area
     window.submitEditArea = function (e) {
         e.preventDefault();
+        if (!isSuperAdmin) { alert('Hanya Super Admin.'); return; }
         var btn = document.getElementById('btnSubmitEditArea');
         var id = document.getElementById('edit_area_id').value;
         var name = document.getElementById('edit_area_name').value;
@@ -1856,14 +1893,13 @@
             alert('Terjadi kesalahan jaringan.');
         });
     };
-
-    // Hapus Area
-    window.deleteArea = function (id, name, scope) {
+//hapus 
+        window.deleteArea = function (id, name, scope) {
+        if (!isSuperAdmin) return;
         scope = scope || 'monitoring';
         if (!confirm('Apakah Anda yakin ingin menghapus card area POP ini:\n\n' + name + '\n\nArea ini akan dihapus dari peta topologi.')) {
             return;
         }
-
         var url = areaEndpoints[scope].destroy.replace('__AREA_ID__', id);
         fetch(url, {
             method: 'POST',

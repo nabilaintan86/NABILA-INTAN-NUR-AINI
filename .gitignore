@@ -29,3 +29,5 @@ Thumbs.db
 *.bak-restore
 device_monitoring
 device_monitoring.bak
+.env
+.bak
