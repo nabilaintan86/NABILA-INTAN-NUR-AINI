@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Device;
 use App\Services\DeviceCsvService;
-use App\Services\DhcpRecognition;
 use Tests\Feature\Concerns\CreatesDeviceTables;
 use Tests\TestCase;
 
@@ -81,33 +80,6 @@ class DeviceCsvSourceOfTruthTest extends TestCase
         $this->assertSame(2, $summary['csv_rows'], 'dua baris CSV = dua perangkat resmi');
         $this->assertSame(1, $summary['csv_unique_ips'], 'tapi hanya satu IP unik');
         $this->assertCount(2, $service->officialDevices());
-    }
-
-    public function test_known_device_count_uses_unique_official_ips(): void
-    {
-        $csv = "NAMA,IP ADD,TYPE,DESKRIPSI,GAMBAR,STATUS\n"
-            ."POP SBY,10.0.0.1,ICMP,,,,up\n"
-            ."POP SBY Backup,10.0.0.1,ICMP,,,,up\n"
-            ."OLT KEN,10.0.0.2,ICMP,,,,down\n";
-
-        $recognition = new DhcpRecognition($this->service($csv));
-
-        $this->assertSame(2, $recognition->knownCount());
-    }
-
-    public function test_known_device_ignores_ip_outside_csv_even_when_present_in_table(): void
-    {
-        $recognition = new DhcpRecognition($this->service($this->registry()));
-
-        $leaseFor = fn (string $ip) => [
-            'ip' => $ip,
-            'mac_address' => 'AA:BB:CC:00:00:01',
-            'hostname' => 'host',
-            'last_seen' => now()->subMinute(),
-        ];
-
-        $this->assertSame('known', $recognition->classify($leaseFor('10.0.0.1')));
-        $this->assertNotSame('known', $recognition->classify($leaseFor('10.0.0.99')), 'IP di tabel tapi bukan di CSV');
     }
 
     public function test_official_summary_counts_status_from_table_for_official_rows_only(): void

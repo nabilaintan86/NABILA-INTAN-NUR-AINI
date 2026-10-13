@@ -119,11 +119,9 @@
     $backUrl  = ($backFrom !== '' && str_contains($backFrom, '/admin/'))
         ? $backFrom
         : route('admin.dashboard');
-    $fromDhcp    = str_contains($backFrom, '/admin/dhcp-lease');
-    $fromLaporan = !$fromDhcp && str_contains($backFrom, '/admin/laporan');
-    $parentLabel = $fromDhcp ? 'DHCP Lease' : ($fromLaporan ? 'Laporan & Grafik' : null);
-    $parentUrl   = $fromDhcp ? route('admin.dhcp-lease')
-        : ($fromLaporan ? route('admin.laporan') : null);
+    $fromLaporan = str_contains($backFrom, '/admin/laporan');
+    $parentLabel = $fromLaporan ? 'Laporan & Grafik' : null;
+    $parentUrl   = $fromLaporan ? route('admin.laporan') : null;
     $crumbs = [];
     if ($parentLabel !== null) {
         $crumbs[] = ['label' => $parentLabel, 'url' => $parentUrl];
@@ -151,8 +149,7 @@
         </span>
         <a href="{{ $backUrl }}" class="btn btn-outline-primary">
             <em class="icon ni ni-arrow-left"></em>
-            @if($fromDhcp) DHCP Lease
-            @elseif($fromLaporan) Laporan
+            @if($fromLaporan) Laporan
             @else Kembali @endif
         </a>
     </x-slot:actions>

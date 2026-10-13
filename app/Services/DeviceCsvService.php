@@ -398,7 +398,7 @@ class DeviceCsvService
      * devices.csv dan diurutkan mengikuti urutan baris file.
      *
      * Inilah koleksi yang dipakai seluruh halaman (Dashboard, Monitoring,
-     * DHCP Lease, Telegram) supaya jumlah device di semua tempat sama.
+     * Telegram) supaya jumlah device di semua tempat sama.
      *
      * @return Collection<int, Device>
      */

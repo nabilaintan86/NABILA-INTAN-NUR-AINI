@@ -46,6 +46,42 @@ final class DiagnosisAnalyzer
     /** Di atas ini packet loss sudah berat, peringatan dinaikkan. */
     public const MAJOR_LOSS_PCT = 20.0;
 
+    /**
+     * SATU-SATUNYA aturan penetapan status dari angka hasil probe. Semua
+     * bagian sistem yang menampilkan status (badge daftar perangkat, kartu
+     * hasil ping, polling database) wajib memakai fungsi ini supaya tidak
+     * pernah ada perbedaan "badge di atas vs hasil di bawah".
+     *
+     *   - packet loss 100 %       → DOWN (tidak merespons sama sekali)
+     *   - packet loss 1-99 %      → WARNING (masih membalas, tapi tidak penuh)
+     *   - latency rata-rata >100ms → WARNING (respons lambat, di atas wajar)
+     *   - selain itu              → UP
+     *
+     * Jitter tidak pernah mengubah status: hanya dilaporkan sebagai angka.
+     *
+     * @param  float|int|null  $lossPct  persen paket hilang (0-100)
+     * @param  float|int|null  $avgMs  rata-rata latency (ms)
+     */
+    public static function statusFromProbe(float|int|null $lossPct, float|int|null $avgMs): string
+    {
+        $loss = $lossPct === null ? null : (float) $lossPct;
+        $avg = $avgMs === null ? null : (float) $avgMs;
+
+        if ($loss !== null && $loss >= 100) {
+            return 'down';
+        }
+
+        if ($loss !== null && $loss > 0) {
+            return 'warning';
+        }
+
+        if ($avg !== null && $avg > self::GOOD_LATENCY_MS) {
+            return 'warning';
+        }
+
+        return 'up';
+    }
+
     /* ══════════════════════════════════════════════════════════════
      *  Pintu masuk per alat
      * ══════════════════════════════════════════════════════════════ */
@@ -122,14 +158,22 @@ final class DiagnosisAnalyzer
 
         $loss = $stats['loss'];
         $avg = $stats['avg'];
-        $jitter = $this->jitter($stats);
 
+        /* Aturan status (kunci sinkronisasi muka Network Tools):
+           - packet loss 100%  → DOWN (ditangani cabang di atas)
+           - packet loss 1-99% → WARNING
+           - latency rata-rata > GOOD_LATENCY_MS (100 ms) → WARNING
+           - packet loss 0% dan latency normal → UP
+           Jitter tetap dilaporkan sebagai fakta, tapi tidak menaikkan
+           status sendirian — supaya hasilnya konsisten dengan badge
+           daftar perangkat (UP/WARNING/DOWN). */
         $slow = $avg !== null && $avg > self::GOOD_LATENCY_MS;
-        $lossy = $loss !== null && $loss > 0;
-        $jittery = $jitter !== null && $jitter > self::JITTER_MS;
+        $lossy = $loss !== null && $loss > 0 && $loss < 100;
 
-        /* ── WARNING: latency tinggi dan/atau sedikit packet loss ── */
-        if ($slow || $lossy || $jittery) {
+        /* Aturan status didelegasikan ke statusFromProbe() — fungsi yang sama
+           dipakai badge daftar perangkat, polling, dan semua alat Network
+           Tools. $slow/$lossy di bawah hanya untuk menyusun kalimat alasan. */
+        if (self::statusFromProbe($loss, $avg) === 'warning') {
             $causes = [];
 
             if ($lossy) {
@@ -138,9 +182,6 @@ final class DiagnosisAnalyzer
             if ($slow) {
                 $causes[] = 'latency tinggi, rata-rata '.$this->num($avg).' ms'
                     .' (wajar di bawah '.$this->num(self::GOOD_LATENCY_MS).' ms)';
-            }
-            if ($jittery) {
-                $causes[] = 'jitter / delay yang berubah-ubah sampai '.$this->num($jitter).' ms';
             }
 
             $severe = ($loss !== null && $loss >= self::MAJOR_LOSS_PCT)

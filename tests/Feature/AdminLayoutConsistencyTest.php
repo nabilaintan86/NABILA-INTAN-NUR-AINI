@@ -40,7 +40,6 @@ class AdminLayoutConsistencyTest extends TestCase
         'admin.notifikasi'         => ['Notifikasi', 'Notifikasi'],
         'admin.kelola-router'      => ['Kelola Router', 'Kelola Router'],
         'admin.device.notes.report' => ['Report Catatan Perangkat', 'Report Catatan'],
-        'admin.dhcp-lease'         => ['DHCP Lease', 'DHCP Lease'],
         'admin.laporan'            => ['Laporan &amp; Grafik', 'Laporan & Grafik'],
         'admin.tools'              => ['Network Tools', 'Network Tools'],
         'admin.kelola-user'        => ['Kelola User', 'Kelola User'],
@@ -548,25 +547,6 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->foreignId('user_id')->nullable();
                 $table->string('action')->nullable();
                 $table->text('description')->nullable();
-                $table->timestamps();
-            },
-            'dhcp_leases' => function (Blueprint $table): void {
-                $table->id();
-                $table->unsignedBigInteger('device_id')->nullable()->index();
-                $table->string('mac_address')->nullable();
-                $table->string('ip_address');
-                $table->string('hostname')->nullable();
-                $table->string('client_id')->nullable();
-                $table->string('vendor')->nullable();
-                $table->string('router')->nullable();
-                $table->string('location')->nullable();
-                $table->timestamp('lease_start')->nullable();
-                $table->timestamp('lease_end')->nullable();
-                $table->string('classification')->default('unknown');
-                $table->timestamp('first_seen')->nullable();
-                $table->timestamp('last_seen')->nullable();
-                $table->string('source')->nullable();
-                $table->text('comment')->nullable();
                 $table->timestamps();
             },
             'telegram_users' => function (Blueprint $table): void {

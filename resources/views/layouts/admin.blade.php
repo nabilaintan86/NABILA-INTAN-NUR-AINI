@@ -184,7 +184,6 @@
             .toast,
             .toast-stack,
             .modal-backdrop,
-            .modal-backdrop-dhcp,
             .laporan-loading
         ) {
             margin-top: 0;
@@ -211,8 +210,6 @@
             .lp-header,
             .telegram-card,
             .telegram-stat,
-            .dhcp-panel,
-            .dhcp-table-wrap,
             .tools-panel,
             .console-box
         ) {

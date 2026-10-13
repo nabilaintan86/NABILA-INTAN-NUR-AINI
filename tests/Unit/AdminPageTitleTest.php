@@ -21,7 +21,6 @@ class AdminPageTitleTest extends TestCase
             '/admin/notifikasi' => 'Notifikasi',
             '/admin/kelola-router' => 'Kelola Router',
             '/admin/device-notes' => 'Report Catatan',
-            '/admin/dhcp-lease' => 'DHCP Lease',
             '/admin/laporan' => 'Laporan & Grafik',
             '/admin/tools' => 'Network Tools',
             '/admin/troubleshooting' => 'Troubleshooting',

@@ -310,18 +310,6 @@
             cursor: pointer;
         }
 
-        .forgot-link {
-            color: #60a5fa;
-            font-size: 0.82rem;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .forgot-link:hover {
-            color: #93c5fd;
-        }
-
         /* Button */
         .btn-login {
             width: 100%;
@@ -383,6 +371,20 @@
             font-size: 0.75rem;
         }
 
+        /* Success */
+        .success-box {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .login-card { padding: 32px 24px; }
@@ -414,6 +416,13 @@
                 <div class="error-box">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>{{ $errors->first() }}</span>
+                </div>
+            @endif
+
+            @if (session('status'))
+                <div class="success-box">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ session('status') }}</span>
                 </div>
             @endif
 

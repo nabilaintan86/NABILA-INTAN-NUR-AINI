@@ -10,7 +10,7 @@ use Tests\Feature\Concerns\CreatesNetworkAreaTables;
 use Tests\TestCase;
 
 /**
- * Dashboard, Monitoring, dan DHCP Lease harus melaporkan jumlah yang sama:
+ * Dashboard dan Monitoring harus melaporkan jumlah yang sama:
  * hanya perangkat yang terdaftar di devices.csv.
  */
 class OfficialDeviceCountPagesTest extends TestCase

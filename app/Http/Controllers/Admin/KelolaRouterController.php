@@ -12,6 +12,11 @@ class KelolaRouterController extends Controller
 {
     public function index()
     {
+        // Daftar perangkat dibaca langsung dari tabel `devices` (database
+        // monitoring Server Radnet), jadi status UP/DOWN dan penambahan
+        // terbaru selalu real-time. Daftar POP diambil dengan
+        // SELECT DISTINCT dari kolom yang sama, supaya filter di Network
+        // Tools dan input di sini memakai satu sumber data.
         $devices = Device::orderBy('status')
             ->orderBy('name')
             ->get();
@@ -20,6 +25,7 @@ class KelolaRouterController extends Controller
             'devices' => $devices,
             'deviceTypes' => DeviceType::types(),
             'protocols' => DeviceType::protocols(),
+            'popOptions' => Device::popNameOptions(),
         ]);
     }
 
@@ -33,6 +39,7 @@ class KelolaRouterController extends Controller
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
             'ip_address' => 'required|ip|unique:devices,ip_address',
             'router_version' => 'nullable|string|max:255',
+            'pop_name' => 'nullable|string|max:255',
         ]);
 
         $validated['icon_type'] = DeviceType::iconKey($validated['type']);
@@ -55,6 +62,7 @@ class KelolaRouterController extends Controller
             'protocol' => ['required', 'string', Rule::in(DeviceType::protocols())],
             'ip_address' => 'required|ip|unique:devices,ip_address,'.$device->id,
             'router_version' => 'nullable|string|max:255',
+            'pop_name' => 'nullable|string|max:255',
         ]);
 
         $validated['icon_type'] = DeviceType::iconKey($validated['type']);

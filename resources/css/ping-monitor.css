@@ -31,6 +31,7 @@
  */
 @source '../views/admin/ping-monitor';
 @source '../views/admin/ping-monitor.blade.php';
+@source '../views/admin/tools.blade.php';
 
 /*
 |--------------------------------------------------------------------------

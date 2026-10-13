@@ -7,6 +7,7 @@ use App\Models\Device;
 use App\Models\MonitoringLog;
 use App\Services\DeviceCsvService;
 use App\Services\DeviceStatusNotifier;
+use App\Services\NetworkTools\DiagnosisAnalyzer;
 use App\Services\SnmpInspectionService;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
@@ -29,67 +30,67 @@ class MonitorDevices extends Command
         }
 
         try {
-        // Hanya perangkat resmi (devices.csv) yang diping, satu kali per IP.
-        $devices = $source->officialDevicesUnique();
+            // Hanya perangkat resmi (devices.csv) yang diping, satu kali per IP.
+            $devices = $source->officialDevicesUnique();
 
-        if ($devices->isEmpty()) {
-            $this->warn('Tidak ada device resmi yang terdaftar di devices.csv.');
+            if ($devices->isEmpty()) {
+                $this->warn('Tidak ada device resmi yang terdaftar di devices.csv.');
 
-            return self::SUCCESS;
-        }
-
-        $this->info("Memulai monitoring untuk {$devices->count()} devices...");
-
-        $inspectSnmp = ! $this->option('no-snmp');
-        $snmp->beginCycle();
-
-        $bar = $this->output->createProgressBar($devices->count());
-        $bar->start();
-
-        $upCount = 0;
-        $downCount = 0;
-
-        foreach ($devices as $device) {
-            try {
-                $isUp = $this->pingDevice($device, $inspectSnmp ? $snmp : null);
-
-                if ($isUp) {
-                    $upCount++;
-                } else {
-                    $downCount++;
-                }
-            } catch (\Throwable $e) {
-                $this->newLine();
-
-                $this->error(
-                    "Gagal memproses {$device->name} ({$device->ip_address}): {$e->getMessage()}"
-                );
-
-                $downCount++;
+                return self::SUCCESS;
             }
 
-            $bar->advance();
-        }
+            $this->info("Memulai monitoring untuk {$devices->count()} devices...");
 
-        $bar->finish();
+            $inspectSnmp = ! $this->option('no-snmp');
+            $snmp->beginCycle();
 
-        $this->newLine(2);
+            $bar = $this->output->createProgressBar($devices->count());
+            $bar->start();
 
-        $this->info('Monitoring selesai!');
-        $this->line("UP   : {$upCount}");
-        $this->line("DOWN : {$downCount}");
-        $this->line("TOTAL: {$devices->count()}");
+            $upCount = 0;
+            $downCount = 0;
 
-        if ($inspectSnmp) {
-            $this->line(sprintf(
-                'SNMP : diperiksa %d, dilewati %d (mode: %s)',
-                $snmp->probedCount(),
-                $snmp->skippedCount(),
-                $snmp->mode()
-            ));
-        }
+            foreach ($devices as $device) {
+                try {
+                    $isUp = $this->pingDevice($device, $inspectSnmp ? $snmp : null);
 
-        return self::SUCCESS;
+                    if ($isUp) {
+                        $upCount++;
+                    } else {
+                        $downCount++;
+                    }
+                } catch (\Throwable $e) {
+                    $this->newLine();
+
+                    $this->error(
+                        "Gagal memproses {$device->name} ({$device->ip_address}): {$e->getMessage()}"
+                    );
+
+                    $downCount++;
+                }
+
+                $bar->advance();
+            }
+
+            $bar->finish();
+
+            $this->newLine(2);
+
+            $this->info('Monitoring selesai!');
+            $this->line("UP   : {$upCount}");
+            $this->line("DOWN : {$downCount}");
+            $this->line("TOTAL: {$devices->count()}");
+
+            if ($inspectSnmp) {
+                $this->line(sprintf(
+                    'SNMP : diperiksa %d, dilewati %d (mode: %s)',
+                    $snmp->probedCount(),
+                    $snmp->skippedCount(),
+                    $snmp->mode()
+                ));
+            }
+
+            return self::SUCCESS;
         } finally {
             $this->releasePollLock();
         }
@@ -140,41 +141,52 @@ class MonitorDevices extends Command
         $previousStatus = strtolower((string) $device->status);
 
         /*
+         * Status ditetapkan lewat SATU aturan yang sama dengan Network Tools
+         * (DiagnosisAnalyzer::statusFromProbe), bukan dari exit code semata:
+         *   - packet loss 0% & latency normal        -> UP
+         *   - packet loss 1-99% atau latency > 100ms -> WARNING
+         *   - packet loss 100% (tidak membalas)      -> DOWN
+         */
+        $loss = $this->extractPacketLoss($outputStr);
+        $latency = $this->parseLatency($outputStr);
+
+        if ($resultCode === 0) {
+            $latency = max(0, $latency);
+            $status = DiagnosisAnalyzer::statusFromProbe(0, $latency);
+        } else {
+            $latency = $latency !== 0 ? $latency : null;
+            $loss = $loss ?? 100;
+            $status = DiagnosisAnalyzer::statusFromProbe($loss, $latency);
+        }
+
+        /*
         |--------------------------------------------------------------------------
-        | DEVICE UP
+        | DEVICE UP / WARNING
         |--------------------------------------------------------------------------
         */
 
-        if ($resultCode === 0) {
-            $latency = $this->parseLatency($outputStr);
-
-            /*
-             * Kalau ping berhasil tetapi latency gagal dibaca,
-             * tetap dianggap UP, tetapi latency dibuat 0.
-             */
-            $latency = max(0, $latency);
-
+        if ($status !== 'down') {
             MonitoringLog::create([
                 'device_id' => $device->id,
                 'device_name' => $device->name,
                 'ip_address' => $device->ip_address,
-                'status' => 'up',
-                'response_time' => $latency,
+                'status' => $status,
+                'response_time' => $status === 'warning' ? ($latency ?? 0) : $latency,
                 'checked_at' => $now,
             ]);
 
             $this->updateDeviceStatistics(
                 $device,
-                'up',
-                $latency,
+                $status,
+                $status === 'warning' ? ($latency ?? 0) : $latency,
                 $now
             );
 
             $this->handleStatusTransition(
                 $device,
                 $previousStatus,
-                'up',
-                $latency,
+                $status,
+                $status === 'warning' ? ($latency ?? 0) : $latency,
                 $now
             );
 
@@ -182,9 +194,9 @@ class MonitorDevices extends Command
              * SNMP purely informatif: hanya dicatat di log aplikasi & console,
              * tidak menyentuh tabel monitoring_logs maupun notifikasi.
              */
-            $this->collectSnmpInsight($device, 'up', $snmp);
+            $this->collectSnmpInsight($device, $status, $snmp);
 
-            return true;
+            return $status === 'up';
         }
 
         /*
@@ -274,11 +286,11 @@ class MonitorDevices extends Command
         $statistics = MonitoringLog::where('device_id', $device->id)
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as successful,
+                SUM(CASE WHEN status IN ('up', 'warning') THEN 1 ELSE 0 END) as successful,
                 SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as failed,
-                AVG(CASE WHEN status = 'up' THEN response_time END) as average_latency,
-                MIN(CASE WHEN status = 'up' THEN response_time END) as minimum_latency,
-                MAX(CASE WHEN status = 'up' THEN response_time END) as maximum_latency
+                AVG(CASE WHEN status IN ('up', 'warning') THEN response_time END) as average_latency,
+                MIN(CASE WHEN status IN ('up', 'warning') THEN response_time END) as minimum_latency,
+                MAX(CASE WHEN status IN ('up', 'warning') THEN response_time END) as maximum_latency
             ")
             ->first();
 
@@ -363,7 +375,10 @@ class MonitorDevices extends Command
             return;
         }
 
-        if (! in_array($previousStatus, ['up', 'down'], true)) {
+        // 'warning' ikut dibandingkan sebagai status sebelumnya supaya transisi
+        // warning -> down tetap memicu alert; notifikasi di-putuskan penuh oleh
+        // DeviceStatusNotifier (degraded -> down = DEVICE DOWN).
+        if (! in_array($previousStatus, ['up', 'down', 'warning'], true)) {
             return;
         }
 
@@ -465,6 +480,9 @@ class MonitorDevices extends Command
         }
     }
 
+    /**
+     * Ambil rata-rata latensi (avg) dari output ping.
+     */
     private function parseLatency(string $output): int
     {
         /*
@@ -511,5 +529,18 @@ class MonitorDevices extends Command
         }
 
         return 0;
+    }
+
+    /**
+     * Ambil persentase perangkat yang hilang dari output ping.
+     * Mengembalikan null bila tidak terbaca (mis. output error tanpa statistik).
+     */
+    private function extractPacketLoss(string $output): ?float
+    {
+        if (preg_match('/([\d.]+)%\s*packet loss/i', $output, $matches)) {
+            return (float) $matches[1];
+        }
+
+        return null;
     }
 }

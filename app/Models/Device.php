@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\DeviceType;
+use App\Services\NetworkTools\DiagnosisAnalyzer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -87,6 +88,36 @@ class Device extends Model
         return $this->hasMany(Note::class);
     }
 
+    /**
+     * Penetap status perangkat dari metrik hasil probe (packet loss & latency).
+     *
+     * Delegasi ke aturan tunggal DiagnosisAnalyzer::statusFromProbe() — fungsi
+     * yang sama dipakai kartu hasil ping Network Tools, polling database, dan
+     * badge daftar perangkat. Jadi tidak mungkin ada perbedaan logika antara
+     * badan perangkat dan kotak hasil diagnostik.
+     *
+     *   - packet loss 100%       → 'down'
+     *   - packet loss 1-99%      → 'warning'
+     *   - latency rata-rata >100 → 'warning'
+     *   - selain itu             → 'up'
+     */
+    public static function statusFromProbe(?float $lossPct, ?float $avgMs): string
+    {
+        return DiagnosisAnalyzer::statusFromProbe($lossPct, $avgMs);
+    }
+
+    /**
+     * Label badge yang tampil di layar untuk satu status internal.
+     */
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'warning' => 'WARNING',
+            'down' => 'DOWN',
+            'up', 'default' => 'UP',
+        };
+    }
+
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);
@@ -148,9 +179,35 @@ class Device extends Model
         return $this->belongsTo(NetworkArea::class, 'network_area_id');
     }
 
-public function topologyMapDevice()
-{
-    return $this->hasOne(\App\Models\TopologyMapDevice::class, 'device_id');
-}
+    /**
+     * Daftar POP unik dari tabel devices (SELECT DISTINCT pop_name).
+     *
+     * Satu sumber data untuk filter Network Tools dan input Kelola Router,
+     * sehingga keduanya selalu sinkron dengan database: POP baru yang
+     * disimpan pada sebuah perangkat langsung tersedia di kedua halaman.
+     * Aman terhadap skema yang belum memiliki kolom `pop_name`.
+     *
+     * @return array<int, string>
+     */
+    public static function popNameOptions(): array
+    {
+        if (! Schema::hasColumn((new static)->getTable(), 'pop_name')) {
+            return [];
+        }
 
+        return static::query()
+            ->whereNotNull('pop_name')
+            ->where('pop_name', '!=', '')
+            ->distinct()
+            ->orderBy('pop_name')
+            ->pluck('pop_name')
+            ->map(fn ($pop) => (string) $pop)
+            ->values()
+            ->all();
+    }
+
+    public function topologyMapDevice()
+    {
+        return $this->hasOne(TopologyMapDevice::class, 'device_id');
+    }
 }

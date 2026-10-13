@@ -259,6 +259,7 @@
                                                             data-protocol="{{ $device->display_protocol }}"
                                                             data-icon="{{ $device->icon_url }}"
                                                             data-ip="{{ $device->ip_address }}"
+                                                            data-pop="{{ $device->pop_name }}"
                                                             data-router-version="{{ $device->router_version }}">
                                                              <em class="icon ni ni-edit"></em>
                                                              <span>Edit</span>
@@ -307,6 +308,15 @@
 </div>
 
 
+{{-- Daftar POP dari database (SELECT DISTINCT pop_name) untuk saran input.
+     Sumber yang sama dengan filter POP di halaman Network Tools. --}}
+<datalist id="popNameOptions">
+    @foreach($popOptions as $pop)
+        <option value="{{ $pop }}"></option>
+    @endforeach
+</datalist>
+
+
 {{-- ============================================================
      MODAL: TAMBAH PERANGKAT
 ============================================================ --}}
@@ -350,6 +360,12 @@
                             <label for="add_ip_address" class="form-label">IP Address <span class="text-danger">*</span></label>
                             <input type="text" name="ip_address" id="add_ip_address" class="form-control"
                                    placeholder="Contoh: 202.154.4.254" required>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <label for="add_pop_name" class="form-label">POP / Area</label>
+                            <input type="text" name="pop_name" id="add_pop_name" class="form-control"
+                                   list="popNameOptions" placeholder="Contoh: POP Gresik">
+                            <small class="text-muted">Dipakai sebagai filter POP di halaman Network Tools.</small>
                         </div>
                         @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <div class="col-12 mt-2">
@@ -415,6 +431,12 @@
                             <label for="edit_ip_address" class="form-label">IP Address <span class="text-danger">*</span></label>
                             <input type="text" name="ip_address" id="edit_ip_address" class="form-control" required>
                         </div>
+                        <div class="col-12 mt-2">
+                            <label for="edit_pop_name" class="form-label">POP / Area</label>
+                            <input type="text" name="pop_name" id="edit_pop_name" class="form-control"
+                                   list="popNameOptions" placeholder="Contoh: POP Gresik">
+                            <small class="text-muted">Dipakai sebagai filter POP di halaman Network Tools.</small>
+                        </div>
                         @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <div class="col-12 mt-2">
                             <label for="edit_router_version" class="form-label">Router Version</label>
@@ -463,6 +485,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit_protocol').value   = protocol;
             document.getElementById('edit_ip_address').value = ip;
             document.getElementById('edit_type_preview').src = icon;
+            var editPopName = document.getElementById('edit_pop_name');
+            if (editPopName) {
+                editPopName.value = this.dataset.pop || '';
+            }
             var editRouterVersion = document.getElementById('edit_router_version');
             if (editRouterVersion) {
                 editRouterVersion.value = this.dataset.routerVersion || '';
