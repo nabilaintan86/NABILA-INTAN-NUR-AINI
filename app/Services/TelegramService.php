@@ -651,9 +651,6 @@ class TelegramService
         }
     }
 
-    /**
-     * Simpan pengaturan bot ke database dan sinkronisasi ke file .env.
-     */
     public function saveSettings(array $data, ?int $userId = null): void
     {
         if (Schema::hasTable('map_settings')) {
@@ -670,16 +667,16 @@ class TelegramService
                 MapSetting::set('telegram_bot_info', $data['bot_info'], $userId);
             }
         }
-
-        $this->syncToEnv([
-            'TELEGRAM_BOT_TOKEN' => $data['bot_token'] ?? null,
-            'TELEGRAM_CHAT_ID' => $data['chat_id'] ?? null,
-            'TELEGRAM_WEBHOOK_SECRET' => $data['webhook_secret'] ?? null,
-        ]);
+        if (config('app.env') === 'local') {
+            $this->syncToEnv([
+                'TELEGRAM_BOT_TOKEN' => $data['bot_token'] ?? null,
+                'TELEGRAM_CHAT_ID' => $data['chat_id'] ?? null,
+                'TELEGRAM_WEBHOOK_SECRET' => $data['webhook_secret'] ?? null,
+            ]);
+        }
 
         $this->reloadConfig();
     }
-
     /**
      * Sinkronisasi nilai kredensial ke file .env bila writable.
      */

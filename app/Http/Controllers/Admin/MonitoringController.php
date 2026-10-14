@@ -515,8 +515,16 @@ class MonitoringController extends Controller
             }
         }
 
+        // 1. SELALU update legacy field di devices (sumber utama render map)
+        $device->update([
+            'pos_x'           => (int) round($validated['pos_x']),
+            'pos_y'           => (int) round($validated['pos_y']),
+            'network_area_id' => $areaId,
+            'map_positioned'  => true,
+        ]);
+
+        // 2. Sinkronisasi tabel device_positions (untuk fitur multi-map nanti)
         if ($positionId) {
-            // UPDATE posisi yang sudah ada
             $pos = \App\Models\DevicePosition::find($positionId);
             if ($pos) {
                 $pos->update([
@@ -524,22 +532,21 @@ class MonitoringController extends Controller
                     'pos_y'           => (int) round($validated['pos_y']),
                     'network_area_id' => $areaId,
                 ]);
+            } else {
+                // position_id dikirim tapi tidak ada di DB → buat baru
+                \App\Models\DevicePosition::create([
+                    'device_id'       => $device->id,
+                    'network_area_id' => $areaId,
+                    'pos_x'           => (int) round($validated['pos_x']),
+                    'pos_y'           => (int) round($validated['pos_y']),
+                ]);
             }
         } else {
-            // BELUM punya posisi → CREATE posisi baru (multi-position)
             \App\Models\DevicePosition::create([
                 'device_id'       => $device->id,
                 'network_area_id' => $areaId,
                 'pos_x'           => (int) round($validated['pos_x']),
                 'pos_y'           => (int) round($validated['pos_y']),
-            ]);
-
-            // Update juga legacy field di device (untuk kompatibilitas)
-            $device->update([
-                'pos_x'          => (int) round($validated['pos_x']),
-                'pos_y'          => (int) round($validated['pos_y']),
-                'network_area_id' => $areaId,
-                'map_positioned' => true,
             ]);
         }
 

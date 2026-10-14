@@ -441,7 +441,7 @@ body, .nk-main { background: #f1f5fa; }
                                 <div class="tg-form-label">Username</div>
                                 <div style="font-size:13px;color:#17233d;">
                                     <a href="https://t.me/{{ $bot['username'] ?? '' }}" target="_blank" rel="noopener" class="text-primary">
-                                        @{{ $bot['username'] ?? '-' }}
+                                    {{ '@'.($bot['username'] ?? '-') }}
                                     </a>
                                 </div>
                             </div>

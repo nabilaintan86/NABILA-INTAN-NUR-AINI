@@ -211,7 +211,7 @@ class TelegramUserController extends Controller
     public function setRole(Request $request, TelegramUser $telegramUser)
     {
         $validated = $request->validate([
-            'role' => ['required', 'string', 'in:super_admin,admin,pending'],
+        'role' => ['required', 'string', 'in:super_admin,admin,staff,pending'],
         ]);
 
         $role = $validated['role'];

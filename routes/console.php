@@ -8,27 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-/*
-|--------------------------------------------------------------------------
-| AUTOMATED NETWORK POLLING
-|--------------------------------------------------------------------------
-| - `network:poll` : ping detail + tulis activity_logs, tiap 1 menit.
-| - `monitor:ping` : ping 115 device + tulis monitoring_logs
-|   (status, response_time, checked_at).
-|   Dijalankan langsung oleh cron sistem, BUKAN Laravel Scheduler.
-|
-| Cara menjalankan scheduler:
-|   DEV  : php artisan schedule:work   (jalankan terus-menerus di terminal)
-|   PROD : tambahkan baris ini ke cron sistem (crontab -e):
-|     * * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1
-|--------------------------------------------------------------------------
-*/
-Schedule::command('network:poll')
+Schedule::command('monitor:ping')
     ->everyMinute()
     ->withoutOverlapping(5)
     ->timezone(config('app.timezone'))
     ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('network:poll selesai tanpa error.');
+        \Illuminate\Support\Facades\Log::info('monitor:ping selesai tanpa error.');
     });
 
 /*

@@ -257,8 +257,7 @@
                     </a>
                 @endforeach
             @endif
-
-                        @if(auth()->user()->role === 'super_admin')
+                @if(auth()->user()?->role === 'super_admin')
                 <button type="button" class="topo-tab-add" data-bs-toggle="modal" data-bs-target="#modalQuickAddMap" title="Tambah Maps Baru Langsung">
                     <em class="icon ni ni-plus"></em>
                     <span>Maps Baru</span>
