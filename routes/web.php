@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceDetailController;
+use App\Http\Controllers\Admin\DhcpLeaseController;
 use App\Http\Controllers\Admin\DeviceNoteController;
 use App\Http\Controllers\Admin\EzyHomeController;
 use App\Http\Controllers\Admin\KelolaRouterController;
@@ -309,6 +310,23 @@ Route::prefix('admin')
             Route::post('/device/{device}/notes', [DeviceNoteController::class, 'store'])->name('device.notes.store');
             Route::put('/device-notes/{note}', [DeviceNoteController::class, 'update'])->name('device.notes.update');
             Route::delete('/device-notes/{note}', [DeviceNoteController::class, 'destroy'])->name('device.notes.destroy');
+        });
+
+        /*
+        |----------------------------------------------------------------------
+        | DHCP Lease
+        |----------------------------------------------------------------------
+        */
+
+        Route::middleware('auth')->group(function () {
+            Route::get('/dhcp-lease', [DhcpLeaseController::class, 'index'])
+                ->name('dhcp-lease');
+
+            Route::post('/dhcp-lease/upload', [DhcpLeaseController::class, 'upload'])
+                ->name('dhcp-lease.upload');
+
+            Route::post('/dhcp-lease/import', [DhcpLeaseController::class, 'sync'])
+                ->name('dhcp-lease.import');
         });
 
         /*
