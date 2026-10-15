@@ -1306,6 +1306,17 @@
         return '';
     }
 
+    /* Saat status WARNING/DOWN, nilai time= ms disembunyikan supaya log
+       menampilkan kondisi masalah (paket hilang) seperti di DOWN, tanpa angka
+       latency. UP tetap menampilkan time= ms. */
+    function displayPingLine(line, status) {
+        if ((status === 'warning' || status === 'down') && /\btime[=:]\s*[\d.]+\s*ms/i.test(line)) {
+            return line.replace(/\s*\btime[=:]\s*[\d.]+\s*ms/i, '').trim();
+        }
+
+        return line;
+    }
+
     function pingStatusLabel(status) {
         if (status === 'up') { return 'UP'; }
         if (status === 'warning') { return 'WARNING'; }
@@ -1428,7 +1439,7 @@
         }
 
         if (evt.type === 'line') {
-            appendPingLog(evt.line, classifyPingLine(evt.line, pingRun.status));
+            appendPingLog(displayPingLine(evt.line, pingRun.status), classifyPingLine(evt.line, pingRun.status));
             return false;
         }
 
