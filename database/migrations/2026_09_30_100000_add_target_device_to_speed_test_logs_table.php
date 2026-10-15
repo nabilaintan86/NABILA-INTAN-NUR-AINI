@@ -27,7 +27,7 @@ return new class extends Migration
                 $table->foreignId('device_id')
                     ->nullable()
                     ->after('user_id')
-                    ->constrained('device')
+                    ->constrained('devices')
                     ->nullOnDelete();
             }
 
