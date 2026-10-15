@@ -86,6 +86,47 @@ class ToolsController extends Controller
     }
 
     /**
+     * Ringkasan status semua perangkat untuk auto-refresh badge di halaman.
+     *
+     * Halaman Network Tools merender daftar perangkat sekali dari database,
+     * sehingga badge UP/WARNING/DOWN bisa basi sampai `monitor:ping` menulis
+     * status baru (tiap 5 menit) DAN halaman di-reload. Endpoint ini membaca
+     * ulang kolom `status` (plus metrik ringkas) dari tabel `devices` supaya
+     * JavaScript di halaman dapat menyegarkan badge secara berkala tanpa
+     * memuat ulang seluruh halaman. Endpoint ini hanya MEMBACA: tidak ada
+     * perubahan data sama sekali.
+     */
+    public function status(): JsonResponse
+    {
+        $devices = Device::query()
+            ->orderBy('id')
+            ->get()
+            ->map(function (Device $device): array {
+                $status = strtolower(trim((string) $device->status));
+
+                return [
+                    'id' => (int) $device->id,
+                    'status' => in_array($status, ['up', 'down', 'warning'], true) ? $status : 'up',
+                    'avg_delay' => (float) ($device->avg_delay ?? 0),
+                    'missed_percentage' => (float) ($device->missed_percentage ?? 0),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'checked_at' => now()->format('H:i:s'),
+            'counts' => [
+                'all' => $devices->count(),
+                'down' => $devices->where('status', 'down')->count(),
+                'warning' => $devices->where('status', 'warning')->count(),
+                'up' => $devices->where('status', 'up')->count(),
+            ],
+            'devices' => $devices,
+        ]);
+    }
+
+    /**
      * Bentuk satu baris perangkat untuk ditampilkan.
      *
      * Status dibaca apa adanya dari kolom `status` tabel `devices`, jadi

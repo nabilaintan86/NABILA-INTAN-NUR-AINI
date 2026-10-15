@@ -894,6 +894,10 @@
        direktori, supaya runPing() tidak pernah memanggil fungsi yang
        "tidak terdefinisi" (refreshItemStatus is not defined). */
     var dirItems = [];
+    /* applyFilter() milik direktori perangkat, diisi oleh IIFE di bawah supaya
+       polling status dari database bisa menyaring ulang daftar setelah badge
+       berubah tanpa membuka kembali closure-nya. */
+    var dirApplyFilter = null;
     var selectedStatusEl = document.getElementById('deviceSelectedStatus');
 
     /* Badge status. Hanya menampilkan label utama (UP / WARNING / DOWN). */
@@ -952,8 +956,10 @@
         items.forEach(function (it) { byId[it.dataset.id] = it; });
 
         // Bagikan daftar item ke scope halaman supaya refreshItemStatus()
-        // (dipakai hasil ping) bisa menyinkronkan badge yang sama.
+        // (dipakai hasil ping) dan polling status dari database bisa
+        // menyinkronkan badge yang sama.
         dirItems = items;
+        dirApplyFilter = applyFilter;
 
         var activeIndex = -1;
 
@@ -1090,6 +1096,75 @@
         renderRecent();
         applyFilter();
     })();
+
+    /* ── Auto-refresh badge status dari database ──────────────────
+       Daftar perangkat dirender SEKALI oleh server dari tabel `devices`,
+       dan `monitor:ping` memperbarui kolom `status` tiap 5 menit. Polling
+       ringan ini membaca ulang status dari database secara berkala supaya
+       badge UP/WARNING/DOWN di layar ikut terbarui tanpa reload penuh —
+       "Server Radnet" jadi sinkron dengan data monitoring. Endpoint hanya
+       MEMBACA; tidak ada data yang diubah. */
+    var DEVICE_STATUS_URL = @json(route('admin.tools.status'));
+    var STATUS_POLL_MS = 10000;
+
+    var statusCountEls = {
+        all: document.querySelector('.dir-chip[data-filter-status="all"] span'),
+        down: document.querySelector('.dir-chip[data-filter-status="down"] span'),
+        warning: document.querySelector('.dir-chip[data-filter-status="warning"] span'),
+        up: document.querySelector('.dir-chip[data-filter-status="up"] span')
+    };
+
+    function applyDeviceStatuses(devices) {
+        if (!devices || !devices.length) { return; }
+
+        var byId = {};
+        devices.forEach(function (d) { byId[String(d.id)] = d; });
+
+        dirItems.forEach(function (it) {
+            var fresh = byId[String(it.dataset.id)];
+            if (!fresh || ['up', 'warning', 'down'].indexOf(fresh.status) === -1) { return; }
+            if (it.dataset.status === fresh.status) { return; }
+
+            it.dataset.status = fresh.status;
+
+            var slot = it.querySelector('.dir-item-status');
+            if (slot) { slot.innerHTML = badgeHtml(fresh.status); }
+
+            if (it.classList.contains('is-selected') && selectedStatusEl) {
+                selectedStatusEl.innerHTML = badgeHtml(fresh.status);
+            }
+        });
+
+        if (typeof dirApplyFilter === 'function') { dirApplyFilter(); }
+    }
+
+    function applyDeviceCounts(counts) {
+        if (!counts) { return; }
+
+        Object.keys(statusCountEls).forEach(function (key) {
+            var el = statusCountEls[key];
+            if (el && typeof counts[key] === 'number') { el.textContent = counts[key]; }
+        });
+    }
+
+    function pollDeviceStatuses() {
+        if (document.hidden) { return; }
+
+        fetch(DEVICE_STATUS_URL, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data || !data.success) { return; }
+                applyDeviceStatuses(data.devices);
+                applyDeviceCounts(data.counts);
+            })
+            .catch(function () { /* koneksi putus: dicoba lagi pada siklus berikutnya */ });
+    }
+
+    setInterval(pollDeviceStatuses, STATUS_POLL_MS);
 
     /* Tabel daftar perangkat, log mentah, dan kotak analisis duplikat
        sudah dihapus dari halaman ini, jadi handler baris tabel serta

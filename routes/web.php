@@ -337,6 +337,11 @@ Route::prefix('admin')
             Route::get('/tools', [ToolsController::class, 'index'])
                 ->name('tools');
 
+            // Ringkasan status semua perangkat dari database, dipakai halaman
+            // untuk menyegarkan badge UP/WARNING/DOWN tanpa reload penuh.
+            Route::get('/tools/status', [ToolsController::class, 'status'])
+                ->name('tools.status');
+
             Route::post('/tools/ping', [ToolsController::class, 'ping'])
                 ->name('tools.ping');
 
