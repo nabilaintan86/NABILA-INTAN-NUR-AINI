@@ -260,27 +260,32 @@
 
     .pm-stop-btn:hover { filter: brightness(1.06); }
 
-    /* ── Log ping realtime (terminal) ─────────────────────────── */
+    /* ── Log ping realtime (terminal) ───────────────────────────
+       Latar terang/putih bersih supaya teks hijau/kuning/merah sangat
+       jelas dibaca (mis. saat ditunjukkan ke atasan/senior). */
     .pm-terminal {
         height: 320px;
         overflow-y: auto;
         padding: 0.9rem 1rem;
         border-radius: 0.7rem;
-        background: #0b1220;
-        border: 1px solid rgba(148, 163, 184, 0.28);
-        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.4);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.6);
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 0.82rem;
         line-height: 1.5;
-        color: #cbd5e1;
+        color: #334155;
         scroll-behavior: smooth;
     }
 
+    /* Warna baris log SAMA PERSIS dengan badge status di daftar perangkat
+       (.status-badge.up / .warning / .down) supaya indikator senada. */
     .pm-log-line { white-space: pre-wrap; word-break: break-word; }
-    .pm-log-line--ok { color: #4ade80; }
-    .pm-log-line--bad { color: #f87171; }
-    .pm-log-line--head { color: #93c5fd; }
-    .pm-log-line--meta { color: #94a3b8; }
+    .pm-log-line--ok { color: #166534; }
+    .pm-log-line--warn { color: #92400e; }
+    .pm-log-line--bad { color: #991b1b; }
+    .pm-log-line--head { color: #1e40af; }
+    .pm-log-line--meta { color: #64748b; }
 
     .pm-log-empty {
         color: #64748b;
@@ -1230,6 +1235,7 @@
         failed: false,
         id: null,
         target: '',
+        status: null,
         controller: null,
         runBtn: null,
         stopBtn: null,
@@ -1273,9 +1279,16 @@
     }
 
     /* Warna baris mengikuti isinya, supaya balasan sehat, kegagalan, dan
-       baris statistik ping langsung bisa dibedakan seperti di terminal. */
-    function classifyPingLine(line) {
-        if (/\btime[=:]\s*[\d.]+\s*ms/i.test(line)) { return 'ok'; }
+       baris statistik ping langsung bisa dibedakan seperti di terminal.
+       Baris balasan ("time=XXms") diwarnai mengikuti STATUS ping saat itu
+       (up → hijau, warning → kuning/oranye, down → merah), sama persis
+       dengan badge status di atasnya. */
+    function classifyPingLine(line, status) {
+        if (/\btime[=:]\s*[\d.]+\s*ms/i.test(line)) {
+            if (status === 'warning') { return 'warn'; }
+            if (status === 'down') { return 'bad'; }
+            return 'ok';
+        }
         if (/unreachable|no route|timed out|timeout|100% packet loss/i.test(line)) { return 'bad'; }
         if (/^---|statistics/i.test(line)) { return 'head'; }
         if (/^PING |packets transmitted|rtt min\/avg/i.test(line)) { return 'meta'; }
@@ -1303,7 +1316,10 @@
         else if (evt.status === 'warning') { cls = 'pm-pill--warning'; }
         else if (evt.status === 'down') { cls = 'pm-pill--danger'; }
 
-        if (evt.status) { text = pingStatusLabel(evt.status) + ' · ' + text; }
+        if (evt.status) {
+            pingRun.status = evt.status;
+            text = pingStatusLabel(evt.status) + ' · ' + text;
+        }
 
         setPingPill(text, cls);
     }
@@ -1370,6 +1386,7 @@
         }
 
         var analysisLevel = levelFromAnalysis(data.analysis);
+        if (data.analysis && data.analysis.status) { pingRun.status = data.analysis.status; }
         var pillCls = 'pm-pill--light';
         var pillText = 'Selesai';
 
@@ -1394,12 +1411,13 @@
         if (!evt || !evt.type) { return false; }
 
         if (evt.type === 'start') {
+            pingRun.status = null;
             setPingPill('PING BERJALAN…', 'pm-pill--light');
             return false;
         }
 
         if (evt.type === 'line') {
-            appendPingLog(evt.line, classifyPingLine(evt.line));
+            appendPingLog(evt.line, classifyPingLine(evt.line, pingRun.status));
             return false;
         }
 
