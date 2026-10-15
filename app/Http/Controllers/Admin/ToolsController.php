@@ -406,18 +406,74 @@ class ToolsController extends Controller
         $buffer = '';
         $collected = '';
         $seq = 0;
+        $lastSeq = 0;
         $lastProgress = 0.0;
         $stoppedByUser = false;
         $aborted = false;
 
+        /* Ping Linux tidak mencetak apa pun untuk paket yang hilang, sehingga
+           nomor icmp_seq terlihat melompat. Supaya log terbaca baris-demi-baris
+           seperti di terminal, celah seq ditutup dengan baris timeout buatan
+           ("Request timed out for icmp_seq=X") tanpa nilai time ms. */
+        $fillGap = static function (int $upto) use (&$seq, &$lastSeq, &$aborted, $emit): bool {
+            while ($lastSeq < $upto) {
+                $lastSeq++;
+                $seq++;
+
+                if (! $emit([
+                    'type' => 'line',
+                    'seq' => $seq,
+                    'line' => 'Request timed out for icmp_seq='.$lastSeq,
+                    'lost' => true,
+                ])) {
+                    $aborted = true;
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
         // Kirim semua baris yang sudah lengkap; berhenti bila koneksi putus.
-        $flushLines = static function () use (&$buffer, &$collected, &$seq, &$aborted, $emit): bool {
+        $flushLines = static function () use (&$buffer, &$collected, &$seq, &$aborted, &$lastSeq, $emit, $fillGap): bool {
             while (($pos = strpos($buffer, "\n")) !== false) {
                 $line = rtrim(substr($buffer, 0, $pos), "\r");
                 $buffer = substr($buffer, $pos + 1);
 
                 if ($line === '') {
                     continue;
+                }
+
+                /* Buang artefak iputils "%spipe %d" yang kadang tercetak saat
+                   stdout ping putus di tengah jalan (mis. klien menutup koneksi). */
+                if (preg_match('/^pipe \d+$/', $line) === 1) {
+                    continue;
+                }
+
+                /* Baris balasan maupun pesan error membawa "icmp_seq=N".
+                   Sebelum baris ini ditampilkan, isi dulu nomor seq yang
+                   terlewat (paket hilang) supaya nomor tidak melompat. */
+                if (preg_match('/icmp_seq[= ](\d+)/', $line, $m) === 1) {
+                    $n = (int) $m[1];
+
+                    if ($n > $lastSeq + 1 && ! $fillGap($n - 1)) {
+                        return false;
+                    }
+
+                    if ($n > $lastSeq) {
+                        $lastSeq = $n;
+                    }
+                }
+
+                /* Blok statistik ping memuat total paket terkirim. Lengkapi
+                   sisa paket yang hilang SEBELUM baris statistik ditampilkan,
+                   supaya baris timeout muncul di atas ringkasan (bukan di
+                   bawahnya) dan tetap tidak ada nomor seq yang melompat. */
+                if (preg_match('/(\d+)\s+packets transmitted/i', $line, $pm) === 1) {
+                    if (! $fillGap((int) $pm[1])) {
+                        return false;
+                    }
                 }
 
                 $collected .= $line."\n";
@@ -569,6 +625,13 @@ class ToolsController extends Controller
         }
 
         $collected = $this->pingSynthStats($collected, $durationMs);
+
+        /* Lengkapi paket di ujung sesi yang tidak pernah dijawab. Jumlah
+           "transmitted" dari blok statistik dipakai sebagai batas, supaya
+           nomor icmp_seq terakhir juga tidak melompat di log. */
+        if (preg_match('/(\d+)\s+packets transmitted/i', $collected, $tm) === 1) {
+            $fillGap((int) $tm[1]);
+        }
 
         $payload = $this->buildPingSummary(
             $target,

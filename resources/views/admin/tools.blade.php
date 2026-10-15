@@ -1229,6 +1229,10 @@
     var PING_RUN_BUTTONS = ['btnPingRadnet', 'btnPingExternal'];
     var MAX_LOG_LINES = 600;
 
+    /* Ambang latency (ms) yang sama dengan DiagnosisAnalyzer::GOOD_LATENCY_MS:
+       di atas ini balasan dianggap lambat dan diwarnai kuning/oranye. */
+    var PING_LATENCY_WARN_MS = 100;
+
     var pingRun = {
         active: false,
         stopping: false,
@@ -1280,15 +1284,22 @@
 
     /* Warna baris mengikuti isinya, supaya balasan sehat, kegagalan, dan
        baris statistik ping langsung bisa dibedakan seperti di terminal.
-       Baris balasan ("time=XXms") diwarnai mengikuti STATUS ping saat itu
-       (up → hijau, warning → kuning/oranye, down → merah), sama persis
-       dengan badge status di atasnya. */
+       - Balasan ("time=XXms") hijau bila latency wajar, kuning/oranye bila
+         latency tinggi atau status WARNING, merah bila status DOWN.
+       - Baris paket hilang ("Request timed out for icmp_seq=X") kuning/oranye
+         saat WARNING, merah saat DOWN — tidak pernah menampilkan time ms. */
     function classifyPingLine(line, status) {
-        if (/\btime[=:]\s*[\d.]+\s*ms/i.test(line)) {
-            if (status === 'warning') { return 'warn'; }
-            if (status === 'down') { return 'bad'; }
-            return 'ok';
+        if (/(request timed out|timeout) for icmp_seq/i.test(line)) {
+            return status === 'down' ? 'bad' : 'warn';
         }
+
+        var latency = /\btime[=:]\s*([\d.]+)\s*ms/i.exec(line);
+        if (latency) {
+            if (status === 'down') { return 'bad'; }
+            if (status === 'warning') { return 'warn'; }
+            return parseFloat(latency[1]) > PING_LATENCY_WARN_MS ? 'warn' : 'ok';
+        }
+
         if (/unreachable|no route|timed out|timeout|100% packet loss/i.test(line)) { return 'bad'; }
         if (/^---|statistics/i.test(line)) { return 'head'; }
         if (/^PING |packets transmitted|rtt min\/avg/i.test(line)) { return 'meta'; }
