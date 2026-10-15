@@ -5,6 +5,11 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     iputils-ping \
+    iputils-tracepath \
+    traceroute \
+    dnsutils \
+    iproute2 \
+    net-tools \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -13,8 +18,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (Pdo Mysql, Mbstring, Exif, PCNTL, Bcmath, GD)
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install PHP extensions (Pdo Mysql, Mbstring, Exif, PCNTL, Bcmath, GD, Sockets)
+# sockets: fitur Port Scan Network Tools memakai socket_import_stream() / socket_getpeername().
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets
 
 # mod_rewrite WAJIB aktif supaya .htaccess diproses Apache
 RUN a2enmod rewrite
