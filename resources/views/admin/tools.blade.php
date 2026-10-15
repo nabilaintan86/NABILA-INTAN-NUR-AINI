@@ -258,7 +258,7 @@
     }
 
     .status-badge {
-        display:inline-flex; align-items:center; border-radius:9999px; padding:0.28rem 0.7rem; font-size:0.78rem; font-weight:800; letter-spacing:0.04em;
+        display:inline-flex; align-items:center; white-space:nowrap; border-radius:9999px; padding:0.28rem 0.7rem; font-size:0.78rem; font-weight:800; letter-spacing:0.04em;
     }
     .status-badge.up { background:#dcfce7; color:#166534; }
     .status-badge.warning { background:#fef3c7; color:#92400e; }
@@ -463,6 +463,43 @@
         margin-top: 0.7rem;
     }
 
+    /* Baris detail status: "UP · time=12.4ms", "WARNING · High Latency ·
+       Packet Loss", atau "DOWN · Destination Host Unreachable". Dibuat
+       menonjol supaya arti status langsung terbaca tanpa membuka log mentah. */
+    .pm-assistant-statusdetail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.7rem;
+        padding: 0.5rem 0.85rem;
+        border-radius: 0.7rem;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px dashed rgba(148, 163, 184, 0.5);
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .pm-assistant-statusdetail .pm-status-code {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.12rem 0.6rem;
+        border-radius: 9999px;
+        background: #64748b;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+    }
+
+    .pm-assistant--danger .pm-status-code { background: #dc2626; }
+    .pm-assistant--warning .pm-status-code { background: #d97706; }
+    .pm-assistant--ok .pm-status-code { background: #16a34a; }
+
+    .pm-assistant-statusdetail .pm-status-value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
     .pm-assistant-metric {
         display: inline-flex;
         align-items: center;
@@ -651,7 +688,7 @@
                                                            @endif
                                                            <span class="dir-item-type">{{ $device->type }}</span>
                                                        </span>
-                                                   </span>
+                                                    </span>
                                                    <span class="dir-item-status">
                                                        @if($device->status === 'up')
                                                            <span class="status-badge up">UP</span>
@@ -714,9 +751,9 @@
                                     <div class="pm-insight-body">
                                         {{-- ── Ringkasan + saran otomatis ───────────── --}}
                                         <div id="aiAssistant" class="pm-assistant pm-assistant--idle">
-                                            Jalankan ping pada tab di atas — hasil pemeriksaan berupa packet
-                                            loss, latensi, dan status jalur akan tampil di sini lengkap dengan
-                                            saran penanganannya.
+                                            Jalankan ping pada tab di atas — status (UP / WARNING /
+                                            DOWN) beserta latensi dan rekomendasi penanganannya akan tampil
+                                            di sini.
                                         </div>
                                     </div>
                                 </section>
@@ -767,6 +804,7 @@
     var dirItems = [];
     var selectedStatusEl = document.getElementById('deviceSelectedStatus');
 
+    /* Badge status. Hanya menampilkan label utama (UP / WARNING / DOWN). */
     function badgeHtml(status) {
         if (status === 'up') { return '<span class="status-badge up">UP</span>'; }
         if (status === 'warning') { return '<span class="status-badge warning">WARNING</span>'; }
@@ -1013,7 +1051,8 @@
             title: (analysis && analysis.headline) ? analysis.headline : (label + ' — hasil pemeriksaan'),
             message: (analysis && analysis.reason) ? analysis.reason : (fallback || ''),
             actions: (analysis && analysis.recommendation) ? [analysis.recommendation] : [],
-            metrics: {}
+            metrics: {},
+            status_detail: (analysis && analysis.status_detail) ? analysis.status_detail : null
         };
     }
 
@@ -1054,8 +1093,18 @@
         html += '<span class="pm-assistant-badge ' + style.badge + '">' + style.label + '</span>';
         html += '</div>';
 
+        // Baris detail status: UP -> "time=12.4ms", WARNING -> penyebabnya
+        // ("High Latency (245ms) · Packet Loss"), DOWN -> "Destination Host
+        // Unreachable" / "Request Timed Out". Tanpa persentase packet loss
+        // supaya indikator tetap bersih.
+        if (assistant.status_detail) {
+            html += '<div class="pm-assistant-statusdetail">' +
+                '<span class="pm-status-code">' + esc(style.label) + '</span>' +
+                '<span class="pm-status-value">' + esc(assistant.status_detail) + '</span>' +
+                '</div>';
+        }
+
         html += '<div class="pm-assistant-metrics">' +
-            metricChip('Packet loss', fmt(m.packet_loss_pct, ' %')) +
             metricChip('Latensi rata-rata', fmt(m.latency_ms, ' ms')) +
             metricChip('Jitter', fmt(m.jitter_ms, ' ms')) +
             '</div>';

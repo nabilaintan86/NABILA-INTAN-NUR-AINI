@@ -241,24 +241,6 @@
                         </li>
                     @endauth
 
-                    {{-- DHCP Lease --}}
-                    @auth
-                        <li class="nk-menu-item">
-                            <a
-                                href="{{ route('admin.dhcp-lease') }}"
-                                class="nk-menu-link"
-                            >
-                                <span class="nk-menu-icon">
-                                    <em class="icon ni ni-wifi"></em>
-                                </span>
-
-                                <span class="nk-menu-text">
-                                    DHCP Lease
-                                </span>
-                            </a>
-                        </li>
-                    @endauth
-
                     {{-- Kelola User (khusus Super Admin) --}}
                     @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <li class="nk-menu-item">

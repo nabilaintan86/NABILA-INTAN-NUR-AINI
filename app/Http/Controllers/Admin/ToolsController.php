@@ -177,6 +177,15 @@ class ToolsController extends Controller
                 (string) ($payload['output'] ?? ''),
                 is_array($payload['analysis'] ?? null) ? $payload['analysis'] : [],
             );
+
+            // Teruskan detail status (mis. "time=12.4ms", "High Latency",
+            // "Destination Host Unreachable") dari analisis ke kartu asisten,
+            // supaya kartu hasil menampilkan angka/keterangan yang sama persis.
+            if (is_array($payload['assistant'])) {
+                $payload['assistant']['status_detail'] = is_string($payload['analysis']['status_detail'] ?? null)
+                    ? $payload['analysis']['status_detail']
+                    : null;
+            }
             $payload['path'] = $this->pathInfo(
                 $target,
                 (string) ($payload['output'] ?? ''),
@@ -978,6 +987,7 @@ PHP;
                 'reason' => $message,
                 'facts' => [],
                 'recommendation' => 'Perbaiki isian di atas lalu tekan tombolnya lagi.',
+                'status_detail' => 'Invalid Target',
             ],
         ], 422);
     }
@@ -1004,11 +1014,13 @@ PHP;
                 'reason' => $message,
                 'facts' => [],
                 'recommendation' => 'Jalankan ulang pemeriksaan. Bila tetap gagal, periksa koneksi server ke perangkat.',
+                'status_detail' => 'Request Timed Out',
             ],
             'assistant' => [
                 'level' => 'danger',
                 'title' => 'GANGGUAN — Pemeriksaan gagal dijalankan',
                 'message' => $message,
+                'status_detail' => 'Request Timed Out',
                 'actions' => [
                     'Jalankan ulang pengecekan; target bisa saja tidak merespons sama sekali (100% RTO).',
                     'Periksa jalur fisik kabel/konektor dan power supply perangkat bila masalah berlanjut.',

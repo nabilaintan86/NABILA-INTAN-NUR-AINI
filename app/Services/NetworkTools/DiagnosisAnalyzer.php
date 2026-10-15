@@ -116,6 +116,7 @@ final class DiagnosisAnalyzer
                     ['Lama menunggu', $this->duration($raw)],
                 ],
                 'Coba pakai alamat IP langsung (mis. 8.8.8.8) atau periksa kembali ejaan nama domainnya.',
+                'Host Not Found',
             );
         }
 
@@ -187,6 +188,18 @@ final class DiagnosisAnalyzer
             $severe = ($loss !== null && $loss >= self::MAJOR_LOSS_PCT)
                 || ($avg !== null && $avg > self::POOR_LATENCY_MS);
 
+            // Detail status untuk indikator: sebut PENYEBAB warning tanpa
+            // menampilkan angka packet loss, supaya badge/indikator tetap
+            // bersih (mis. "High Latency (245ms) · Packet Loss").
+            $detailParts = [];
+
+            if ($slow) {
+                $detailParts[] = 'High Latency ('.$this->numDot($avg).'ms)';
+            }
+            if ($lossy) {
+                $detailParts[] = 'Packet Loss';
+            }
+
             return $this->build(
                 'warning',
                 $severe
@@ -198,6 +211,7 @@ final class DiagnosisAnalyzer
                 $severe
                     ? 'Periksa kabel, colokan, dan beban uplink di titik ini secepatnya — layanan di perangkat ini kemungkinan sudah terganggu.'
                     : 'Kalau berlangsung lama, periksa kabel, colokan, atau beban jaringan di titik tersebut.',
+                $detailParts === [] ? 'Warning' : implode(' · ', $detailParts),
             );
         }
 
@@ -210,6 +224,7 @@ final class DiagnosisAnalyzer
                 .'. Kondisi ini normal dan tidak perlu tindakan apa pun.',
             $facts,
             'Tidak perlu tindakan. Lanjutkan pemeriksaan lain atau pantau berkala.',
+            $avg !== null ? 'time='.$this->numDot($avg).'ms' : 'Reachable',
         );
     }
 
@@ -245,6 +260,7 @@ final class DiagnosisAnalyzer
                     : 'Tidak ada balasan sama sekali'],
             ],
             'Cek lampu dan kabel di perangkat ini dulu. Kalau lampunya masih menyala, periksa juga perangkat di seberang titik ini.',
+            $unroutable ? 'Destination Host Unreachable' : 'Request Timed Out',
         );
     }
 
@@ -530,7 +546,7 @@ final class DiagnosisAnalyzer
      * @param  list<array{0: string, 1: string}>  $facts
      * @return array<string, mixed>
      */
-    protected function build(string $status, string $headline, string $reason, array $facts, string $recommendation): array
+    protected function build(string $status, string $headline, string $reason, array $facts, string $recommendation, ?string $detail = null): array
     {
         return [
             'status' => $status,
@@ -543,6 +559,7 @@ final class DiagnosisAnalyzer
             'reason' => $reason,
             'facts' => array_values($facts),
             'recommendation' => $recommendation,
+            'status_detail' => $detail,
         ];
     }
 
@@ -561,5 +578,10 @@ final class DiagnosisAnalyzer
     protected function num(float|int $value): string
     {
         return number_format((float) $value, 1, ',', '.');
+    }
+
+    protected function numDot(float|int $value): string
+    {
+        return number_format((float) $value, 1, '.', '');
     }
 }
