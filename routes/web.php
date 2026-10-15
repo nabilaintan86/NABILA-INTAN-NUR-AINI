@@ -340,6 +340,13 @@ Route::prefix('admin')
             Route::post('/tools/ping', [ToolsController::class, 'ping'])
                 ->name('tools.ping');
 
+            // Ping berkelanjutan (stream baris demi baris) + tombol hentikan.
+            Route::post('/tools/ping/stream', [ToolsController::class, 'pingStream'])
+                ->name('tools.ping.stream');
+
+            Route::post('/tools/ping/stop', [ToolsController::class, 'pingStop'])
+                ->name('tools.ping.stop');
+
             Route::post('/tools/trace', [ToolsController::class, 'trace'])
                 ->name('tools.trace');
 

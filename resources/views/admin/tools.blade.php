@@ -77,6 +77,12 @@
         border-color: rgba(249, 168, 212, 0.25);
     }
 
+    .pm-pill--danger {
+        background: rgba(248, 113, 113, 0.14);
+        color: #fca5a5;
+        border-color: rgba(252, 165, 165, 0.28);
+    }
+
     .pm-tabbar {
         padding: 0.9rem 1.25rem 0;
         display: flex;
@@ -227,6 +233,59 @@
     }
 
     .pm-run-btn:hover { filter: brightness(1.06); }
+
+    .pm-run-actions {
+        display: grid;
+        gap: 0.6rem;
+        margin-top: 1rem;
+    }
+
+    .pm-run-actions .pm-run-btn { margin-top: 0; }
+
+    .pm-stop-btn {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.9rem 1rem;
+        border-radius: 0.8rem;
+        border: 1px solid rgba(248, 113, 113, 0.7);
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        color: #fff;
+        font-weight: 800;
+        font-size: 1rem;
+        box-shadow: 0 10px 24px rgba(185, 28, 28, .30);
+    }
+
+    .pm-stop-btn:hover { filter: brightness(1.06); }
+
+    /* ── Log ping realtime (terminal) ─────────────────────────── */
+    .pm-terminal {
+        height: 320px;
+        overflow-y: auto;
+        padding: 0.9rem 1rem;
+        border-radius: 0.7rem;
+        background: #0b1220;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.4);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: #cbd5e1;
+        scroll-behavior: smooth;
+    }
+
+    .pm-log-line { white-space: pre-wrap; word-break: break-word; }
+    .pm-log-line--ok { color: #4ade80; }
+    .pm-log-line--bad { color: #f87171; }
+    .pm-log-line--head { color: #93c5fd; }
+    .pm-log-line--meta { color: #94a3b8; }
+
+    .pm-log-empty {
+        color: #64748b;
+        font-style: italic;
+    }
 
     /* device icon + status badge */
     .device-icon {
@@ -717,9 +776,14 @@
                                          bawah. Hasil + saran sekarang hanya dibaca
                                          dari satu kotak di sana. --}}
 
-                                    <button type="button" id="btnPingRadnet" class="pm-run-btn">
-                                        ▶ Mulai Ping Server Radnet
-                                    </button>
+                                    <div class="pm-run-actions">
+                                        <button type="button" id="btnPingRadnet" class="pm-run-btn">
+                                            ▶ Mulai Ping Server Radnet
+                                        </button>
+                                        <button type="button" id="btnPingRadnetStop" class="pm-stop-btn hidden">
+                                            ⏹ Hentikan Ping
+                                        </button>
+                                    </div>
                                </div>
                            </section>
 
@@ -731,11 +795,16 @@
                                         <input type="text" id="externalTarget" value="8.8.8.8" placeholder="8.8.8.8" class="pm-form-control">
                                     </div>
 
-                                   <button type="button" id="btnPingExternal" class="pm-run-btn">
-                                       ▶ Mulai Ping Server Luar
-                                   </button>
-                               </div>
-                           </section>
+                                   <div class="pm-run-actions">
+                                       <button type="button" id="btnPingExternal" class="pm-run-btn">
+                                           ▶ Mulai Ping Server Luar
+                                       </button>
+                                       <button type="button" id="btnPingExternalStop" class="pm-stop-btn hidden">
+                                           ⏹ Hentikan Ping
+                                       </button>
+                                   </div>
+                                </div>
+                            </section>
 
                              {{-- ── KARTU HASIL PEMERIKSAAN ────────────────────
                                   Kartu diletakkan SETELAH kedua tab pemeriksaan:
@@ -743,6 +812,23 @@
                                   di atasnya, jadi isinya selalu "di bawah hasil
                                   pengecekan" berapa pun tab yang dipakai. --}}
                             <div class="pm-insight-stack" id="insightStack">
+                                {{-- Log realtime: baris ping mentah bermunculan
+                                     selama proses berjalan, seperti terminal. --}}
+                                <section class="pm-insight-card" aria-labelledby="pingLogTitle">
+                                    <div class="pm-insight-head">
+                                        <h3 id="pingLogTitle">Log Ping (Realtime)</h3>
+                                        <span class="pm-pill pm-pill--light" id="pingLogState">Menunggu</span>
+                                    </div>
+                                    <div class="pm-insight-body">
+                                        <div id="pingLog" class="pm-terminal">
+                                            <div class="pm-log-empty" id="pingLogEmpty">
+                                                Tekan "Mulai Ping" untuk memulai pemantauan berkelanjutan.
+                                                Baris balasan akan muncul di sini satu per satu seperti di terminal.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
                                 <section class="pm-insight-card" aria-labelledby="aiAssistantTitle">
                                     <div class="pm-insight-head">
                                         <h3 id="aiAssistantTitle">Hasil &amp; Rekomendasi Pemeriksaan</h3>
@@ -773,7 +859,8 @@
 
     var CSRF = document.querySelector('meta[name="csrf-token"]');
     CSRF = CSRF ? CSRF.content : '';
-    var PING_URL = @json(route('admin.tools.ping'));
+    var PING_STREAM_URL = @json(route('admin.tools.ping.stream'));
+    var PING_STOP_URL = @json(route('admin.tools.ping.stop'));
 
     /* ── Tab navigasi ─────────────────────────────────────────── */
     var tabs = document.querySelectorAll('.tools-tab');
@@ -1125,147 +1212,396 @@
         if (badge) { badge.textContent = style.label; }
     }
 
-    /* ── Jalankan ping ke backend, isi kartu hasil pemeriksaan ──
-         Kotak log mentah dan kotak analisis duplikat sudah tidak ada,
-         jadi satu-satunya tempat hasil tampil adalah kartu Hasil &
-         Rekomendasi Pemeriksaan (ringkasan + saran). */
-    function runPing(opts) {
-        var btn = document.getElementById(opts.button);
+    /* ══════════════════════════════════════════════════════════════
+       Ping BERKELANJUTAN (streaming) — baris demi baris seperti terminal.
 
-        if (btn) { btn.disabled = true; }
+       Backend mengirim NDJSON: satu objek JSON per baris.
+         {"type":"line", ...}     baris keluaran ping mentah
+         {"type":"progress", ...} ringkasan live (paket + latency, TANPA %)
+         {"type":"summary", ...}  ringkasan akhir (UP / WARNING / DOWN)
+         {"type":"error", ...}    gangguan di server
+       ============================================================== */
+    var PING_RUN_BUTTONS = ['btnPingRadnet', 'btnPingExternal'];
+    var MAX_LOG_LINES = 600;
 
-        renderAssistant('running');
+    var pingRun = {
+        active: false,
+        stopping: false,
+        failed: false,
+        id: null,
+        target: '',
+        controller: null,
+        runBtn: null,
+        stopBtn: null,
+        stopTimer: null,
+        hardTimer: null
+    };
 
-        // Batas waktu sisi browser: kalau server tetap tidak menjawab,
-        // permintaan dibatalkan dan kartu TIDAK tertahan di status
-        // "Menganalisis hasil pengecekan…". Nilainya lebih longgar dari
-        // timeout ping di backend (maks. ~11 detik untuk 2 paket).
-        var REQUEST_TIMEOUT_MS = 20000;
-        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-        var timer = null;
+    function pingLogEl() { return document.getElementById('pingLog'); }
 
-        if (controller) {
-            timer = setTimeout(function () {
-                try { controller.abort(); } catch (e) { /* diabaikan */ }
-            }, REQUEST_TIMEOUT_MS);
+    function setPingPill(text, cls) {
+        var pill = document.getElementById('pingLogState');
+        if (!pill) { return; }
+        pill.textContent = text;
+        pill.className = 'pm-pill ' + (cls || 'pm-pill--light');
+    }
+
+    function clearPingLog() {
+        var log = pingLogEl();
+        if (log) { log.innerHTML = ''; }
+    }
+
+    function appendPingLog(line, kind) {
+        var log = pingLogEl();
+        if (!log) { return; }
+
+        var empty = log.querySelector('.pm-log-empty');
+        if (empty) { empty.remove(); }
+
+        var row = document.createElement('div');
+        row.className = 'pm-log-line' + (kind ? ' pm-log-line--' + kind : '');
+        row.textContent = line;
+        log.appendChild(row);
+
+        // Ping berkelanjutan bisa menghasilkan ratusan baris: batasi DOM-nya
+        // supaya halaman tidak melambat setelah lama berjalan.
+        while (log.childElementCount > MAX_LOG_LINES) {
+            log.removeChild(log.firstElementChild);
         }
 
-        // Selalu dipanggil sekali, apa pun hasilnya: tombol kembali aktif dan
-        // timer dibersihkan, jadi tidak ada tombol yang "stuck" loading.
-        function finish() {
-            if (timer) { clearTimeout(timer); }
+        log.scrollTop = log.scrollHeight;
+    }
+
+    /* Warna baris mengikuti isinya, supaya balasan sehat, kegagalan, dan
+       baris statistik ping langsung bisa dibedakan seperti di terminal. */
+    function classifyPingLine(line) {
+        if (/\btime[=:]\s*[\d.]+\s*ms/i.test(line)) { return 'ok'; }
+        if (/unreachable|no route|timed out|timeout|100% packet loss/i.test(line)) { return 'bad'; }
+        if (/^---|statistics/i.test(line)) { return 'head'; }
+        if (/^PING |packets transmitted|rtt min\/avg/i.test(line)) { return 'meta'; }
+        return '';
+    }
+
+    function pingStatusLabel(status) {
+        if (status === 'up') { return 'UP'; }
+        if (status === 'warning') { return 'WARNING'; }
+        if (status === 'down') { return 'DOWN'; }
+        return 'PING';
+    }
+
+    function applyPingProgress(evt) {
+        var parts = [];
+
+        if (typeof evt.sent === 'number') { parts.push(evt.sent + ' terkirim'); }
+        if (typeof evt.received === 'number') { parts.push(evt.received + ' dijawab'); }
+        if (evt.avg !== null && evt.avg !== undefined) { parts.push('avg ' + fmt(evt.avg, ' ms')); }
+
+        var text = parts.length ? parts.join(' · ') : 'Ping berjalan…';
+        var cls = 'pm-pill--light';
+
+        if (evt.status === 'up') { cls = 'pm-pill--success'; }
+        else if (evt.status === 'warning') { cls = 'pm-pill--warning'; }
+        else if (evt.status === 'down') { cls = 'pm-pill--danger'; }
+
+        if (evt.status) { text = pingStatusLabel(evt.status) + ' · ' + text; }
+
+        setPingPill(text, cls);
+    }
+
+    function setStopVisible(stopBtn, visible) {
+        if (!stopBtn) { return; }
+        if (visible) { stopBtn.classList.remove('hidden'); }
+        else { stopBtn.classList.add('hidden'); }
+    }
+
+    function endPing() {
+        if (!pingRun.active) { return; }
+
+        pingRun.active = false;
+        pingRun.stopping = false;
+
+        PING_RUN_BUTTONS.forEach(function (id) {
+            var btn = document.getElementById(id);
             if (btn) { btn.disabled = false; }
+        });
+
+        setStopVisible(pingRun.stopBtn, false);
+        if (pingRun.stopBtn) { pingRun.stopBtn.disabled = false; }
+
+        if (pingRun.stopTimer) { clearTimeout(pingRun.stopTimer); }
+        if (pingRun.hardTimer) { clearTimeout(pingRun.hardTimer); }
+
+        pingRun.stopTimer = null;
+        pingRun.hardTimer = null;
+        pingRun.controller = null;
+        pingRun.runBtn = null;
+        pingRun.stopBtn = null;
+        pingRun.id = null;
+    }
+
+    function failPing(message) {
+        if (!pingRun.active || pingRun.failed) { return; }
+
+        pingRun.failed = true;
+        setPingPill('GAGAL', 'pm-pill--danger');
+        appendPingLog('!! ' + message, 'bad');
+        renderAssistant('error', null, null, message);
+
+        endPing();
+    }
+
+    function applyPingSummary(data) {
+        if (!pingRun.active) { return; }
+
+        var target = pingRun.target || data.summary || '';
+        var meta = 'Sasaran ' + target + (data.checked_at ? ' · pukul ' + data.checked_at : '');
+
+        if (data.analysis && data.analysis.label) {
+            meta += ' · hasil: ' + String(data.analysis.label).toUpperCase();
         }
+        if (data.device && data.device.name) {
+            meta += ' · ' + data.device.name
+                + ' (status terpantau: ' + String((data.device.status || '?')).toUpperCase() + ')';
+        }
+
+        // Selaraskan badge perangkat di daftar dengan hasil ping terbaru.
+        if (data.device && data.device.id && data.analysis) {
+            refreshItemStatus(data.device.id, data.analysis.status);
+        }
+
+        var analysisLevel = levelFromAnalysis(data.analysis);
+        var pillCls = 'pm-pill--light';
+        var pillText = 'Selesai';
+
+        if (analysisLevel === 'danger') { pillCls = 'pm-pill--danger'; pillText = 'DOWN'; }
+        else if (analysisLevel === 'warning') { pillCls = 'pm-pill--warning'; pillText = 'WARNING'; }
+        else if (analysisLevel === 'ok') { pillCls = 'pm-pill--success'; pillText = 'UP'; }
+
+        setPingPill(pillText, pillCls);
+
+        var assistant = data.assistant || null;
+
+        if (!assistant && data.analysis && data.analysis.status) {
+            assistant = assistantFromAnalysis(data.analysis, data.message);
+        }
+
+        renderAssistant('done', assistant, meta, null, analysisLevel);
+
+        endPing();
+    }
+
+    function handlePingEvent(evt) {
+        if (!evt || !evt.type) { return false; }
+
+        if (evt.type === 'start') {
+            setPingPill('PING BERJALAN…', 'pm-pill--light');
+            return false;
+        }
+
+        if (evt.type === 'line') {
+            appendPingLog(evt.line, classifyPingLine(evt.line));
+            return false;
+        }
+
+        if (evt.type === 'progress') {
+            applyPingProgress(evt);
+            return false;
+        }
+
+        if (evt.type === 'summary') {
+            applyPingSummary(evt);
+            return true;
+        }
+
+        if (evt.type === 'error') {
+            failPing(evt.message || 'Pemeriksaan terputus di server.');
+            return true;
+        }
+
+        return false;
+    }
+
+    function startPing(opts) {
+        if (pingRun.active) { return; }
+
+        if (!opts.target) {
+            alert('Isi target IP / host dulu sebelum memulai ping.');
+            return;
+        }
+
+        var runBtn = document.getElementById(opts.button);
+        var stopBtn = document.getElementById(opts.stopButton);
+
+        pingRun.active = true;
+        pingRun.stopping = false;
+        pingRun.failed = false;
+        pingRun.runBtn = runBtn;
+        pingRun.stopBtn = stopBtn;
+        pingRun.target = opts.target;
+        pingRun.id = 'pm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        pingRun.controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+
+        PING_RUN_BUTTONS.forEach(function (id) {
+            var btn = document.getElementById(id);
+            if (btn) { btn.disabled = true; }
+        });
+
+        setStopVisible(stopBtn, true);
+        if (stopBtn) { stopBtn.disabled = false; }
+
+        clearPingLog();
+        setPingPill('Memulai…', 'pm-pill--light');
+        renderAssistant('running');
 
         var request = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Accept': 'application/x-ndjson',
                 'X-CSRF-TOKEN': CSRF
             },
             body: JSON.stringify({
                 target: opts.target,
-                count: opts.count,
-                device_id: opts.deviceId || null
+                device_id: opts.deviceId || null,
+                id: pingRun.id
             })
         };
 
-        if (controller) { request.signal = controller.signal; }
+        if (pingRun.controller) { request.signal = pingRun.controller.signal; }
 
-        fetch(PING_URL, request)
-            .then(function (r) {
-                // Server harusnya mengirim JSON; kalau bukan, tetap jangan
-                // melempar error yang membuat kartu menggantung.
-                return r.json()
-                    .catch(function () { return {}; })
-                    .then(function (d) { return { ok: r.ok, data: d }; });
+        // Batas keras: apa pun yang terjadi, kontrol dilepas setelah 140 detik
+        // supaya tidak ada tombol yang menggantung selamanya.
+        pingRun.hardTimer = setTimeout(function () {
+            if (pingRun.controller) {
+                try { pingRun.controller.abort(); } catch (e) { /* diabaikan */ }
+            }
+        }, 140000);
+
+        fetch(PING_STREAM_URL, request)
+            .then(function (response) {
+                // Target ditolak / server membalas JSON biasa (bukan stream).
+                if (!response.ok || !response.body || typeof response.body.getReader !== 'function') {
+                    return response.json()
+                        .catch(function () { return {}; })
+                        .then(function (data) {
+                            failPing((data && data.message)
+                                ? data.message
+                                : 'Pemeriksaan gagal dijalankan di server.');
+                        });
+                }
+
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder('utf-8');
+                var buffer = '';
+                var summarySeen = false;
+
+                function pump() {
+                    return reader.read().then(function (chunk) {
+                        if (chunk.done) {
+                            // Stream tertutup. Kalau ringkasan tidak pernah
+                            // datang (mis. server terputus), jangan biarkan
+                            // kartu menggantung di status "Menganalisis…".
+                            if (!summarySeen && pingRun.active && !pingRun.failed) {
+                                failPing('Pemeriksaan berakhir tanpa ringkasan. Coba lagi.');
+                            } else {
+                                endPing();
+                            }
+                            return;
+                        }
+
+                        buffer += decoder.decode(chunk.value, { stream: true });
+
+                        var idx;
+
+                        while ((idx = buffer.indexOf('\n')) !== -1) {
+                            var raw = buffer.slice(0, idx);
+                            buffer = buffer.slice(idx + 1);
+
+                            if (raw.trim() === '') { continue; }
+
+                            var evt = null;
+
+                            // Baris yang bukan JSON (mis. peringatan PHP) cukup
+                            // dilewati, tidak boleh merusak seluruh stream.
+                            try { evt = JSON.parse(raw); } catch (e) { continue; }
+
+                            if (handlePingEvent(evt)) { summarySeen = true; }
+                        }
+
+                        return pump();
+                    });
+                }
+
+                return pump();
             })
             .catch(function (err) {
                 var aborted = err && (err.name === 'AbortError' || err.code === 20);
 
-                return {
-                    ok: false,
-                    data: {
-                        success: false,
-                        message: aborted
-                            ? 'Server tidak menjawab dalam batas waktu. Target kemungkinan tidak merespons (DOWN). Coba lagi.'
-                            : 'Tidak dapat menghubungi server. Periksa koneksi lalu coba lagi.'
-                    }
-                };
-            })
-            .then(function (res) {
-                var data = res.data || {};
-                var meta = 'Sasaran ' + opts.target + (data.checked_at ? ' · pukul ' + data.checked_at : '');
-                if (data.analysis && data.analysis.label) {
-                    meta += ' · hasil: ' + String(data.analysis.label).toUpperCase();
-                }
-                if (data.device && data.device.name) {
-                    meta += ' · ' + data.device.name
-                        + ' (status terpantau: ' + String((data.device.status || '?')).toUpperCase() + ')';
-                }
-
-                // Selaraskan badge perangkat di daftar dengan hasil ping terbaru.
-                if (data.device && data.device.id && data.analysis) {
-                    refreshItemStatus(data.device.id, data.analysis.status);
-                }
-
-                var analysisLevel = levelFromAnalysis(data.analysis);
-
-                if (!res.ok || !data.success) {
-                    // Perintah jalan tapi hasilnya memang gagal (mis. 100% packet
-                    // loss): datanya lengkap, jadi kartu hasil tetap diisi. Yang
-                    // kosong hanya kalau server benar-benar tidak menjawab atau
-                    // target ditolak.
-                    if (data.assistant) {
-                        renderAssistant('done', data.assistant, meta, null, analysisLevel);
-                    } else if (data.analysis && data.analysis.status) {
-                        renderAssistant('done', assistantFromAnalysis(data.analysis, data.message),
-                            meta, null, analysisLevel);
-                    } else {
-                        renderAssistant('error', null, null,
-                            data.message || data.error || 'Pemeriksaan gagal dijalankan.');
-                    }
-                    return;
-                }
-
-                renderAssistant('done', data.assistant || null, meta, null, analysisLevel);
-            })
-            .catch(function (err) {
-                // Jaring pengaman terakhir: kartu tidak pernah menggantung,
-                // tombol tetap kembali aktif lewat finish().
-                renderAssistant('error', null, null,
-                    (err && err.message) ? err.message : 'Gagal menampilkan hasil pemeriksaan.');
-            })
-            .then(finish);
+                if (aborted) { endPing(); }
+                else { failPing('Tidak dapat menghubungi server. Periksa koneksi lalu coba lagi.'); }
+            });
     }
 
-    /* Perangkat terpilih → ping. */
+    /* Hentikan ping: kabari server lewat file penanda, lalu TUNGGU ringkasan
+       akhirnya datang. Koneksi sengaja tidak langsung diputus supaya kartu
+       hasil tetap terisi status + rekomendasi. */
+    function stopPing() {
+        if (!pingRun.active || pingRun.stopping) { return; }
+
+        pingRun.stopping = true;
+        if (pingRun.stopBtn) { pingRun.stopBtn.disabled = true; }
+        setPingPill('Menghentikan…', 'pm-pill--warning');
+
+        if (pingRun.id) {
+            fetch(PING_STOP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': CSRF
+                },
+                body: JSON.stringify({ id: pingRun.id })
+            }).catch(function () { /* ringkasan tetap menyusul dari stream */ });
+        }
+
+        pingRun.stopTimer = setTimeout(function () {
+            if (pingRun.controller) {
+                try { pingRun.controller.abort(); } catch (e) { /* diabaikan */ }
+            }
+        }, 6000);
+    }
+
+    /* Perangkat terpilih → ping berkelanjutan. */
     var btnRadnet = document.getElementById('btnPingRadnet');
     if (btnRadnet) {
         btnRadnet.addEventListener('click', function () {
             var sel = document.getElementById('deviceSelect');
-            var deviceId = sel && sel.value ? sel.value : null;
-            runPing({
+            startPing({
                 target: document.getElementById('radnetTarget').value.trim(),
-                count: 2,
-                deviceId: deviceId,
-                button: 'btnPingRadnet'
+                deviceId: sel && sel.value ? sel.value : null,
+                button: 'btnPingRadnet',
+                stopButton: 'btnPingRadnetStop'
             });
         });
     }
 
+    var btnRadnetStop = document.getElementById('btnPingRadnetStop');
+    if (btnRadnetStop) { btnRadnetStop.addEventListener('click', stopPing); }
+
     var btnExternal = document.getElementById('btnPingExternal');
     if (btnExternal) {
         btnExternal.addEventListener('click', function () {
-            runPing({
+            startPing({
                 target: document.getElementById('externalTarget').value.trim(),
-                count: 2,
                 deviceId: null,
-                button: 'btnPingExternal'
+                button: 'btnPingExternal',
+                stopButton: 'btnPingExternalStop'
             });
         });
     }
+
+    var btnExternalStop = document.getElementById('btnPingExternalStop');
+    if (btnExternalStop) { btnExternalStop.addEventListener('click', stopPing); }
 
     /* ── Bersihkan semua riwayat (khusus Super Admin) ─────────── */
     var purgeBtn = document.querySelector('.js-purge-all');

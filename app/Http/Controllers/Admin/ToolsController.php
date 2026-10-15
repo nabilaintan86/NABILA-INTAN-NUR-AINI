@@ -235,6 +235,582 @@ class ToolsController extends Controller
     }
 
     /**
+     * Ping BERKELANJUTAN: keluaran dikirim baris demi baris (NDJSON) selama
+     * proses ping masih berjalan, layaknya terminal ping sungguhan, sampai
+     * pengguna menekan "Hentikan Ping" atau batas waktu tercapai.
+     *
+     * Tiap baris respons adalah satu objek JSON:
+     *
+     *   {"type":"start", ...}     ping baru dimulai
+     *   {"type":"line", ...}      satu baris keluaran ping mentah
+     *   {"type":"progress", ...}  ringkasan live (paket + latency, TANPA %)
+     *   {"type":"summary", ...}   ringkasan akhir, bentuk sama dgn tools.ping
+     *
+     * Penghentian dikirim lewat pingStop() berupa file penanda, BUKAN dengan
+     * memutus koneksi — supaya server masih sempat menutup ping dengan
+     * ringkasan akhir (UP / WARNING / DOWN) yang ikut terkirim ke layar.
+     */
+    public function pingStream(Request $request)
+    {
+        $target = $this->resolveTarget($request->input('target'));
+
+        if ($target === null) {
+            return $this->errorResponse('Target IP / domain tidak valid.');
+        }
+
+        $id = (string) $request->input('id');
+
+        if (preg_match('/^[A-Za-z0-9_-]{4,64}$/', $id) !== 1) {
+            $id = bin2hex(random_bytes(8));
+        }
+
+        $deviceId = $request->input('device_id');
+        $stopFile = $this->pingStopFile($id);
+
+        if (is_file($stopFile)) {
+            @unlink($stopFile);
+        }
+
+        return response()->stream(function () use ($target, $deviceId, $stopFile): void {
+            try {
+                $this->streamPing($target, $deviceId, $stopFile);
+            } catch (\Throwable $e) {
+                // Stream sudah terlanjur terbuka: kirim satu event penutup
+                // supaya browser tidak menggantung menunggu data berikutnya.
+                @error_log('ping stream gagal: '.$e->getMessage());
+
+                echo json_encode([
+                    'type' => 'error',
+                    'message' => 'Pemeriksaan terputus di server. Coba lagi sebentar.',
+                ], JSON_UNESCAPED_UNICODE)."\n";
+
+                @flush();
+            }
+        }, 200, [
+            'Content-Type' => 'application/x-ndjson; charset=UTF-8',
+            'Content-Encoding' => 'identity',
+            'X-Accel-Buffering' => 'no',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, no-transform',
+        ]);
+    }
+
+    /**
+     * Tombol "Hentikan Ping": menulis file penanda kecil di storage.
+     *
+     * Dipakai alih-alih memutus koneksi HTTP karena streamPing() harus
+     * masih punya kesempatan mengirim ringkasan akhir (status + rekomendasi)
+     * sebelum menutup stream-nya.
+     */
+    public function pingStop(Request $request): JsonResponse
+    {
+        $id = (string) $request->input('id');
+
+        if (preg_match('/^[A-Za-z0-9_-]{4,64}$/', $id) !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Id ping tidak valid.',
+            ], 422);
+        }
+
+        $file = $this->pingStopFile($id);
+        $dir = dirname($file);
+
+        if (! is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+
+        @file_put_contents($file, (string) time());
+
+        return response()->json(['success' => true]);
+    }
+
+    protected function pingStopFile(string $id): string
+    {
+        return storage_path('framework/ping/'.$id.'.stop');
+    }
+
+    /**
+     * Inti ping streaming: buka proses `ping`, teruskan output baris demi
+     * baris ke browser, lalu tutup dengan ringkasan akhir.
+     *
+     * @param  mixed  $deviceId  id perangkat terpilih (boleh null)
+     */
+    protected function streamPing(string $target, mixed $deviceId, string $stopFile): void
+    {
+        set_time_limit(0);
+
+        // Buang semua lapisan output buffering (Laravel / PHP-FPM) supaya tiap
+        // baris benar-benar terkirim saat itu juga, bukan sekaligus di akhir.
+        while (ob_get_level() > 0) {
+            if (! @ob_end_flush()) {
+                break;
+            }
+        }
+
+        @ini_set('zlib.output_compression', '0');
+
+        /** @var callable(array<string, mixed>): bool $emit */
+        $emit = static function (array $event): bool {
+            echo json_encode($event, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n";
+            @flush();
+
+            return connection_aborted() === 0;
+        };
+
+        $command = 'ping -4 -n -i 1 -W 2 -w 118 '.escapeshellarg($target);
+
+        // Bentuk perintah memakai ARRAY, bukan string, supaya PHP TIDAK
+        // membungkusnya dengan `sh -c`. Sinyal "Hentikan Ping" (SIGINT) harus
+        // mendarat di proses ping-nya langsung, persis seperti Ctrl+C di
+        // terminal — kalau lewat shell, sinyalnya tidak sampai.
+        $process = @proc_open(
+            ['ping', '-4', '-n', '-i', '1', '-W', '2', '-w', '118', $target],
+            [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes
+        );
+
+        if (! is_resource($process)) {
+            $emit(['type' => 'error', 'message' => 'Perintah ping tidak bisa dijalankan di server.']);
+
+            return;
+        }
+
+        @fclose($pipes[0]);
+        stream_set_blocking($pipes[1], false);
+        stream_set_blocking($pipes[2], false);
+
+        $closed = false;
+
+        // Kalau browser tertutup / pindah halaman di tengah jalan, proses
+        // ping tetap wajib ikut mati — tidak boleh jadi proses yatim yang
+        // berjalan sampai batas waktu 118 detik.
+        register_shutdown_function(static function () use (&$process, &$pipes, &$closed): void {
+            if ($closed || ! is_resource($process)) {
+                return;
+            }
+
+            foreach ($pipes as $pipe) {
+                if (is_resource($pipe)) {
+                    @fclose($pipe);
+                }
+            }
+
+            @proc_terminate($process, 9);
+            @proc_close($process);
+            $closed = true;
+        });
+
+        $startedAt = microtime(true);
+        $deadline = $startedAt + 125;
+        $exitCode = null;
+        $buffer = '';
+        $collected = '';
+        $seq = 0;
+        $lastProgress = 0.0;
+        $stoppedByUser = false;
+        $aborted = false;
+
+        // Kirim semua baris yang sudah lengkap; berhenti bila koneksi putus.
+        $flushLines = static function () use (&$buffer, &$collected, &$seq, &$aborted, $emit): bool {
+            while (($pos = strpos($buffer, "\n")) !== false) {
+                $line = rtrim(substr($buffer, 0, $pos), "\r");
+                $buffer = substr($buffer, $pos + 1);
+
+                if ($line === '') {
+                    continue;
+                }
+
+                $collected .= $line."\n";
+                $seq++;
+
+                if (! $emit(['type' => 'line', 'seq' => $seq, 'line' => $line])) {
+                    $aborted = true;
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        $emit(['type' => 'start', 'target' => $target, 'at' => now()->format('H:i:s')]);
+
+        while (true) {
+            if (microtime(true) > $deadline) {
+                break;
+            }
+
+            if (is_file($stopFile)) {
+                $stoppedByUser = true;
+                break;
+            }
+
+            $buffer .= $this->pingSelectRead([$pipes[1], $pipes[2]], 200000);
+
+            if (! $flushLines()) {
+                break;
+            }
+
+            /* Ringkasan live tiap 2 detik dipakai badge di layar, dan juga
+               menjaga stream tetap "sibuk": saat target senyap ping tidak
+               mengeluarkan baris apa pun sama sekali, sehingga tanpa event
+               ini reverse proxy bisa memutus koneksi karena dianggap diam. */
+            if (microtime(true) - $lastProgress >= 2.0) {
+                $lastProgress = microtime(true);
+
+                if (! $emit(array_merge(['type' => 'progress'], $this->pingTally($collected, microtime(true) - $startedAt)))) {
+                    $aborted = true;
+                    break;
+                }
+            }
+
+            if (! $this->pingRunning($process, $exitCode)) {
+                // Ping selesai sendiri (batas -w): baca sisa output sampai
+                // EOF, termasuk blok statistik penutupnya.
+                for ($i = 0; $i < 50; $i++) {
+                    $chunk = $this->pingSelectRead([$pipes[1], $pipes[2]], 20000);
+
+                    if ($chunk !== '') {
+                        $buffer .= $chunk;
+                    }
+
+                    if (! $flushLines()) {
+                        break 2;
+                    }
+
+                    if ($chunk === '' && feof($pipes[1]) && feof($pipes[2])) {
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+
+        /* "Hentikan Ping" diterjemahkan jadi SIGINT: sama persis dengan
+           menekan Ctrl+C di terminal, sehingga ping menutup sendiri dan
+           mencetak blok statistik (packets transmitted / rtt min/avg/max). */
+        if (! $aborted && is_resource($process) && $this->pingRunning($process, $exitCode)) {
+            @proc_terminate($process, 2);
+
+            $graceUntil = microtime(true) + 1.5;
+
+            while (microtime(true) < $graceUntil) {
+                $buffer .= $this->pingSelectRead([$pipes[1], $pipes[2]], 150000);
+
+                if (! $flushLines()) {
+                    break;
+                }
+
+                if (! $this->pingRunning($process, $exitCode)) {
+                    break;
+                }
+            }
+        }
+
+        if (is_resource($process) && $this->pingRunning($process, $exitCode)) {
+            @proc_terminate($process, 9);
+        }
+
+        if (! $aborted) {
+            $drainUntil = microtime(true) + 1.0;
+
+            while (microtime(true) < $drainUntil) {
+                $chunk = $this->pingSelectRead([$pipes[1], $pipes[2]], 150000);
+
+                if ($chunk !== '') {
+                    $buffer .= $chunk;
+                }
+
+                if (! $flushLines()) {
+                    break;
+                }
+
+                if ($chunk === '' && feof($pipes[1]) && feof($pipes[2])) {
+                    break;
+                }
+            }
+
+            if ($buffer !== '') {
+                $line = rtrim($buffer, "\r");
+                $buffer = '';
+
+                if ($line !== '') {
+                    $collected .= $line."\n";
+                    $seq++;
+                    $emit(['type' => 'line', 'seq' => $seq, 'line' => $line]);
+                }
+            }
+        }
+
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
+        $this->pingRunning($process, $exitCode);
+
+        foreach ($pipes as $pipe) {
+            if (is_resource($pipe)) {
+                @fclose($pipe);
+            }
+        }
+
+        if (is_resource($process)) {
+            $closeCode = @proc_close($process);
+
+            if ($exitCode === null && $closeCode >= 0) {
+                $exitCode = $closeCode;
+            }
+        }
+
+        $closed = true;
+        @unlink($stopFile);
+
+        if ($aborted) {
+            return;
+        }
+
+        $collected = $this->pingSynthStats($collected, $durationMs);
+
+        $payload = $this->buildPingSummary(
+            $target,
+            $collected,
+            $exitCode ?? 0,
+            $durationMs,
+            $deviceId,
+            false,
+            $command,
+        );
+
+        $payload['type'] = 'summary';
+        $payload['stopped_by_user'] = $stoppedByUser;
+
+        $emit($payload);
+    }
+
+    /**
+     * Baca keluaran proses ping tanpa memblokir event loop di atas.
+     *
+     * @param  array<int, resource>  $streams
+     */
+    protected function pingSelectRead(array $streams, int $timeoutUs): string
+    {
+        $read = $streams;
+        $write = null;
+        $except = null;
+
+        if (@stream_select($read, $write, $except, 0, $timeoutUs) < 1) {
+            return '';
+        }
+
+        $out = '';
+
+        foreach ($read as $stream) {
+            $chunk = @fread($stream, 8192);
+
+            if (is_string($chunk) && $chunk !== '') {
+                $out .= $chunk;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Status proses ping. Exit code yang valid (>= 0) disimpan ke $exitCode
+     * begitu terbaca, karena PHP hanya melaporkannya satu kali setelah proses
+     * selesai — panggilan berikutnya bisa saja sudah mengembalikan -1.
+     */
+    protected function pingRunning(mixed $process, ?int &$exitCode): bool
+    {
+        if (! is_resource($process)) {
+            return false;
+        }
+
+        $status = @proc_get_status($process);
+
+        if (! is_array($status)) {
+            return false;
+        }
+
+        if (! $status['running'] && $status['exitcode'] >= 0 && $exitCode === null) {
+            $exitCode = (int) $status['exitcode'];
+        }
+
+        return (bool) $status['running'];
+    }
+
+    /**
+     * Balasan ping (latency ms) yang sudah terkumpul dari keluaran mentah.
+     *
+     * @return list<float>
+     */
+    protected function pingLatencies(string $output): array
+    {
+        preg_match_all('/\btime[=:]\s*([\d.]+)\s*ms/i', $output, $matches);
+
+        return array_map('floatval', $matches[1] ?? []);
+    }
+
+    /**
+     * Ringkasan live dari keluaran ping yang sudah terkumpul.
+     *
+     * Sengaja TIDAK mengembalikan persentase packet loss: angka persen tidak
+     * boleh muncul di badge / indikator UI. Yang dikirim hanya status hasil
+     * DiagnosisAnalyzer::statusFromProbe() — aturan yang sama persis dengan
+     * badge daftar perangkat — plus jumlah paket dan latency rata-rata.
+     *
+     * @return array{sent: int, received: int, avg: float|null, status: string|null}
+     */
+    protected function pingTally(string $output, float $elapsedSeconds = 0.0): array
+    {
+        preg_match_all('/icmp_seq=(\d+)/', $output, $matches);
+        $seqs = array_map('intval', $matches[1] ?? []);
+
+        $seqSent = $seqs === [] ? 0 : max($seqs);
+        $latencies = $this->pingLatencies($output);
+        $received = count($latencies);
+        $avg = $received > 0 ? round(array_sum($latencies) / $received, 1) : null;
+
+        /* Selama ada baris icmp_seq, jumlah terkirim diambil dari seq tertinggi
+           (paling akurat). Perkiraan dari lamanya ping (interval 1 detik) hanya
+           dipakai untuk target senyap total (DROP) yang tidak mengeluarkan baris
+           apa pun — tanpa itu statusnya menggantung di "belum ada data" walau
+           targetnya jelas tidak merespons. Memakai perkiraan saat seq sudah ada
+           justru membuat paket yang masih dalam perjalanan dihitung sebagai
+           hilang, sehingga status sempat salah jadi "warning". */
+        $sent = $seqSent > 0 ? $seqSent : (int) floor(max(0.0, $elapsedSeconds));
+
+        if ($sent === 0 && $received === 0) {
+            // Belum ada paket yang sama sekali: status belum boleh ditebak.
+            return ['sent' => 0, 'received' => 0, 'avg' => null, 'status' => null];
+        }
+
+        $loss = $sent > 0 ? round((($sent - $received) / $sent) * 100, 1) : 100.0;
+
+        return [
+            'sent' => $sent,
+            'received' => $received,
+            'avg' => $avg,
+            'status' => DiagnosisAnalyzer::statusFromProbe($loss, $avg),
+        ];
+    }
+
+    /**
+     * Lengkapi blok statistik ping bila proses berhenti sebelum ping sempat
+     * mencetaknya — target yang senyap total (DROP, bukan host unreachable)
+     * tidak mengeluarkan baris apa pun selama berjalan.
+     *
+     * Tanpa blok ini DiagnosisAnalyzer tidak punya angka packet loss /
+     * latency, dan statusnya justru bisa terbaca UP padahal target mati.
+     */
+    protected function pingSynthStats(string $output, int $durationMs): string
+    {
+        if (preg_match('/packets transmitted/i', $output) === 1) {
+            return $output;
+        }
+
+        $latencies = $this->pingLatencies($output);
+
+        preg_match_all('/icmp_seq=(\d+)/', $output, $matches);
+        $seqs = array_map('intval', $matches[1] ?? []);
+
+        $received = count($latencies);
+        $estimated = (int) floor(max(0.0, $durationMs / 1000));
+        $sent = max(1, $seqs === [] ? $received : max($seqs), $received, $estimated);
+        $loss = round((($sent - $received) / $sent) * 100, 1);
+
+        $line = $sent.' packets transmitted, '.$received.' received, '
+            .$loss.'% packet loss, time '.max(1, $durationMs).'ms';
+
+        if ($received > 0) {
+            $min = min($latencies);
+            $max = max($latencies);
+            $avg = array_sum($latencies) / $received;
+            $variance = 0.0;
+
+            foreach ($latencies as $latency) {
+                $variance += ($latency - $avg) ** 2;
+            }
+
+            $line .= "\nrtt min/avg/max/mdev = "
+                .round($min, 3).'/'.round($avg, 3).'/'.round($max, 3).'/'
+                .round(sqrt($variance / $received), 3).' ms';
+        }
+
+        return $output."\n".$line."\n";
+    }
+
+    /**
+     * Ringkasan akhir ping berkelanjutan — bentuknya sama persis dengan
+     * respons POST /admin/tools/ping (runCommand) plus lapisan device,
+     * asisten, dan peta jalur, supaya kartu hasil tidak perlu membedakan
+     * dua jenis ping sama sekali.
+     */
+    protected function buildPingSummary(
+        string $target,
+        string $output,
+        int $exitCode,
+        int $durationMs,
+        mixed $deviceId,
+        bool $timedOut = false,
+        string $command = 'ping',
+    ): array {
+        $now = now();
+
+        $networkFault = false;
+
+        if ($exitCode !== 0) {
+            foreach (['Host Unreachable', 'Destination Host Unreachable', 'No route to host', 'Request timeout', 'Name or service not known', 'Timed Out', 'packet loss', '0 received'] as $fault) {
+                if (str_contains($output, $fault)) {
+                    $networkFault = true;
+                    break;
+                }
+            }
+        }
+
+        $raw = [
+            'output' => $output,
+            'exit' => $exitCode,
+            'timedout' => $timedOut,
+            'duration_ms' => $durationMs,
+        ];
+
+        $payload = [
+            'success' => $exitCode === 0,
+            'label' => 'Ping',
+            'summary' => $target,
+            'command' => $command,
+            'exit' => $exitCode,
+            'duration' => round($durationMs / 1000, 2),
+            'duration_ms' => $durationMs,
+            'checked_at' => $now->format('H:i:s'),
+            'checked_date' => $now->format('d/m/Y'),
+            'output' => $output,
+            'timedout' => $timedOut,
+            'network_fault' => $networkFault,
+            'error' => null,
+            'analysis' => $this->analyze('ping', $raw),
+        ];
+
+        $payload['device'] = $this->deviceInfo($deviceId, $target);
+
+        $payload['assistant'] = (new NetworkAssistant)->suggest(
+            is_string($payload['analysis']['status'] ?? null) ? $payload['analysis']['status'] : null,
+            $output,
+            $payload['analysis'],
+        );
+
+        if (is_array($payload['assistant'])) {
+            $payload['assistant']['status_detail'] = is_string($payload['analysis']['status_detail'] ?? null)
+                ? $payload['analysis']['status_detail']
+                : null;
+        }
+
+        $payload['path'] = $this->pathInfo($target, $output, $payload['analysis']);
+
+        return $payload;
+    }
+
+    /**
      * Jawaban chat box AI Network Assistant (tanya-jawab engineer).
      *
      * Halaman mengirim pertanyaan bebas plus ringkasan hasil ping terakhir
