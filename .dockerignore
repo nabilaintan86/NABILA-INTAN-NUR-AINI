@@ -1,7 +1,10 @@
-vendor
 node_modules
-.git
+public/hot
+public/storage
+storage/*.key
+vendor
 .env
-storage/logs/*
-bootstrap/cache/*
-*.sql
+.git
+.gitignore
+docker-compose.yml
+Dockerfile

@@ -9,10 +9,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\TestCase;
 
 class TelegramUserManagementTest extends TestCase
 {
+    use AuthenticatesAdmin;
     protected function setUp(): void
     {
         parent::setUp();
@@ -70,6 +72,8 @@ class TelegramUserManagementTest extends TestCase
             $table->rememberToken();
             $table->timestamps();
         });
+
+        $this->authenticateAsAdmin();
     }
 
     protected function createSchema(string $name, callable $definition): void
@@ -122,7 +126,7 @@ class TelegramUserManagementTest extends TestCase
             'message_text' => '/start',
         ]);
         Http::assertSent(fn ($request) => $request['chat_id'] === '9001'
-            && str_contains($request['text'], 'Menunggu persetujuan admin'));
+            && str_contains($request['text'], 'Menunggu persetujuan Super Admin'));
     }
 
     public function test_new_registration_notifies_linked_super_admin(): void

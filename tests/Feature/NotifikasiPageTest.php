@@ -7,11 +7,13 @@ use App\Models\DeviceNotification;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
 class NotifikasiPageTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use InteractsWithDeviceRegistry;
 
     protected function setUp(): void
@@ -55,6 +57,8 @@ class NotifikasiPageTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_notifikasi_page_renders_device_notifications(): void
@@ -103,7 +107,7 @@ class NotifikasiPageTest extends TestCase
         $response->assertDontSee('class="status-guide__content"', false);
     }
 
-    public function test_network_poll_creates_real_warning_notification(): void
+    public function test_network_poll_marks_unresponsive_device_as_down(): void
     {
         $device = Device::create([
             'name' => 'Router-Warning',
@@ -125,17 +129,18 @@ class NotifikasiPageTest extends TestCase
 
         $notification = DeviceNotification::where('device_name', $device->name)->sole();
 
-        $this->assertSame('warning', $notification->status);
-        $this->assertSame('WARNING', $notification->event);
-        $this->assertSame('warning', $notification->event_type);
-        $this->assertStringContainsString('Timed Out', $notification->message);
+        // 100% packet loss = tidak merespons sama sekali → DOWN, bukan WARNING.
+        $this->assertSame('down', $notification->status);
+        $this->assertSame('DOWN', $notification->event);
+        $this->assertSame('down', $notification->event_type);
+        $this->assertStringContainsString('Tidak merespons ping', $notification->message);
         $this->assertFalse($notification->is_read);
-        $this->assertSame('warning', $device->fresh()->status);
+        $this->assertSame('down', $device->fresh()->status);
 
         $this->get(route('admin.notifikasi'))
             ->assertOk()
             ->assertSee('Router-Warning')
-            ->assertSee('Paket ping terakhir tidak dijawab (Timed Out).');
+            ->assertSee('Tidak merespons ping');
     }
 
     public function test_high_latency_is_saved_as_real_warning_notification(): void
@@ -162,7 +167,7 @@ class NotifikasiPageTest extends TestCase
 
         $this->assertSame('warning', $notification->status);
         $this->assertSame(180, $notification->latency);
-        $this->assertStringContainsString('threshold 150 ms', $notification->message);
+        $this->assertStringContainsString('threshold 100 ms', $notification->message);
         $this->assertSame('warning', $device->fresh()->status);
     }
 

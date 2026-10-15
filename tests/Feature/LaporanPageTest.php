@@ -8,10 +8,12 @@ use App\Models\Note;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\TestCase;
 
 class LaporanPageTest extends TestCase
 {
+    use AuthenticatesAdmin;
     protected function setUp(): void
     {
         parent::setUp();
@@ -106,6 +108,8 @@ class LaporanPageTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        $this->authenticateAsAdmin();
     }
 
     public function test_laporan_page_renders_with_real_monitoring_data(): void

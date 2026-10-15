@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class AuthController extends Controller
 {
     /**
      * Redirect ke halaman yang sesuai berdasarkan role user.
      */
-    private function redirectByRole(): \Illuminate\Http\RedirectResponse
+    private function redirectByRole(): RedirectResponse
     {
         $role = Auth::user()->role ?? 'staff';
 
         return match ($role) {
             'super_admin', 'admin' => redirect()->route('admin.dashboard'),
-            default                => redirect()->route('admin.monitoring'),
+            default => redirect()->route('admin.monitoring'),
         };
     }
 
@@ -97,20 +98,4 @@ class AuthController extends Controller
 
         return redirect('/login');
     }
-public function showForgotForm()
-{
-    return view('auth.forgot-password');
-}
-
-public function sendResetLink(Request $request)
-{
-    $request->validate(['email' => 'required|email']);
-
-    // Untuk saat ini, tidak kirim email beneran.
-    // Cukup tampilkan pesan ke user.
-    return back()->with(
-        'status',
-        'Permintaan reset password sudah tercatat. Silakan hubungi Admin IT untuk proses lebih lanjut.'
-    );
-}
 }

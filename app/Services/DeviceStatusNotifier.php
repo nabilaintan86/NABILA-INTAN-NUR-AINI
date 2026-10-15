@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Device;
 use App\Models\DeviceNotification;
+use App\Services\NetworkTools\DiagnosisAnalyzer;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -193,7 +194,7 @@ class DeviceStatusNotifier
     {
         return match ($eventType) {
             'warning' => $latency !== null
-                ? "Ping berhasil, tetapi latency {$latency} ms melebihi threshold 150 ms."
+                ? 'Ping berhasil, tetapi latency '.$latency.' ms melebihi threshold '.DiagnosisAnalyzer::GOOD_LATENCY_MS.' ms.'
                 : "Paket ping terakhir tidak dijawab ({$reason}).",
             'down' => "Tidak merespons ping: {$reason}.",
             default => $latency !== null

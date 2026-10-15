@@ -8,6 +8,7 @@ use App\Services\DeviceStatusNotifier;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\AuthenticatesAdmin;
 use Tests\Feature\Concerns\InteractsWithDeviceRegistry;
 use Tests\TestCase;
 
@@ -16,6 +17,7 @@ use Tests\TestCase;
  */
 class DeviceNotificationTransitionTest extends TestCase
 {
+    use AuthenticatesAdmin;
     use InteractsWithDeviceRegistry;
 
     protected function setUp(): void
@@ -72,6 +74,8 @@ class DeviceNotificationTransitionTest extends TestCase
                 $table->timestamps();
             });
         }
+
+        $this->authenticateAsAdmin();
     }
 
     private function device(string $name = 'Router-Transisi', string $ip = '10.10.0.1', string $status = 'up'): Device
@@ -100,7 +104,7 @@ class DeviceNotificationTransitionTest extends TestCase
         ]);
     }
 
-    /** Ping timeout (exit code 1) -> status 'warning' (degraded). */
+    /** Ping timeout (exit code 1) dengan 100% packet loss -> status 'down'. */
     private function pollTimeout(): void
     {
         Process::fake([
@@ -235,51 +239,36 @@ class DeviceNotificationTransitionTest extends TestCase
      * Pemulihan dari 'warning' pun tidak boleh membuat "recovered" palsu,
      * karena device tidak pernah tercatat DOWN.
      */
-    public function test_timeout_warning_flapping_does_not_spam(): void
+    public function test_timeout_is_down_not_warning_and_does_not_spam(): void
     {
         $device = $this->device('Router-Flap', '10.10.0.3', 'up');
 
-        // 1) timeout pertama: satu warning
+        // 1) timeout pertama (100% packet loss): tidak merespons sama sekali =
+        //    DOWN, bukan WARNING. Satu notifikasi DOWN.
         $this->pollTimeout();
         $this->runPoll();
-        $this->assertSame(['warning'], $this->eventsFor($device));
-        $this->assertSame('warning', $device->fresh()->status);
+        $this->assertSame(['down'], $this->eventsFor($device));
+        $this->assertSame('down', $device->fresh()->status);
 
-        // 2) timeout berikutnya: tidak ada notifikasi baru
+        // 2) timeout berikutnya (masih DOWN): tidak ada notifikasi baru
         $this->runPoll();
         $this->runPoll();
-        $this->assertSame(['warning'], $this->eventsFor($device));
+        $this->assertSame(['down'], $this->eventsFor($device));
 
-        // 3) sempat merespons lagi (tapi tidak tercatat DOWN): tidak ada "recovered"
+        // 3) sempat merespons lagi: satu RECOVERED
         $this->pollReachable();
         $this->runPoll();
-        $this->assertSame(['warning'], $this->eventsFor($device));
+        $this->assertSame(['down', 'recovered'], $this->eventsFor($device));
         $this->assertSame('up', $device->fresh()->status);
 
-        // 4) timeout lagi setelah sempat pulih: warning tidak diulang, karena device
-        //    belum pernah punya notifikasi DOWN/RECOVERED (episode masih sama).
+        // 4) timeout lagi setelah pulih: episode baru = DOWN lagi
         $this->pollTimeout();
         $this->runPoll();
-        $this->assertSame(['warning'], $this->eventsFor($device));
+        $this->assertSame(['down', 'recovered', 'down'], $this->eventsFor($device));
 
-        // 5) benar-benar DOWN (alasan selain timeout): notifikasi DOWN
-        $this->pollDown();
+        // 5) timeout langsung sesudahnya: tidak ada tambahan
         $this->runPoll();
-        $this->assertSame(['warning', 'down'], $this->eventsFor($device));
-
-        // 6) kembali merespons: satu notifikasi RECOVERED
-        $this->pollReachable();
-        $this->runPoll();
-        $this->assertSame(['warning', 'down', 'recovered'], $this->eventsFor($device));
-
-        // 7) episode baru: timeout setelah recovery boleh membuat warning lagi
-        $this->pollTimeout();
-        $this->runPoll();
-        $this->assertSame(['warning', 'down', 'recovered', 'warning'], $this->eventsFor($device));
-
-        // 8) timeout lagi langsung sesudahnya: tidak ada tambahan
-        $this->runPoll();
-        $this->assertSame(4, DeviceNotification::where('device_id', $device->id)->count());
+        $this->assertSame(3, DeviceNotification::where('device_id', $device->id)->count());
     }
 
     /** Device dengan latency tinggi tidak boleh membuat DOWN/RECOVERED bolak-balik. */

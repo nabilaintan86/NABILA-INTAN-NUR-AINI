@@ -10,6 +10,7 @@ use DOMElement;
 use DOMXPath;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Tests\Feature\Concerns\CreatesNetworkAreaTables;
 use Tests\TestCase;
 
 /**
@@ -26,6 +27,11 @@ use Tests\TestCase;
  */
 class AdminLayoutConsistencyTest extends TestCase
 {
+    /* Halaman admin.monitoring membaca network_areas + map_settings, jadi
+       keduanya harus ada di skema test — kalau tidak,route-nya 500 dan
+       standar layout-nya sendiri tidak sempat diuji. */
+    use CreatesNetworkAreaTables;
+
     /** @var array<string, array{0: string, 1: string}> route => [label, pageTitle] */
     private const PAGES = [
         'admin.dashboard'          => ['Dashboard', 'Dashboard'],
@@ -34,7 +40,6 @@ class AdminLayoutConsistencyTest extends TestCase
         'admin.notifikasi'         => ['Notifikasi', 'Notifikasi'],
         'admin.kelola-router'      => ['Kelola Router', 'Kelola Router'],
         'admin.device.notes.report' => ['Report Catatan Perangkat', 'Report Catatan'],
-        'admin.dhcp-lease'         => ['DHCP Lease', 'DHCP Lease'],
         'admin.laporan'            => ['Laporan &amp; Grafik', 'Laporan & Grafik'],
         'admin.tools'              => ['Network Tools', 'Network Tools'],
         'admin.kelola-user'        => ['Kelola User', 'Kelola User'],
@@ -46,6 +51,7 @@ class AdminLayoutConsistencyTest extends TestCase
     {
         parent::setUp();
         $this->createSchema();
+        $this->createNetworkAreaTables();
     }
 
     public function test_every_admin_page_uses_the_same_global_layout(): void
@@ -417,7 +423,7 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->id();
                 $table->string('name');
                 $table->string('email')->unique();
-                $table->string('role')->default('admin');
+                $table->string('role')->default('super_admin');
                 $table->timestamp('email_verified_at')->nullable();
                 $table->string('password');
                 $table->unsignedBigInteger('telegram_chat_id')->nullable();
@@ -541,25 +547,6 @@ class AdminLayoutConsistencyTest extends TestCase
                 $table->foreignId('user_id')->nullable();
                 $table->string('action')->nullable();
                 $table->text('description')->nullable();
-                $table->timestamps();
-            },
-            'dhcp_leases' => function (Blueprint $table): void {
-                $table->id();
-                $table->unsignedBigInteger('device_id')->nullable()->index();
-                $table->string('mac_address')->nullable();
-                $table->string('ip_address');
-                $table->string('hostname')->nullable();
-                $table->string('client_id')->nullable();
-                $table->string('vendor')->nullable();
-                $table->string('router')->nullable();
-                $table->string('location')->nullable();
-                $table->timestamp('lease_start')->nullable();
-                $table->timestamp('lease_end')->nullable();
-                $table->string('classification')->default('unknown');
-                $table->timestamp('first_seen')->nullable();
-                $table->timestamp('last_seen')->nullable();
-                $table->string('source')->nullable();
-                $table->text('comment')->nullable();
                 $table->timestamps();
             },
             'telegram_users' => function (Blueprint $table): void {

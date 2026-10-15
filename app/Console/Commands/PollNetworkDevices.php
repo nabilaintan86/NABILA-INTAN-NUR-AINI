@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\HasSharedPollLock;
 use App\Models\ActivityLog;
 use App\Models\Device;
 use App\Services\DeviceCsvService;
 use App\Services\DeviceStatusNotifier;
+use App\Services\NetworkTools\DiagnosisAnalyzer;
 use App\Services\SnmpInspectionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
@@ -13,7 +15,7 @@ use Illuminate\Support\Str;
 
 class PollNetworkDevices extends Command
 {
-    private const WARNING_LATENCY_THRESHOLD_MS = 150;
+    use HasSharedPollLock;
 
     protected $signature = 'network:poll {--no-log : Jangan simpan riwayat log aktivitas} {--no-snmp : Lewati pemeriksaan SNMP (data tambahan, tidak memengaruhi status ICMP)}';
 
@@ -21,147 +23,167 @@ class PollNetworkDevices extends Command
 
     public function handle(DeviceCsvService $source, SnmpInspectionService $snmp, DeviceStatusNotifier $notifier): int
     {
-        // Hanya perangkat resmi (devices.csv) yang dipoll, satu kali per IP.
-        $devices = $source->officialDevicesUnique();
-
-        if ($devices->isEmpty()) {
-            $this->warn('Tidak ada perangkat resmi yang terdaftar di devices.csv.');
-
+        // Kunci bersama dengan monitor:ping: hanya satu siklus polling berat
+        // yang boleh jalan dalam satu waktu.
+        if (! $this->acquirePollLock()) {
             return self::SUCCESS;
         }
 
-        $this->info("Memulai polling untuk {$devices->count()} device...");
-        $log = ! $this->option('no-log');
-        $inspectSnmp = ! $this->option('no-snmp');
-        $snmp->beginCycle();
+        try {
+            // Hanya perangkat resmi (devices.csv) yang dipoll, satu kali per IP.
+            $devices = $source->officialDevicesUnique();
 
-        foreach ($devices as $device) {
-            $ip = trim((string) $device->ip_address);
-            $this->line("  Polling {$device->name} ({$ip})...");
+            if ($devices->isEmpty()) {
+                $this->warn('Tidak ada perangkat resmi yang terdaftar di devices.csv.');
 
-            $previousStatus = strtolower((string) $device->status);
-            $processError = null;
-            $raw = '';
-            $exitCode = 1;
+                return self::SUCCESS;
+            }
 
-            if ($ip === '') {
-                $raw = 'Invalid IP Address';
-                $exitCode = 2;
-            } else {
-                try {
-                    $result = Process::timeout(20)->run('ping -4 -c 1 -W 3 '.escapeshellarg($ip));
+            $this->info("Memulai polling untuk {$devices->count()} device...");
+            $log = ! $this->option('no-log');
+            $inspectSnmp = ! $this->option('no-snmp');
+            $snmp->beginCycle();
 
-                    $exitCode = $result->exitCode();
-                    $raw = trim($result->output()."\n".$result->errorOutput());
-                } catch (\Throwable $e) {
-                    $processError = $e->getMessage();
-                    $this->warn("    Proses ping bermasalah untuk {$ip}: {$processError}");
+            foreach ($devices as $device) {
+                $ip = trim((string) $device->ip_address);
+                $this->line("  Polling {$device->name} ({$ip})...");
+
+                $previousStatus = strtolower((string) $device->status);
+                $processError = null;
+                $raw = '';
+                $exitCode = 1;
+
+                if ($ip === '') {
+                    $raw = 'Invalid IP Address';
+                    $exitCode = 2;
+                } else {
+                    try {
+                        $result = Process::timeout(20)->run('ping -4 -c 1 -W 3 '.escapeshellarg($ip));
+
+                        $exitCode = $result->exitCode();
+                        $raw = trim($result->output()."\n".$result->errorOutput());
+                    } catch (\Throwable $e) {
+                        $processError = $e->getMessage();
+                        $this->warn("    Proses ping bermasalah untuk {$ip}: {$processError}");
+                    }
+                }
+
+                $device->increment('polls');
+
+                if ($exitCode === 0) {
+                    $latency = $this->extractLatency($raw);
+                    // Semua paket membalas (exit 0) = loss 0%: tersisa UP atau
+                    // WARNING (latency > 100 ms). Ambil langsung dari aturan
+                    // tunggal yang sama dengan badge & kotak hasil Network Tools.
+                    $status = DiagnosisAnalyzer::statusFromProbe(0, $latency);
+                    $reason = $status === 'warning' ? 'High Latency' : 'Normal';
+
+                    // SNMP hanya data tambahan: status di atas tetap hasil ICMP.
+                    $snmpInspection = $inspectSnmp
+                        ? $snmp->inspectIfEligible($device, $status)
+                        : $this->emptySnmpInspection();
+                    $logReason = Str::limit($snmp->decorateReason($reason, $snmpInspection), 255, '');
+
+                    if ($previousStatus !== $status) {
+                        $device->increment('alerts_count');
+                    }
+
+                    $device->update([
+                        'status' => $status,
+                        'avg_delay' => $latency ?? 0,
+                        'min_delay' => $latency !== null
+                            ? min($device->min_delay !== 0 ? $device->min_delay : PHP_INT_MAX, $latency)
+                            : 0,
+                        'max_delay' => max($device->max_delay, $latency ?? 0),
+                        'responded_percentage' => round($device->responded_percentage < 100
+                            ? $device->responded_percentage + 0.02
+                            : 100, 2),
+                        'missed_percentage' => round($device->missed_percentage > 0
+                            ? $device->missed_percentage - 0.02
+                            : 0, 2),
+                    ]);
+
+                    if ($log) {
+                        $this->writeLog($device, $status, $logReason, $latency);
+                    }
+
+                    $this->recordStatusNotification(
+                        $notifier,
+                        $device,
+                        $previousStatus,
+                        $status,
+                        $latency,
+                        $reason
+                    );
+
+                    $outputTag = $status === 'warning' ? 'comment' : 'info';
+                    $detail = $latency !== null ? $latency.' ms' : 'merespons';
+                    $this->line("    <{$outputTag}>{$status}</{$outputTag}> — {$detail}");
+
+                    $this->reportSnmpInspection($snmpInspection);
+                } else {
+                    $reason = $processError !== null
+                        ? 'Probe Error'
+                        : $this->resolveFailureReason($raw, $exitCode);
+
+                    // Tidak ada balasan sama sekali adalah DOWN, BUKAN warning.
+                    // Baca packet loss dari output kalau tertera (mis. ping
+                    // multi-paket yang sebagian membalas); kalau tidak terbaca,
+                    // dianggap 100% hilang → DOWN.
+                    $loss = null;
+                    if (preg_match('/([\d.]+)%\s*packet loss/i', $raw, $matches)) {
+                        $loss = (float) $matches[1];
+                    }
+                    $status = DiagnosisAnalyzer::statusFromProbe($loss ?? 100, null);
+
+                    if ($previousStatus !== $status) {
+                        $device->increment('alerts_count');
+                    }
+
+                    $device->update([
+                        'status' => $status,
+                        'avg_delay' => 0,
+                        'responded_percentage' => round($device->responded_percentage > 1
+                            ? $device->responded_percentage - 0.05
+                            : 0, 2),
+                        'missed_percentage' => round($device->missed_percentage < 99
+                            ? $device->missed_percentage + 0.05
+                            : 100, 2),
+                    ]);
+
+                    if ($log) {
+                        $this->writeLog($device, $status, $reason, null);
+                    }
+
+                    $this->recordStatusNotification(
+                        $notifier,
+                        $device,
+                        $previousStatus,
+                        $status,
+                        null,
+                        $reason
+                    );
+
+                    $outputTag = $status === 'warning' ? 'comment' : 'error';
+                    $this->line("    <{$outputTag}>{$status}</{$outputTag}> — {$reason}");
                 }
             }
 
-            $device->increment('polls');
+            $this->info('Polling selesai.');
 
-            if ($exitCode === 0) {
-                $latency = $this->extractLatency($raw);
-                $status = $latency !== null && $latency > self::WARNING_LATENCY_THRESHOLD_MS
-                    ? 'warning'
-                    : 'up';
-                $reason = $status === 'warning' ? 'High Latency' : 'Normal';
-
-                // SNMP hanya data tambahan: status di atas tetap hasil ICMP.
-                $snmpInspection = $inspectSnmp
-                    ? $snmp->inspectIfEligible($device, $status)
-                    : $this->emptySnmpInspection();
-                $logReason = Str::limit($snmp->decorateReason($reason, $snmpInspection), 255, '');
-
-                if ($previousStatus !== $status) {
-                    $device->increment('alerts_count');
-                }
-
-                $device->update([
-                    'status' => $status,
-                    'avg_delay' => $latency ?? 0,
-                    'min_delay' => $latency !== null
-                        ? min($device->min_delay !== 0 ? $device->min_delay : PHP_INT_MAX, $latency)
-                        : 0,
-                    'max_delay' => max($device->max_delay, $latency ?? 0),
-                    'responded_percentage' => round($device->responded_percentage < 100
-                        ? $device->responded_percentage + 0.02
-                        : 100, 2),
-                    'missed_percentage' => round($device->missed_percentage > 0
-                        ? $device->missed_percentage - 0.02
-                        : 0, 2),
-                ]);
-
-                if ($log) {
-                    $this->writeLog($device, $status, $logReason, $latency);
-                }
-
-                $this->recordStatusNotification(
-                    $notifier,
-                    $device,
-                    $previousStatus,
-                    $status,
-                    $latency,
-                    $reason
-                );
-
-                $outputTag = $status === 'warning' ? 'comment' : 'info';
-                $detail = $latency !== null ? $latency.' ms' : 'merespons';
-                $this->line("    <{$outputTag}>{$status}</{$outputTag}> — {$detail}");
-
-                $this->reportSnmpInspection($snmpInspection);
-            } else {
-                $reason = $processError !== null
-                    ? 'Probe Error'
-                    : $this->resolveFailureReason($raw, $exitCode);
-                $status = $reason === 'Timed Out' ? 'warning' : 'down';
-
-                if ($previousStatus !== $status) {
-                    $device->increment('alerts_count');
-                }
-
-                $device->update([
-                    'status' => $status,
-                    'avg_delay' => 0,
-                    'responded_percentage' => round($device->responded_percentage > 1
-                        ? $device->responded_percentage - 0.05
-                        : 0, 2),
-                    'missed_percentage' => round($device->missed_percentage < 99
-                        ? $device->missed_percentage + 0.05
-                        : 100, 2),
-                ]);
-
-                if ($log) {
-                    $this->writeLog($device, $status, $reason, null);
-                }
-
-                $this->recordStatusNotification(
-                    $notifier,
-                    $device,
-                    $previousStatus,
-                    $status,
-                    null,
-                    $reason
-                );
-
-                $outputTag = $status === 'warning' ? 'comment' : 'error';
-                $this->line("    <{$outputTag}>{$status}</{$outputTag}> — {$reason}");
+            if ($inspectSnmp) {
+                $this->line(sprintf(
+                    'SNMP: %d perangkat diperiksa, %d dilewati (mode: %s).',
+                    $snmp->probedCount(),
+                    $snmp->skippedCount(),
+                    $snmp->mode()
+                ));
             }
+
+            return self::SUCCESS;
+        } finally {
+            $this->releasePollLock();
         }
-
-        $this->info('Polling selesai.');
-
-        if ($inspectSnmp) {
-            $this->line(sprintf(
-                'SNMP: %d perangkat diperiksa, %d dilewati (mode: %s).',
-                $snmp->probedCount(),
-                $snmp->skippedCount(),
-                $snmp->mode()
-            ));
-        }
-
-        return self::SUCCESS;
     }
 
     /**

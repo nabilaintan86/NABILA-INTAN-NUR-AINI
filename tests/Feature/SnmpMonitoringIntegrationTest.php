@@ -242,8 +242,8 @@ class SnmpMonitoringIntegrationTest extends TestCase
 
         $this->artisan('network:poll')->assertExitCode(0);
 
-        // Status ping tanpa balasan tetap 'warning' (sesuai perilaku ICMP lama).
-        $this->assertSame('warning', Device::where('ip_address', '10.0.0.3')->sole()->status);
+        // Status ping tanpa balasan (100% packet loss) = DOWN, bukan warning.
+        $this->assertSame('down', Device::where('ip_address', '10.0.0.3')->sole()->status);
         $this->assertSame([], $snmp->commands, 'SNMP tidak boleh ditanya untuk device yang ICMP-nya down.');
     }
 
@@ -363,7 +363,7 @@ class SnmpMonitoringIntegrationTest extends TestCase
 
     public function test_notifications_are_not_polluted_by_snmp_details(): void
     {
-        $this->makeDevice('10.0.0.11', 'SNMP', 'down');
+        $this->makeDevice('10.0.0.11', 'SNMP', 'up');
         $this->fakePingFailure();
         $this->fakeSnmp();
 

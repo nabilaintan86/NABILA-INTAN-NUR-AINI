@@ -2,15 +2,18 @@
 
 namespace App\Services;
 
+use App\Services\NetworkTools\DiagnosisAnalyzer;
 use Illuminate\Process\Exceptions\ProcessTimedOutException;
 use Illuminate\Support\Facades\Process;
 
 class NetworkProbe
 {
     /**
-     * Ambang latensi (ms) sebelum status dinyatakan WARNING.
+     * Ambang latensi (ms) sebelum status dinyatakan WARNING. Nilainya sama
+     * dengan DiagnosisAnalyzer::GOOD_LATENCY_MS — satu-satunya sumber dermaga
+     * penetapan status (lihat statusFromProbe()).
      */
-    public const HIGH_LATENCY_MS = 150;
+    public const HIGH_LATENCY_MS = 100;
 
     /**
      * Jalankan ICMP ping (4 probe) dan kembalikan hasil detail per IP.
@@ -20,53 +23,49 @@ class NetworkProbe
     public function probe(string $ip): array
     {
         $data = [
-            'exit_code'    => 1,
-            'output'       => '',
+            'exit_code' => 1,
+            'output' => '',
             'error_output' => '',
-            'latency'      => null,
-            'packet_loss'  => null,
-            'error'        => null,
+            'latency' => null,
+            'packet_loss' => null,
+            'error' => null,
         ];
 
         try {
             $result = Process::timeout(20)->run('ping -4 -c 4 -i 0.2 -W 2 '.escapeshellarg($ip));
 
-            $data['exit_code']    = $result->exitCode();
-            $data['output']       = trim($result->output());
+            $data['exit_code'] = $result->exitCode();
+            $data['output'] = trim($result->output());
             $data['error_output'] = trim($result->errorOutput());
-            $data['latency']      = $this->extractLatency($data['output']);
-            $data['packet_loss']  = $this->extractPacketLoss($data['output']);
+            $data['latency'] = $this->extractLatency($data['output']);
+            $data['packet_loss'] = $this->extractPacketLoss($data['output']);
         } catch (ProcessTimedOutException $e) {
             $data['error'] = 'Diagnostic timeout: '.$e->getMessage();
         } catch (\Throwable $e) {
-            $data['error'] = 'Failed to run diagnostic: '.$e->getMessage();
+            $data['error'] = 'Diagnostic error: '.$e->getMessage();
         }
 
         return $data;
     }
 
     /**
-     * Tentukan status perangkat berdasarkan hasil ping yang terukur:
-     * - up      : semua packet terkirim & latensi normal.
-     * - warning : ada packet loss sebagian atau latensi tinggi.
-     * - down    : 100% packet loss / tidak ada balasan sama sekali.
+     * Tentukan status perangkat berdasarkan hasil ping yang terukur.
+     *
+     * Delegasi murni ke aturan tunggal DiagnosisAnalyzer::statusFromProbe() —
+     * up: tanpa packet loss & latency wajar; warning: packet loss parsial
+     * (1-99%) atau latency > 100 ms; down: 100% packet loss / tidak membalas.
      */
     public function tentukanStatus(int $exitCode, ?float $packetLoss, ?int $latency): string
     {
-        if ($exitCode === 0
-            && ($packetLoss === null || $packetLoss === 0.0)
-            && ($latency === null || $latency <= self::HIGH_LATENCY_MS)) {
-            return 'up';
+        // Tidak ada paket yang membalas (kode keluar bukan 0) dan loss pun
+        // tidak terbaca: disimpulkan 100% hilang → DOWN, bukan WARNING.
+        if ($exitCode !== 0 && ($packetLoss === null || $packetLoss <= 0)) {
+            $packetLoss = 100;
         }
 
-        $adaLossSebagian = $packetLoss !== null && $packetLoss > 0 && $packetLoss < 100;
-        $latensiTinggi   = $exitCode === 0 && $latency !== null && $latency > self::HIGH_LATENCY_MS;
+        $latencyMs = $exitCode === 0 ? $latency : null;
 
-        if ($adaLossSebagian || $latensiTinggi) {
-            return 'warning';
-        }
-
-        return 'down';
+        return DiagnosisAnalyzer::statusFromProbe($packetLoss, $latencyMs);
     }
 
     /**

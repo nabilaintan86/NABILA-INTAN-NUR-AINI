@@ -1,0 +1,273 @@
+/*
+|--------------------------------------------------------------------------
+| Tailwind — Halaman Ping Monitor saja
+|--------------------------------------------------------------------------
+| Sengaja TIDAK memakai `@import 'tailwindcss'` (yang menarik preflight).
+| Preflight akan me-reset margin, border, dan font untuk SELURUH halaman
+| admin — termasuk sidebar Noko dan 40+ halaman lain yang sekarang masih
+| memakai kelas dari template (nk-*, btn, table, row/col-*). Memuatnya
+| di layout admin akan merusak semuanya.
+|
+| Yang diimpor hanya lapisan theme + utilities. Hasilnya: kelas utilitas
+| Tailwind tersedia untuk halaman ini, tanpa efek samping ke halaman lain.
+|
+| Aset ini hanya dimuat lewat @vite di dalam halaman ping-monitor, bukan
+| di layouts/admin.blade.php.
+*/
+
+@layer theme, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/*
+ * Halaman ini dipecah jadi view utama (ping-monitor.blade.php) dan partial
+ * terminal yang dipakai dua kali (_terminal.blade.php). Keduanya wajib ikut
+ * dipindai: kelas utility yang hanya muncul di partial — misalnya penanda
+ * kotak analisis — diam-diam hilang kalau partial ini tidak disebut.
+ *
+ * Dipindai per direktori, bukan per file, supaya partial baru di masa depan
+ * otomatis ikut terbawa tanpa perlu menambahkan @source lagi.
+ */
+@source '../views/admin/ping-monitor';
+@source '../views/admin/ping-monitor.blade.php';
+@source '../views/admin/tools.blade.php';
+
+/*
+|--------------------------------------------------------------------------
+| Identitas visual: WhatsUp Gold
+|--------------------------------------------------------------------------
+| Halaman ini memakai identitas biru konsol NOC: header kotak biru, tab aktif
+| biru, tombol biru aksen. Warna emas/amber TIDAK dipakai lagi sebagai
+| dekorasi, karena sebelumnya bercampur dengan header biru sehingga halaman
+| terlihat seperti dua tema yang dijahit.
+|
+| PENTING: warna status (UP / WARNING / DOWN) tetap memakai hijau / kuning /
+| merah. Biru di sini hanya untuk kerangka halaman, tidak pernah untuk
+|_status_, supaya arti warna tidak berubah.
+|
+| Token dideklarasikan satu kali di sini lalu dipakai ulang, jadi tidak ada
+| angka warna hex yang tercecer di beberapa tempat berbeda.
+*/
+
+.pm-page {
+    /* Permukaan halaman dan kartu. */
+    --pm-canvas: #0b1220;
+    --pm-surface: #0f172a;
+    --pm-surface-2: #111c33;
+    --pm-line: #1e293b;
+
+    /* Aksen biru: warna tombol, tab aktif, dan garis fokus. */
+    --pm-accent: #3b82f6;
+    --pm-accent-deep: #1d4ed8;
+    --pm-accent-soft: #93c5fd;
+
+    /* Header kotak biru ala WhatsUp Gold. */
+    --pm-header: #1e40af;
+    --pm-header-2: #1e3a8a;
+}
+
+/* Latar area konten dibuat gelap selama halaman ini terpasang. */
+body:has(.pm-page) .nk-content {
+    background: var(--pm-canvas);
+}
+
+/* ══ Deretan tab ═══════════════════════════════════════════
+   Bentuk segmented control: satu wadah gelap, tab di dalamnya.
+   ═══════════════════════════════════════════════════════════ */
+
+.pm-tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding: 0.375rem;
+    background: var(--pm-surface);
+    border: 1px solid var(--pm-line);
+    border-radius: 0.875rem;
+}
+
+.pm-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: 0.625rem;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.pm-tab:hover:not(.is-active) {
+    background: #172554;
+    color: var(--pm-accent-soft);
+}
+
+.pm-tab.is-active {
+    background: linear-gradient(135deg, var(--pm-accent) 0%, var(--pm-accent-deep) 100%);
+    border-color: var(--pm-accent);
+    color: #ffffff;
+    box-shadow: 0 8px 20px -10px rgba(59, 130, 246, 0.85);
+}
+
+.pm-tab:focus-visible {
+    outline: 2px solid var(--pm-accent-soft);
+    outline-offset: 2px;
+}
+
+/* ══ Tombol MULAI PING ════════════════════════════════════ */
+
+.pm-run {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    border: 1px solid var(--pm-accent);
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, var(--pm-accent) 0%, var(--pm-accent-deep) 100%);
+    color: #ffffff;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -10px rgba(59, 130, 246, 0.85);
+    transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.pm-run:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+.pm-run:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.pm-run:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.pm-run:focus-visible {
+    outline: 2px solid var(--pm-accent-soft);
+    outline-offset: 2px;
+}
+
+/* ══ Kolom isian IP dan jumlah paket ══════════════════════
+   Garis fokus memakai satu komponen supaya tidak perlu menulis
+   ulang focus:ring-... di tiap kolom, dan tidak bisa lagi
+   kelewat ditulis tanpa nama warna seperti yang pernah terjadi.
+   ═══════════════════════════════════════════════════════════ */
+
+.pm-field {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    background: #020617;
+    border: 1px solid var(--pm-line);
+    border-radius: 0.5rem;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pm-field::placeholder {
+    color: #475569;
+}
+
+.pm-field:hover {
+    border-color: #334155;
+}
+
+.pm-field:focus {
+    border-color: var(--pm-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Kolom IP pakai font monospace supaya mudah dicek digit per digit. */
+.pm-field--mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Dropdown jumlah paket: panah bawaan browser diwarnai agar tidak
+   berwarna hitam di atas latar gelap. */
+.pm-field--select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.625rem center;
+    background-size: 1.1em;
+    padding-right: 2.25rem;
+}
+
+.pm-field--select option {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+
+/* ══ Terminal log ══════════════════════════════════════════
+   Scrollbar dibuat gelap supaya tidak mencolok di dalam kotak log.
+   ═══════════════════════════════════════════════════════════ */
+
+.pm-term-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #24344d #0b1220;
+}
+
+.pm-term-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.pm-term-scroll::-webkit-scrollbar-track {
+    background: #0b1220;
+}
+
+.pm-term-scroll::-webkit-scrollbar-thumb {
+    background: #24344d;
+    border-radius: 8px;
+}
+
+.pm-term-scroll::-webkit-scrollbar-thumb:hover {
+    background: #33445f;
+}
+
+/* ══ Kartu ringkasan pada tab Status Ringkasan ══════════════
+   Garis aksen di atas kartu, warna diambil dari state yang
+   ditambahkan JavaScript (data-state). Kartu tanpa state
+   (belum diuji) tetap netral.
+   ═══════════════════════════════════════════════════════════ */
+
+.pm-summary {
+    position: relative;
+    overflow: hidden;
+    padding: 1.1rem 1.25rem;
+    background: var(--pm-surface-2);
+    border: 1px solid var(--pm-line);
+    border-radius: 0.75rem;
+}
+
+.pm-summary::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: #334155;
+}
+
+.pm-summary[data-state="good"]::before { background: #10b981; }
+.pm-summary[data-state="warn"]::before { background: #f59e0b; }
+.pm-summary[data-state="bad"]::before  { background: #f43f5e; }
+
+/* Menghormati pengaturan pengguna yang mengurangi animasi. */
+@media (prefers-reduced-motion: reduce) {
+    .pm-tab,
+    .pm-run,
+    .pm-field {
+        transition: none;
+    }
+}

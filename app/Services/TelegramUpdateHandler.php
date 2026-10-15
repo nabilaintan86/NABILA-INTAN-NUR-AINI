@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Device;
-use App\Models\DhcpLease;
 use App\Models\MonitoringLog;
 use App\Models\TelegramSubscriber;
 use App\Models\TelegramUser;
@@ -166,10 +165,6 @@ class TelegramUpdateHandler
             return in_array($user->role, ['admin', 'super_admin'], true);
         }
 
-        if ($command === 'lease') {
-            return in_array($user->role, ['admin', 'super_admin'], true);
-        }
-
         if (in_array($command, ['broadcast', 'users', 'approve', 'reject', 'setrole'], true)) {
             return $user->role === 'super_admin';
         }
@@ -184,7 +179,6 @@ class TelegramUpdateHandler
             'status' => $this->statusText(),
             'device' => $this->deviceText($argument),
             'incident' => $this->incidentText(),
-            'lease' => $this->leaseText(),
             'broadcast' => $this->broadcastText($argument),
             'users' => $this->usersText(),
             'approve' => $this->approveText($argument),
@@ -202,10 +196,6 @@ class TelegramUpdateHandler
             '/device {nama} — cari perangkat',
             '/incident — insiden terbaru',
         ];
-
-        if (in_array($user->role, ['admin', 'super_admin'], true)) {
-            $commands[] = '/lease — lease DHCP aktif';
-        }
 
         if ($user->role === 'super_admin') {
             $commands[] = '/broadcast {pesan} — kirim broadcast';
@@ -293,34 +283,6 @@ class TelegramUpdateHandler
         foreach ($incidents as $incident) {
             $time = $incident->checked_at?->format('d/m/Y H:i') ?: '-';
             $lines[] = '• '.strtoupper((string) $incident->status).' | '.($incident->device_name ?: '-').' | '.($incident->ip_address ?: '-').' | '.$time;
-        }
-
-        return implode("\n", $lines);
-    }
-
-    protected function leaseText(): string
-    {
-        if (! Schema::hasTable('dhcp_leases')) {
-            return 'Data lease DHCP belum tersedia.';
-        }
-
-        $leases = DhcpLease::query()
-            ->where('classification', '!=', 'unknown')
-            ->where(function ($query) {
-                $query->whereNull('lease_end')->orWhere('lease_end', '>=', now());
-            })
-            ->orderBy('ip_address')
-            ->limit(10)
-            ->get();
-
-        if ($leases->isEmpty()) {
-            return 'Tidak ada lease DHCP aktif.';
-        }
-
-        $lines = ['🌐 Lease DHCP aktif', ''];
-
-        foreach ($leases as $lease) {
-            $lines[] = '• '.($lease->hostname ?: $lease->ip_address ?: '-').' | '.($lease->ip_address ?: '-').' | '.($lease->mac_address ?: '-');
         }
 
         return implode("\n", $lines);

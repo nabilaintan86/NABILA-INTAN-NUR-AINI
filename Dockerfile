@@ -1,22 +1,33 @@
-FROM php:8.4-fpm
+FROM php:8.4-apache
 
+# Install dependencies yang sering dibutuhkan Laravel
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libjpeg-dev libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    git \
+    curl \
+    iputils-ping \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install PHP extensions (Pdo Mysql, Mbstring, Exif, PCNTL, Bcmath, GD)
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-WORKDIR /var/www
+# mod_rewrite WAJIB aktif supaya .htaccess diproses Apache
+RUN a2enmod rewrite
 
-RUN git config --global --add safe.directory /var/www
+# DocumentRoot permanen ke folder public/ Laravel
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+WORKDIR /var/www/html
 
-COPY . .
+# Ganti VirtualHost default dengan konfigurasi eksplisit yang:
+#   1. mengarahkan DocumentRoot ke /var/www/html/public
+#   2. memakai AllowOverride All agar .htaccess dibaca (routing Laravel)
+# Lalu pastikan site-nya aktif.
+COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+RUN a2ensite 000-default
 
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-EXPOSE 9000
-CMD ["php-fpm"]
+EXPOSE 80
