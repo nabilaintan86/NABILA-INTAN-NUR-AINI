@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "postbuild": "node -e \"const fs=require('fs');const p='public/build/manifest.json';if(fs.existsSync(p)){const m=JSON.parse(fs.readFileSync(p,'utf8'));const e=m['resources/css/ping-monitor.css'];if(e&&e.file){fs.mkdirSync('public/css',{recursive:true});fs.copyFileSync('public/build/'+e.file,'public/css/ping-monitor.css');console.log('Fallback CSS disalin: public/css/ping-monitor.css');}}\"",
         "dev": "vite --host 0.0.0.0 --port 5173",
         "preview": "vite preview --host 0.0.0.0 --port 4173"
     },

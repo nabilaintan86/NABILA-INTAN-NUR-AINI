@@ -11,7 +11,21 @@
      Tailwind dimuat lewat ping-monitor.css (page-scoped, TANPA preflight) supaya
      tidak merusak sidebar/template halaman admin lain. --}}
 @push('styles')
-@vite(['resources/css/ping-monitor.css'])
+@php
+    $pmEntry = 'resources/css/ping-monitor.css';
+    $pmManifestPath = public_path('build/manifest.json');
+    $pmHasEntry = false;
+
+    if (is_file($pmManifestPath)) {
+        $pmManifest = json_decode((string) file_get_contents($pmManifestPath), true);
+        $pmHasEntry = is_array($pmManifest) && ! empty($pmManifest[$pmEntry]['file']);
+    }
+@endphp
+@if ($pmHasEntry)
+    @vite([$pmEntry])
+@else
+    <link rel="stylesheet" href="{{ asset('css/ping-monitor.css') }}">
+@endif
 <style>
     .pm-page {
         width: 100%;
