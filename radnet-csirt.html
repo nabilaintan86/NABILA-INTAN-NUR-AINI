@@ -13,7 +13,7 @@
   <style>
     :root {
       color-scheme: light;
-      --white: #fff;
+      --white: #ffffff;
       --slate-50: #f8fafc;
       --slate-100: #f1f5f9;
       --slate-200: #e2e8f0;
@@ -27,14 +27,11 @@
       --cyan-50: #ecfeff;
       --cyan-100: #cffafe;
       --cyan-200: #a5f3fc;
-      --cyan-500: #06b6d4;
       --cyan-600: #0891b2;
       --cyan-700: #0e7490;
       --cyan-800: #155e75;
       --emerald-50: #ecfdf5;
-      --emerald-100: #d1fae5;
       --emerald-200: #a7f3d0;
-      --emerald-500: #10b981;
       --emerald-600: #059669;
       --emerald-700: #047857;
       --red-50: #fef2f2;
@@ -43,36 +40,23 @@
       --red-700: #b91c1c;
       --amber-50: #fffbeb;
       --amber-200: #fde68a;
-      --amber-600: #d97706;
       --amber-700: #b45309;
-      --orange-50: #fff7ed;
-      --orange-200: #fed7aa;
-      --orange-700: #c2410c;
-      --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 22px;
-      --radius-xl: 28px;
-      --shadow-xs: 0 1px 2px rgba(15, 23, 42, .04);
-      --shadow-sm: 0 4px 14px rgba(15, 23, 42, .05);
-      --shadow-md: 0 14px 38px rgba(15, 23, 42, .08);
-      --shadow-lg: 0 30px 80px rgba(15, 23, 42, .12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+      --shadow-md: 0 12px 32px -18px rgba(15, 23, 42, .18);
       --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       --font-display: "Plus Jakarta Sans", "Inter", "Segoe UI", system-ui, sans-serif;
-      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
     }
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; scroll-padding-top: 120px; -webkit-text-size-adjust: 100%; }
-    section { scroll-margin-top: 130px; }
+    html { scroll-behavior: smooth; scroll-padding-top: 96px; -webkit-text-size-adjust: 100%; }
+    section { scroll-margin-top: 92px; }
     body {
-      margin: 0;
-      background: var(--white);
-      color: var(--slate-900);
-      font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
+      margin: 0; background: var(--white); color: var(--slate-900);
+      font-family: var(--font-sans); font-size: 16px; line-height: 1.65;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
     body.modal-open { overflow: hidden; }
     a { color: inherit; text-decoration: none; }
@@ -82,16 +66,17 @@
     h1, h2, h3, h4, p { margin-top: 0; }
     ul, ol { margin-top: 0; }
     ::selection { background: var(--cyan-100); color: var(--slate-900); }
-    :focus-visible { outline: 3px solid var(--cyan-500); outline-offset: 3px; border-radius: 5px; }
-    .container { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+    :focus-visible { outline: 3px solid var(--cyan-600); outline-offset: 3px; border-radius: 4px; }
+    .container { width: min(1140px, calc(100% - 48px)); margin-inline: auto; }
     .sr-only {
       position: absolute !important; width: 1px !important; height: 1px !important;
       padding: 0 !important; margin: -1px !important; overflow: hidden !important;
       clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important;
     }
     .skip-link {
-      position: fixed; left: 16px; top: -100px; z-index: 999; background: var(--slate-900);
-      color: #fff; padding: 12px 18px; border-radius: 10px; font-weight: 700; transition: top .2s ease;
+      position: fixed; left: 16px; top: -100px; z-index: 999; padding: 10px 16px;
+      border-radius: 8px; background: var(--slate-900); color: #fff; font-weight: 700;
+      transition: top .2s ease;
     }
     .skip-link:focus { top: 16px; }
     .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
@@ -100,240 +85,454 @@
       stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
     }
     .icon-sm { width: 16px; height: 16px; }
-    .icon-lg { width: 26px; height: 26px; }
+    .icon-lg { width: 24px; height: 24px; }
 
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-      min-height: 48px; padding: 12px 22px; border: 1.5px solid transparent; border-radius: 12px;
-      font-size: 14.5px; font-weight: 800; line-height: 1.25; white-space: nowrap;
-      transition: all .24s cubic-bezier(.25,.8,.25,1); position: relative; overflow: hidden; will-change: transform, box-shadow;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 46px; padding: 11px 19px; border: 1px solid transparent; border-radius: 10px;
+      font-size: 14px; font-weight: 700; line-height: 1.25; white-space: nowrap;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+      will-change: transform;
     }
-    .btn:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -18px rgba(15,23,42,.95); }
-    .btn:active { transform: translateY(-1px) scale(.98); }
-    .btn-danger {
-      background: var(--red-600); border-color: var(--red-600); color: #fff;
-      box-shadow: 0 10px 26px rgba(220, 38, 38, .22);
-    }
-    .btn-danger:hover { background: var(--red-700); border-color: var(--red-700); box-shadow: 0 14px 30px rgba(220, 38, 38, .28); }
-    .btn-primary { background: var(--cyan-700); border-color: var(--cyan-700); color: #fff; box-shadow: 0 10px 24px rgba(14, 116, 144, .18); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -14px rgba(15, 23, 42, .45); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: var(--cyan-700); border-color: var(--cyan-700); color: #fff; }
     .btn-primary:hover { background: var(--cyan-800); border-color: var(--cyan-800); }
-    .btn-outline { background: #fff; border-color: var(--slate-300); color: var(--slate-800); box-shadow: var(--shadow-xs); }
-    .btn-outline:hover { background: var(--cyan-50); border-color: #67e8f9; color: var(--cyan-800); }
+    .btn-danger { background: var(--red-600); border-color: var(--red-600); color: #fff; }
+    .btn-danger:hover { background: var(--red-700); border-color: var(--red-700); }
+    .btn-outline { background: #fff; border-color: var(--slate-300); color: var(--slate-700); }
+    .btn-outline:hover { background: var(--cyan-50); border-color: var(--cyan-200); color: var(--cyan-800); }
     .btn-ghost { background: var(--slate-50); border-color: var(--slate-200); color: var(--slate-700); }
-    .btn-ghost:hover { background: var(--slate-100); border-color: var(--slate-300); }
-    .btn-sm { min-height: 40px; padding: 9px 15px; font-size: 13.5px; border-radius: 10px; }
+    .btn-ghost:hover { background: var(--slate-100); }
+    .btn-sm { min-height: 38px; padding: 8px 13px; font-size: 12.5px; border-radius: 8px; }
     .btn-block { width: 100%; }
 
-    .topbar { background: var(--slate-50); border-bottom: 1px solid var(--slate-200); font-size: 13px; color: var(--slate-600); }
-    .topbar-inner { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-    .topbar-contacts { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .topbar-link { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; transition: color .18s ease; }
+    .topbar { background: var(--slate-50); border-bottom: 1px solid var(--slate-200); color: var(--slate-600); font-size: 12.5px; }
+    .topbar-inner { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .topbar-links { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+    .topbar-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; transition: color .18s ease; }
     .topbar-link:hover { color: var(--cyan-700); }
     .topbar-link .icon { color: var(--cyan-700); }
-    .topbar-divider { width: 1px; height: 18px; background: var(--slate-300); }
-    .topbar-hours { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .soc-badge {
-      display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 4px 11px;
-      border: 1px solid var(--emerald-200); border-radius: 999px; background: var(--emerald-50);
-      color: var(--emerald-700); font-size: 11.5px; font-weight: 800; letter-spacing: .045em; white-space: nowrap;
-    }
-    .pulse-dot {
-      position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--emerald-500);
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, .55); animation: pulseDot 2s infinite;
+    .topbar-status { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+    .soc-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--emerald-600);
+      box-shadow: 0 0 0 0 rgba(5, 150, 105, .45); animation: pulseDot 2.2s infinite;
     }
     @keyframes pulseDot {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, .55); }
-      70% { box-shadow: 0 0 0 9px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, .45); }
+      70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
     }
-    .live-clock { font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; color: var(--slate-500); white-space: nowrap; }
+    .status-text { color: var(--emerald-700); font-weight: 700; }
+    .live-clock { font-family: var(--font-mono); font-size: 11.5px; color: var(--slate-500); }
 
-    .security-ticker {
-      position: relative; z-index: 55; overflow: hidden;
-      background: linear-gradient(90deg, #0f172a 0%, #164e63 52%, #0e7490 100%);
-      color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12);
-    }
-    .security-ticker::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse 45% 120% at 0% 0%, rgba(34, 211, 238, .22), transparent 70%);
-    }
-    .ticker-inner { position: relative; z-index: 1; min-height: 54px; display: flex; align-items: center; gap: 16px; }
+    .security-ticker { background: var(--slate-50); border-bottom: 1px solid var(--slate-200); overflow: hidden; }
+    .ticker-inner { min-height: 42px; display: flex; align-items: center; gap: 14px; }
     .ticker-label {
-      display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto;
-      padding: 6px 11px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 999px;
-      background: rgba(255, 255, 255, .08); font-size: 10.5px; font-weight: 800;
+      display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto;
+      color: var(--cyan-800); font-size: 10.5px; font-weight: 800;
       letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
     }
-    .ticker-live {
-      width: 7px; height: 7px; border-radius: 50%; background: #34d399;
-      box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); animation: pulseDot 2s infinite;
-    }
+    .ticker-live { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-600); }
     .ticker-viewport {
       flex: 1 1 auto; min-width: 0; overflow: hidden;
-      -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
-      mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
     }
     .ticker-track { display: flex; width: max-content; will-change: transform; }
-    .ticker-track.is-animated { animation: tickerScroll 46s linear infinite; }
+    .ticker-track.is-animated { animation: tickerScroll 52s linear infinite; }
     .security-ticker:hover .ticker-track.is-animated,
     .security-ticker:focus-within .ticker-track.is-animated { animation-play-state: paused; }
     .ticker-sequence { display: flex; align-items: center; flex: 0 0 auto; }
     .ticker-item {
-      display: inline-flex; align-items: center; gap: 9px; padding: 4px 30px 4px 0;
-      color: #e2e8f0; font-size: 12.5px; font-weight: 600; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 8px; padding: 3px 26px 3px 0;
+      color: var(--slate-600); font-size: 12px; font-weight: 500; white-space: nowrap;
       transition: color .18s ease;
     }
-    .ticker-item:hover, .ticker-item:focus-visible { color: #fff; }
-    .ticker-item::after { content: ""; width: 5px; height: 5px; margin-left: 21px; border-radius: 50%; background: rgba(255, 255, 255, .35); }
+    .ticker-item:hover { color: var(--cyan-700); }
+    .ticker-item::after { content: ""; width: 4px; height: 4px; margin-left: 18px; border-radius: 50%; background: var(--slate-300); }
+    .ticker-text { font-weight: 600; }
     .ticker-item:hover .ticker-text { text-decoration: underline; text-underline-offset: 3px; }
-    .ticker-sev { flex: 0 0 auto; padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
-    .ticker-sev.critical { background: rgba(248, 113, 113, .18); color: #fecaca; border: 1px solid rgba(248, 113, 113, .35); }
-    .ticker-sev.high { background: rgba(251, 191, 36, .16); color: #fde68a; border: 1px solid rgba(251, 191, 36, .32); }
-    .ticker-sev.medium { background: rgba(125, 211, 252, .16); color: #bae6fd; border: 1px solid rgba(125, 211, 252, .3); }
-    .ticker-meta { color: #94a3b8; font-family: var(--font-mono); font-size: 10px; }
-    .ticker-more {
-      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
-      padding: 6px 10px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 8px;
-      color: #fff; font-size: 11px; font-weight: 750; white-space: nowrap;
-      transition: background .18s ease, border-color .18s ease, transform .18s ease;
-    }
-    .ticker-more:hover { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .4); transform: translateY(-1px); }
-    .ticker-more .icon { width: 13px; height: 13px; }
+    .ticker-sev { padding: 1px 6px; border-radius: 999px; font-size: 8.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .ticker-sev.critical { background: var(--red-50); color: var(--red-700); border: 1px solid var(--red-200); }
+    .ticker-sev.high { background: var(--amber-50); color: var(--amber-700); border: 1px solid var(--amber-200); }
+    .ticker-sev.medium { background: var(--cyan-50); color: var(--cyan-700); border: 1px solid var(--cyan-200); }
+    .ticker-meta { color: var(--slate-400); font-family: var(--font-mono); font-size: 9.5px; }
+    .ticker-more { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; color: var(--cyan-700); font-size: 11px; font-weight: 700; }
+    .ticker-more:hover { color: var(--cyan-800); }
+    .ticker-more .icon { width: 12px; height: 12px; transition: transform .18s ease; }
+    .ticker-more:hover .icon { transform: translateX(2px); }
     @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
     .site-header {
-      position: sticky; top: 0; z-index: 60; background: rgba(255, 255, 255, .94);
-      border-bottom: 1px solid var(--slate-200); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      transition: box-shadow .2s ease, border-color .2s ease;
+      position: sticky; top: 0; z-index: 60; background: rgba(255, 255, 255, .96);
+      border-bottom: 1px solid var(--slate-200);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      transition: box-shadow .2s ease;
     }
-    .site-header.scrolled { border-color: var(--slate-200); box-shadow: 0 10px 30px rgba(15, 23, 42, .075); }
-    .navbar { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 22px; }
-    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .site-header.scrolled { box-shadow: 0 8px 24px -18px rgba(15, 23, 42, .25); }
+    .navbar { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
     .brand-mark {
-      width: 46px; height: 46px; flex: 0 0 auto; border-radius: 13px;
-      background: linear-gradient(145deg, var(--cyan-700), #0b4a63); color: #fff;
-      display: grid; place-items: center; box-shadow: 0 8px 20px rgba(14, 116, 144, .22);
+      width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center;
+      border-radius: 10px; background: var(--cyan-700); color: #fff;
     }
-    .brand-mark svg { width: 27px; height: 27px; }
-    .brand-text { display: block; min-width: 0; }
+    .brand-mark svg { width: 23px; height: 23px; }
+    .brand-text { min-width: 0; }
     .brand-name {
-      display: block; font-family: var(--font-display); font-size: 21px; font-weight: 800;
-      letter-spacing: -.035em; line-height: 1.1; color: var(--slate-900); white-space: nowrap;
+      display: block; font-family: var(--font-display); font-size: 19px; font-weight: 800;
+      line-height: 1.1; letter-spacing: -.03em; color: var(--slate-900); white-space: nowrap;
     }
     .brand-name span { color: var(--cyan-700); }
-    .brand-sub {
-      display: block; margin-top: 4px; font-size: 11px; line-height: 1.2;
-      font-weight: 700; letter-spacing: .035em; color: var(--slate-500); white-space: nowrap;
-    }
+    .brand-sub { display: block; margin-top: 2px; color: var(--slate-500); font-size: 10.5px; font-weight: 600; white-space: nowrap; }
     .nav-links { display: flex; align-items: center; gap: 2px; }
     .nav-link {
-      position: relative; display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 999px;
-      font-size: 13.8px; font-weight: 700; color: var(--slate-700); white-space: nowrap;
-      transition: all .26s cubic-bezier(.25,.8,.25,1); border: 2px solid transparent;
-      will-change: transform, box-shadow, background, color, filter;
-      overflow: hidden;
+      display: inline-flex; align-items: center; padding: 9px 11px; border-bottom: 2px solid transparent;
+      color: var(--slate-600); font-size: 13px; font-weight: 600; white-space: nowrap;
+      transition: color .18s ease, border-color .18s ease, transform .18s ease;
     }
-    .nav-link::before {
-      content: ""; position: absolute; inset: 0; border-radius: inherit;
-      background: radial-gradient(circle at center, rgba(8,145,178,.16) 0%, transparent 70%);
-      transform: scale(0); opacity: 0; transition: all .36s cubic-bezier(.25,.8,.25,1);
-    }
-    .nav-link:hover { 
-      color: var(--cyan-700); 
-      background: linear-gradient(135deg, #fff 0%, var(--cyan-50) 100%);
-      border-color: rgba(8,145,178,.42);
-      box-shadow: 0 12px 30px -16px rgba(8,145,178,.95);
-      transform: translateY(-3px) scale(1.02);
-    }
-    .nav-link:hover::before { transform: scale(1.4); opacity: 1; }
-    .nav-link:active { transform: translateY(-1px) scale(.96); }
-    .nav-link.active { 
-      color: #fff; 
-      background: radial-gradient(120% 120% at 50% 0%, #22d3ee 0%, var(--cyan-600) 55%, var(--cyan-700) 100%);
-      border-color: rgba(8,145,178,1);
-      box-shadow: 0 18px 40px -18px rgba(8,145,178,1), 0 0 0 1px rgba(255,255,255,.22) inset;
-      font-weight: 800;
-      transform: scale(1.06);
-    }
-    .nav-link > * { position: relative; z-index: 1; }
-    .nav-link.active::before {
-      content: ""; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-      width: 7px; height: 7px; border-radius: 50%; background: #fff;
-      box-shadow: 0 0 0 5px rgba(255,255,255,.22);
-      animation: navPulse 1.4s ease-in-out infinite;
-      z-index: 2;
-    }
-    .nav-link.active::after {
-      content: ""; position: absolute; left: 50%; transform: translateX(-50%) scaleX(1); bottom: -13px;
-      width: 34px; height: 5px; border-radius: 999px;
-      background: linear-gradient(90deg, var(--cyan-600), #22d3ee);
-      box-shadow: 0 14px 36px -12px var(--cyan-600), 0 0 0 5px rgba(8,145,178,.14);
-      animation: navIndicator .32s cubic-bezier(.25,.8,.25,1);
-      z-index: 2;
-    }
-    @keyframes navIndicator {
-      from { transform: translateX(-50%) scaleX(.18); opacity: 0; }
-      to { transform: translateX(-50%) scaleX(1); opacity: 1; }
-    }
-    @keyframes navPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.32); }
-      70% { box-shadow: 0 0 0 8px rgba(255,255,255,.16); }
-    }
-    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .nav-link:hover { color: var(--cyan-700); border-bottom-color: var(--cyan-200); transform: translateY(-1px); }
+    .nav-link.active { color: var(--cyan-800); border-bottom-color: var(--cyan-700); }
+    .nav-actions { display: flex; align-items: center; gap: 9px; }
     .mobile-toggle {
-      display: none; width: 44px; height: 44px; align-items: center; justify-content: center;
-      border: 1px solid var(--slate-300); border-radius: 11px; background: #fff; color: var(--slate-700);
+      display: none; width: 42px; height: 42px; align-items: center; justify-content: center;
+      border: 1px solid var(--slate-300); border-radius: 9px; background: #fff; color: var(--slate-700);
     }
     .mobile-toggle:hover { background: var(--slate-50); }
-    .mobile-drawer {
-      display: none; border-top: 1px solid var(--slate-200); background: #fff;
-      padding: 10px 0 18px; box-shadow: 0 24px 30px rgba(15, 23, 42, .07);
-    }
+    .mobile-drawer { display: none; border-top: 1px solid var(--slate-200); background: #fff; padding: 8px 0 16px; }
     .mobile-drawer.open { display: block; }
     .mobile-nav { display: grid; gap: 2px; }
     .mobile-link {
-      display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 12px 22px;
-      border-radius: 14px; color: var(--slate-700); font-size: 15px; font-weight: 650;
-      border: 1.5px solid transparent; transition: all .26s cubic-bezier(.25,.8,.25,1);
-      will-change: transform, box-shadow, background;
-      position: relative;
+      display: flex; align-items: center; justify-content: space-between; padding: 11px 14px;
+      border-radius: 8px; color: var(--slate-700); font-size: 14px; font-weight: 600;
+      transition: background .18s ease, color .18s ease;
     }
-    .mobile-link:hover { color: #fff; background: linear-gradient(90deg, var(--cyan-600) 0%, #06b6d4 100%); border-color: rgba(8,145,178,.6); transform: translateX(10px); box-shadow: 0 12px 26px -16px rgba(8,145,178,1); }
-    .mobile-link:active { transform: translateX(8px) scale(.98); }
-    .mobile-link.active { color: #fff; background: linear-gradient(90deg, var(--cyan-700) 0%, var(--cyan-600) 100%); border-color: rgba(8,145,178,.9); font-weight: 800; box-shadow: 0 16px 34px -18px rgba(8,145,178,1), 0 0 0 1px rgba(255,255,255,.16) inset; transform: translateX(12px); }
-    .mobile-link.active::before {
-      content: ""; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-      width: 6px; height: 6px; border-radius: 50%; background: #fff;
-      box-shadow: 0 0 0 4px rgba(255,255,255,.18);
-      animation: navPulse 1.6s ease-in-out infinite;
-    }
-    .mobile-link .icon { color: var(--slate-400); transition: all .26s ease; }
-    .mobile-link.active .icon, .mobile-link:hover .icon { color: #fff; transform: translateX(6px); }
+    .mobile-link:hover, .mobile-link.active { background: var(--cyan-50); color: var(--cyan-800); }
+    .mobile-link .icon { color: var(--slate-400); }
     .mobile-cta { margin-top: 8px; }
 
-    .section { padding: 88px 0; }
+    .section { padding: 84px 0; }
     .section-alt { background: var(--slate-50); border-top: 1px solid var(--slate-200); border-bottom: 1px solid var(--slate-200); }
-    .section-head { max-width: 760px; margin-bottom: 42px; }
+    .section-head { max-width: 720px; margin-bottom: 38px; }
     .section-head.center { margin-inline: auto; text-align: center; }
     .eyebrow {
-      display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px;
-      color: var(--cyan-700); font-size: 12.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px;
+      color: var(--cyan-700); font-size: 11.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
     }
-    .eyebrow::before { content: ""; width: 28px; height: 2px; border-radius: 2px; background: var(--cyan-600); }
-    .section-head.center .eyebrow { justify-content: center; }
-    .section-head.center .eyebrow::after { content: ""; width: 28px; height: 2px; border-radius: 2px; background: var(--cyan-600); }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; border-radius: 2px; background: var(--cyan-600); }
     .section-title {
-      margin-bottom: 14px; font-family: var(--font-display); font-size: clamp(2rem, 3.2vw, 2.75rem);
-      line-height: 1.12; letter-spacing: -.035em; font-weight: 800; color: var(--slate-900);
+      margin-bottom: 12px; font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.4rem);
+      line-height: 1.15; letter-spacing: -.035em; font-weight: 800; color: var(--slate-900);
     }
     .section-title .accent { color: var(--cyan-700); }
-    .section-desc { margin: 0; max-width: 700px; color: var(--slate-600); font-size: 16.5px; line-height: 1.75; }
+    .section-desc { margin: 0; max-width: 680px; color: var(--slate-600); font-size: 15.5px; line-height: 1.75; }
     .section-head.center .section-desc { margin-inline: auto; }
     .muted { color: var(--slate-500); }
     .reveal { opacity: 1; transform: none; }
-    .js .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+    .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s ease; }
     .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    .hero { padding: 72px 0 60px; background: linear-gradient(180deg, #fff 0%, var(--slate-50) 100%); border-bottom: 1px solid var(--slate-200); }
+    .hero-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 48px; align-items: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px; margin-bottom: 18px; padding: 6px 11px;
+      border: 1px solid var(--cyan-200); border-radius: 999px; background: var(--cyan-50);
+      color: var(--cyan-800); font-size: 11.5px; font-weight: 700;
+    }
+    .hero-title {
+      margin-bottom: 18px; font-family: var(--font-display); font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+      line-height: 1.08; letter-spacing: -.045em; font-weight: 800; color: var(--slate-900);
+    }
+    .hero-title .accent { color: var(--cyan-700); }
+    .hero-desc { max-width: 590px; margin-bottom: 26px; color: var(--slate-600); font-size: 16.5px; line-height: 1.8; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+    .hero-points { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 0; padding: 0; list-style: none; color: var(--slate-600); font-size: 12.5px; font-weight: 600; }
+    .hero-points li { display: inline-flex; align-items: center; gap: 6px; }
+    .hero-points .icon { color: var(--emerald-600); }
+    .quick-card {
+      padding: 26px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg);
+      background: #fff; box-shadow: var(--shadow-md);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .quick-card:hover { transform: translateY(-3px); border-color: var(--cyan-200); box-shadow: 0 18px 40px -24px rgba(15, 23, 42, .3); }
+    .quick-kicker { display: block; margin-bottom: 6px; color: var(--cyan-700); font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .quick-card h2 { margin-bottom: 7px; font-family: var(--font-display); font-size: 21px; line-height: 1.3; letter-spacing: -.02em; font-weight: 800; }
+    .quick-card p { margin-bottom: 16px; color: var(--slate-600); font-size: 13px; line-height: 1.65; }
+    .quick-links { display: grid; gap: 8px; margin-bottom: 16px; }
+    .quick-link {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border: 1px solid var(--slate-200); border-radius: 9px; background: var(--slate-50);
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .quick-link:hover { border-color: var(--cyan-200); background: #fff; transform: translateX(2px); }
+    .quick-link-icon { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 8px; background: var(--cyan-50); color: var(--cyan-700); }
+    .quick-link-text { display: block; min-width: 0; }
+    .quick-link-text span { display: block; color: var(--slate-500); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .quick-link-text strong { display: block; margin-top: 1px; color: var(--slate-800); font-size: 13px; font-weight: 700; }
+    .quick-status { display: flex; align-items: center; gap: 7px; color: var(--emerald-700); font-size: 11.5px; font-weight: 700; }
+
+    .fact-strip {
+      display: grid; grid-template-columns: repeat(3, 1fr); margin-top: -28px; position: relative; z-index: 2;
+      border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff;
+      box-shadow: 0 14px 34px -24px rgba(15, 23, 42, .25); overflow: hidden;
+    }
+    .fact { padding: 19px 24px; }
+    .fact + .fact { border-left: 1px solid var(--slate-200); }
+    .fact strong { display: block; font-family: var(--font-display); font-size: 18px; line-height: 1.25; letter-spacing: -.02em; color: var(--slate-900); }
+    .fact span { display: block; margin-top: 2px; color: var(--slate-500); font-size: 12px; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .about-copy p { color: var(--slate-600); font-size: 14.5px; line-height: 1.8; }
+    .about-copy p:last-child { margin-bottom: 0; }
+    .about-points { display: grid; gap: 10px; margin: 22px 0 0; padding: 0; list-style: none; }
+    .about-point { display: flex; gap: 10px; align-items: flex-start; color: var(--slate-600); font-size: 13px; line-height: 1.6; }
+    .about-point .icon { width: 16px; height: 16px; margin-top: 2px; color: var(--emerald-600); flex: 0 0 auto; }
+    .info-card { padding: 26px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+    .info-card h3 { margin-bottom: 4px; font-family: var(--font-display); font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+    .info-card > p { margin-bottom: 18px; color: var(--slate-500); font-size: 12.5px; }
+    .info-row { display: grid; grid-template-columns: 116px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--slate-100); font-size: 12.5px; line-height: 1.55; }
+    .info-row span { color: var(--slate-400); font-weight: 700; }
+    .info-row strong { color: var(--slate-700); font-weight: 600; }
+    .info-note { display: flex; gap: 8px; margin-top: 18px; padding: 12px 13px; border-radius: 9px; background: var(--cyan-50); color: var(--cyan-800); font-size: 12px; line-height: 1.55; font-weight: 500; }
+    .info-note .icon { color: var(--cyan-700); margin-top: 1px; }
+
+    .service-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .service-card {
+      padding: 24px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff;
+      box-shadow: var(--shadow-sm); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .service-card:hover { transform: translateY(-3px); border-color: var(--cyan-200); box-shadow: 0 16px 36px -22px rgba(15, 23, 42, .28); }
+    .service-icon { width: 44px; height: 44px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 10px; background: var(--cyan-50); color: var(--cyan-700); }
+    .service-icon .icon { width: 22px; height: 22px; }
+    .service-card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 17px; line-height: 1.35; letter-spacing: -.015em; font-weight: 800; }
+    .service-card p { margin: 0; color: var(--slate-600); font-size: 13px; line-height: 1.7; }
+
+    .report-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 30px; align-items: start; }
+    .report-aside { display: grid; gap: 14px; }
+    .help-card { padding: 22px; border: 1px solid var(--red-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+    .help-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; color: var(--red-700); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .help-card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 19px; letter-spacing: -.02em; font-weight: 800; }
+    .help-card > p { margin-bottom: 14px; color: var(--slate-600); font-size: 12.5px; line-height: 1.65; }
+    .help-links { display: grid; gap: 8px; }
+    .help-link { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border: 1px solid var(--slate-200); border-radius: 8px; background: var(--slate-50); color: var(--slate-700); font-size: 12.5px; font-weight: 700; transition: border-color .18s ease, background .18s ease; }
+    .help-link:hover { border-color: var(--red-200); background: var(--red-50); color: var(--red-700); }
+    .help-link .icon { color: var(--red-600); }
+    .checklist-card { padding: 20px 22px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; }
+    .checklist-card h3 { margin-bottom: 10px; font-family: var(--font-display); font-size: 14.5px; font-weight: 800; }
+    .checklist { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .checklist li { display: flex; gap: 8px; align-items: flex-start; color: var(--slate-600); font-size: 12px; line-height: 1.55; }
+    .checklist .icon { width: 14px; height: 14px; margin-top: 2px; color: var(--cyan-700); flex: 0 0 auto; }
+    .privacy-note { display: flex; gap: 8px; padding: 12px 13px; border-radius: 9px; background: var(--cyan-50); color: var(--cyan-800); font-size: 11.5px; line-height: 1.55; }
+    .privacy-note .icon { color: var(--cyan-700); margin-top: 1px; flex: 0 0 auto; }
+
+    .form-card { border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-md); overflow: hidden; }
+    .form-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 22px 24px 18px; border-bottom: 1px solid var(--slate-200); background: var(--slate-50); }
+    .form-kicker { display: block; margin-bottom: 4px; color: var(--cyan-700); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .form-head h3 { margin-bottom: 4px; font-family: var(--font-display); font-size: 21px; line-height: 1.25; letter-spacing: -.025em; font-weight: 800; }
+    .form-head p { margin: 0; color: var(--slate-500); font-size: 12px; line-height: 1.5; }
+    .secure-badge { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--emerald-200); border-radius: 6px; background: var(--emerald-50); color: var(--emerald-700); font-size: 9.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    .incident-form { padding: 22px 24px 24px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field-group { margin-bottom: 15px; }
+    .field-group label, .field-group legend { display: block; margin-bottom: 5px; color: var(--slate-800); font-size: 12.5px; line-height: 1.4; font-weight: 700; }
+    .req { color: var(--red-600); }
+    .field { display: block; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--slate-300); border-radius: 8px; background: #fff; color: var(--slate-900); font-size: 13.5px; line-height: 1.4; transition: border-color .18s ease, box-shadow .18s ease; }
+    .field::placeholder { color: var(--slate-400); opacity: 1; }
+    .field:hover { border-color: var(--slate-400); }
+    .field:focus { outline: none; border-color: var(--cyan-600); box-shadow: 0 0 0 3px rgba(8, 145, 178, .12); }
+    select.field { appearance: none; -webkit-appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    textarea.field { min-height: 116px; resize: vertical; }
+    .field-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; color: var(--slate-400); font-size: 10.5px; }
+    .counter { font-family: var(--font-mono); }
+    .field-error { display: none; margin-top: 4px; color: var(--red-700); font-size: 11px; line-height: 1.4; font-weight: 600; }
+    .field-group.invalid .field { border-color: var(--red-600); box-shadow: 0 0 0 3px rgba(220, 38, 38, .08); }
+    .field-group.invalid .field-error { display: block; }
+    .severity-group { margin: 0 0 15px; padding: 0; border: 0; }
+    .severity-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .sev-option { position: relative; display: block; cursor: pointer; }
+    .sev-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .sev-option span { display: block; padding: 8px 6px; border: 1px solid var(--slate-300); border-radius: 8px; background: #fff; text-align: center; transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+    .sev-option b { display: block; color: var(--slate-700); font-size: 11.5px; line-height: 1.3; }
+    .sev-option small { display: block; margin-top: 1px; color: var(--slate-400); font-size: 9px; line-height: 1.3; }
+    .sev-option:hover span { border-color: var(--slate-400); }
+    .sev-option input:checked + span { border-color: var(--cyan-600); background: var(--cyan-50); box-shadow: inset 0 0 0 1px var(--cyan-600); }
+    .sev-option[data-level="High"] input:checked + span { border-color: var(--amber-700); background: var(--amber-50); box-shadow: inset 0 0 0 1px var(--amber-700); }
+    .sev-option[data-level="Critical"] input:checked + span { border-color: var(--red-600); background: var(--red-50); box-shadow: inset 0 0 0 1px var(--red-600); }
+    .severity-group.invalid .field-error { display: block; }
+    .file-drop { display: flex; align-items: center; gap: 11px; padding: 13px; border: 1.5px dashed var(--slate-300); border-radius: 9px; background: var(--slate-50); cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+    .file-drop:hover { border-color: var(--cyan-600); background: var(--cyan-50); }
+    .file-drop-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 8px; background: #fff; color: var(--cyan-700); border: 1px solid var(--slate-200); }
+    .file-drop-copy { min-width: 0; }
+    .file-drop-copy strong { display: block; color: var(--slate-700); font-size: 12px; line-height: 1.4; }
+    .file-drop-copy span { display: block; margin-top: 2px; color: var(--slate-400); font-size: 10px; }
+    .file-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+    .consent-row { display: flex; gap: 9px; align-items: flex-start; margin: 4px 0 16px; }
+    .consent-row input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--cyan-700); flex: 0 0 auto; }
+    .consent-row label { color: var(--slate-600); font-size: 11.5px; line-height: 1.55; }
+    .consent-row .field-error { display: none; margin-top: 3px; }
+    .consent-row.invalid .field-error { display: block; }
+    .submit-btn { position: relative; }
+    .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, .35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    .submit-btn.loading .spinner { display: block; }
+    .submit-btn.loading .submit-arrow { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .form-footnote { margin: 10px 0 0; color: var(--slate-400); font-size: 10.5px; text-align: center; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-box { position: relative; flex: 1 1 280px; max-width: 380px; }
+    .search-box .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--slate-400); pointer-events: none; }
+    .search-box .field { padding-left: 38px; }
+    .filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filter-btn { padding: 7px 12px; border: 1px solid var(--slate-300); border-radius: 999px; background: #fff; color: var(--slate-600); font-size: 11.5px; font-weight: 700; transition: all .18s ease; }
+    .filter-btn:hover { border-color: var(--cyan-200); background: var(--cyan-50); color: var(--cyan-800); }
+    .filter-btn.active { border-color: var(--cyan-700); background: var(--cyan-700); color: #fff; }
+    .advisory-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--slate-500); font-size: 11.5px; }
+    .advisory-meta strong { color: var(--slate-700); }
+    .advisory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .advisory-card { display: flex; flex-direction: column; padding: 18px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .advisory-card:hover { transform: translateY(-3px); border-color: var(--cyan-200); box-shadow: 0 14px 32px -22px rgba(15, 23, 42, .3); }
+    .advisory-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .sev-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border: 1px solid transparent; border-radius: 5px; font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .sev-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .sev-critical { border-color: var(--red-200); background: var(--red-50); color: var(--red-700); }
+    .sev-high { border-color: var(--amber-200); background: var(--amber-50); color: var(--amber-700); }
+    .sev-medium { border-color: var(--cyan-200); background: var(--cyan-50); color: var(--cyan-700); }
+    .advisory-date { color: var(--slate-400); font-family: var(--font-mono); font-size: 9px; white-space: nowrap; padding-top: 2px; }
+    .advisory-id { margin-bottom: 6px; color: var(--slate-400); font-family: var(--font-mono); font-size: 9px; line-height: 1.4; }
+    .advisory-card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 14.5px; line-height: 1.4; letter-spacing: -.01em; font-weight: 800; }
+    .advisory-card p { margin-bottom: 13px; color: var(--slate-600); font-size: 11.5px; line-height: 1.65; }
+    .advisory-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 11px; border-top: 1px solid var(--slate-100); }
+    .advisory-cat { padding: 2px 6px; border-radius: 4px; background: var(--slate-100); color: var(--slate-500); font-size: 9px; font-weight: 700; white-space: nowrap; }
+    .advisory-link { display: inline-flex; align-items: center; gap: 3px; padding: 0; border: 0; background: transparent; color: var(--cyan-700); font-size: 10.5px; font-weight: 800; }
+    .advisory-link:hover { color: var(--cyan-800); }
+    .advisory-link .icon { width: 12px; height: 12px; transition: transform .18s ease; }
+    .advisory-link:hover .icon { transform: translateX(2px); }
+    .advisory-empty { display: none; padding: 48px 24px; border: 1.5px dashed var(--slate-300); border-radius: var(--radius-md); background: rgba(255, 255, 255, .65); text-align: center; }
+    .advisory-empty.show { display: block; }
+    .advisory-empty-icon { width: 48px; height: 48px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 12px; background: var(--slate-100); color: var(--slate-500); }
+    .advisory-empty h3 { margin-bottom: 4px; font-family: var(--font-display); font-size: 17px; font-weight: 800; }
+    .advisory-empty p { margin: 0; color: var(--slate-500); font-size: 12.5px; }
+
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .doc-card { border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); overflow: hidden; }
+    .doc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--slate-200); }
+    .doc-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .doc-icon { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; background: var(--cyan-50); color: var(--cyan-700); }
+    .doc-icon.green { background: var(--emerald-50); color: var(--emerald-700); }
+    .doc-title-wrap h3 { margin: 0 0 1px; font-family: var(--font-display); font-size: 15.5px; font-weight: 800; }
+    .doc-title-wrap p { margin: 0; color: var(--slate-500); font-size: 10.5px; }
+    .doc-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 1px solid var(--emerald-200); border-radius: 5px; background: var(--emerald-50); color: var(--emerald-700); font-size: 8.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    .doc-body { padding: 18px 20px 20px; }
+    .rfc-list { margin: 0 0 16px; padding: 0; list-style: none; }
+    .rfc-row { display: grid; grid-template-columns: 106px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--slate-100); font-size: 12px; }
+    .rfc-row:first-child { border-top: 1px solid var(--slate-100); }
+    .rfc-row dt { color: var(--slate-400); font-weight: 700; }
+    .rfc-row dd { margin: 0; color: var(--slate-700); }
+    .doc-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .fingerprint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 11px; padding: 9px 10px; border: 1px solid var(--slate-200); border-radius: 8px; background: var(--slate-50); }
+    .fingerprint .icon { width: 14px; height: 14px; color: var(--cyan-700); flex: 0 0 auto; margin-top: 2px; }
+    .fingerprint span { display: block; color: var(--slate-400); font-size: 8.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .fingerprint code { display: block; margin-top: 1px; color: var(--slate-700); font-family: var(--font-mono); font-size: 9.5px; line-height: 1.5; word-break: break-word; }
+    .pgp-key-box { max-height: 190px; overflow: auto; margin-bottom: 11px; padding: 12px; border: 1px solid var(--slate-200); border-radius: 8px; background: var(--slate-50); }
+    .pgp-key { margin: 0; color: var(--slate-600); font-family: var(--font-mono); font-size: 9px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+    .pgp-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .tooltip-wrap { position: relative; display: inline-flex; }
+    .copy-tooltip { position: absolute; right: 0; bottom: calc(100% + 7px); z-index: 5; padding: 5px 8px; border-radius: 5px; background: var(--slate-900); color: #fff; font-size: 10px; font-weight: 600; white-space: nowrap; opacity: 0; transform: translateY(3px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+    .copy-tooltip::after { content: ""; position: absolute; top: 100%; right: 14px; border: 4px solid transparent; border-top-color: var(--slate-900); }
+    .tooltip-wrap.show .copy-tooltip { opacity: 1; transform: translateY(0); }
+    .pgp-note { display: flex; gap: 6px; align-items: flex-start; margin: 11px 0 0; color: var(--slate-500); font-size: 10px; line-height: 1.5; }
+    .pgp-note .icon { width: 12px; height: 12px; flex: 0 0 auto; margin-top: 1px; color: var(--emerald-600); }
+
+    .office-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+    .office-card { padding: 20px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); transition: transform .2s ease, border-color .2s ease; }
+    .office-card:hover { transform: translateY(-2px); border-color: var(--cyan-200); }
+    .office-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+    .office-city { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 15px; font-weight: 800; }
+    .office-city .icon { color: var(--cyan-700); }
+    .office-hq { padding: 2px 6px; border-radius: 4px; background: var(--cyan-50); color: var(--cyan-800); font-size: 8px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .office-card p { margin: 0; color: var(--slate-600); font-size: 12px; line-height: 1.65; }
+    .office-card p + p { margin-top: 6px; }
+    .office-card a { color: var(--cyan-700); font-weight: 600; }
+    .office-card a:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .contact-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: var(--slate-200); overflow: hidden; }
+    .contact-item { display: flex; align-items: flex-start; gap: 9px; padding: 16px 17px; background: #fff; }
+    .contact-item .icon { color: var(--cyan-700); margin-top: 2px; }
+    .contact-item span { display: block; color: var(--slate-400); font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .contact-item strong { display: block; margin-top: 2px; color: var(--slate-800); font-size: 12px; line-height: 1.45; }
+    .contact-item a { color: var(--slate-800); font-weight: 700; }
+    .contact-item a:hover { color: var(--cyan-700); }
+
+    .site-footer { background: var(--slate-50); border-top: 1px solid var(--slate-200); }
+    .footer-main { padding: 48px 0 34px; }
+    .footer-inner { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr; gap: 36px; }
+    .footer-brand .brand { margin-bottom: 11px; }
+    .footer-brand p { max-width: 340px; margin-bottom: 12px; color: var(--slate-500); font-size: 12px; line-height: 1.7; }
+    .footer-social { display: flex; flex-wrap: wrap; gap: 7px; }
+    .footer-social a { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border: 1px solid var(--slate-200); border-radius: 5px; background: #fff; color: var(--slate-500); font-size: 10px; font-weight: 600; transition: color .18s ease, border-color .18s ease; }
+    .footer-social a:hover { border-color: var(--cyan-200); color: var(--cyan-700); }
+    .footer-social .icon { width: 11px; height: 11px; }
+    .footer-col h3 { margin: 2px 0 11px; color: var(--slate-400); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .footer-links { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .footer-links a { display: inline-flex; align-items: center; gap: 5px; color: var(--slate-600); font-size: 12px; transition: color .16s ease; }
+    .footer-links a:hover { color: var(--cyan-700); }
+    .footer-links .icon { width: 11px; height: 11px; color: var(--slate-300); }
+    .footer-contact-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .footer-contact-list li { display: flex; gap: 6px; align-items: flex-start; color: var(--slate-600); font-size: 11.5px; line-height: 1.5; }
+    .footer-contact-list .icon { width: 12px; height: 12px; margin-top: 2px; color: var(--cyan-700); flex: 0 0 auto; }
+    .footer-contact-list a:hover { color: var(--cyan-700); text-decoration: underline; text-underline-offset: 2px; }
+    .footer-bottom { border-top: 1px solid var(--slate-200); background: #fff; }
+    .footer-bottom-inner { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 0; color: var(--slate-500); font-size: 10.5px; }
+    .footer-bottom-inner p { margin: 0; }
+    .footer-bottom-links { display: flex; flex-wrap: wrap; gap: 13px; }
+    .footer-bottom-links a { color: var(--slate-500); font-weight: 600; }
+    .footer-bottom-links a:hover { color: var(--cyan-700); }
+
+    .back-to-top { position: fixed; right: 18px; bottom: 18px; z-index: 50; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--slate-300); border-radius: 9px; background: rgba(255, 255, 255, .97); color: var(--slate-600); box-shadow: var(--shadow-md); opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s ease, transform .2s ease, color .2s ease, border-color .2s ease; }
+    .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .back-to-top:hover { color: var(--cyan-700); border-color: var(--cyan-200); }
+
+    .toast { position: fixed; left: 50%; bottom: 24px; z-index: 160; display: flex; align-items: center; gap: 7px; max-width: calc(100% - 32px); padding: 10px 14px; border: 1px solid var(--slate-700); border-radius: 8px; background: var(--slate-900); color: #fff; box-shadow: 0 12px 30px rgba(15, 23, 42, .24); font-size: 11.5px; font-weight: 600; opacity: 0; transform: translate(-50%, 10px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast .icon { color: #34d399; }
+
+    .modal { position: fixed; inset: 0; z-index: 120; display: none; align-items: center; justify-content: center; padding: 18px; }
+    .modal.open { display: flex; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .56); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .modal-card { position: relative; z-index: 1; width: min(600px, 100%); max-height: min(90vh, 800px); overflow: auto; padding: 28px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: 0 30px 80px rgba(15, 23, 42, .28); animation: modalIn .22s ease-out both; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-close { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--slate-200); border-radius: 8px; background: #fff; color: var(--slate-500); transition: background .16s ease, color .16s ease; }
+    .modal-close:hover { background: var(--slate-50); color: var(--slate-900); }
+    .modal-success-icon { width: 60px; height: 60px; margin: 2px auto 15px; display: grid; place-items: center; border: 1px solid var(--emerald-200); border-radius: 50%; background: var(--emerald-50); color: var(--emerald-700); }
+    .modal-success-icon .icon { width: 30px; height: 30px; stroke-width: 2.2; }
+    .modal-title { margin-bottom: 6px; text-align: center; font-family: var(--font-display); font-size: 23px; line-height: 1.2; letter-spacing: -.03em; font-weight: 800; }
+    .modal-subtitle { max-width: 440px; margin: 0 auto 18px; text-align: center; color: var(--slate-600); font-size: 12.5px; line-height: 1.65; }
+    .ticket-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding: 13px 14px; border: 1px solid var(--cyan-200); border-radius: 9px; background: var(--cyan-50); }
+    .ticket-left span { display: block; color: var(--cyan-700); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .ticket-left strong { display: block; margin-top: 1px; color: var(--cyan-800); font-family: var(--font-mono); font-size: 17px; line-height: 1.3; }
+    .ticket-copy { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 5px 9px; border: 1px solid var(--cyan-200); border-radius: 6px; background: #fff; color: var(--cyan-700); font-size: 10px; font-weight: 700; }
+    .ticket-copy:hover { border-color: var(--cyan-600); background: var(--cyan-50); }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 0 0 14px; padding: 12px; border: 1px solid var(--slate-200); border-radius: 9px; background: var(--slate-50); }
+    .summary-grid div { min-width: 0; }
+    .summary-grid dt { margin-bottom: 1px; color: var(--slate-400); font-size: 8.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .summary-grid dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--slate-800); font-size: 11px; font-weight: 600; }
+    .summary-grid dd.mono { font-family: var(--font-mono); font-size: 10px; }
+    .modal-note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--slate-200); border-radius: 8px; color: var(--slate-600); font-size: 11px; line-height: 1.55; }
+    .modal-note .icon { color: var(--cyan-700); flex: 0 0 auto; margin-top: 1px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .modal-actions .btn { flex: 1; }
+    .advisory-modal-card { width: min(680px, 100%); }
+    .advisory-modal-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 11px; padding-right: 32px; }
+    .advisory-modal-id { color: var(--slate-400); font-family: var(--font-mono); font-size: 9px; }
+    .advisory-modal-title { margin-bottom: 8px; font-family: var(--font-display); font-size: clamp(1.35rem, 2.8vw, 1.7rem); line-height: 1.25; letter-spacing: -.03em; font-weight: 800; }
+    .advisory-modal-info { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-bottom: 16px; color: var(--slate-500); font-size: 10.5px; font-weight: 600; }
+    .advisory-modal-info span { display: inline-flex; align-items: center; gap: 4px; }
+    .advisory-modal-info .icon { width: 12px; height: 12px; color: var(--cyan-700); }
+    .advisory-detail { margin-bottom: 14px; padding: 13px 14px; border: 1px solid var(--slate-200); border-radius: 9px; background: var(--slate-50); }
+    .advisory-detail h4 { margin: 0 0 4px; color: var(--cyan-700); font-size: 9px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .advisory-detail p { margin: 0; color: var(--slate-700); font-size: 11.5px; line-height: 1.7; }
+    .advisory-detail.recommendation { border-color: var(--emerald-200); background: var(--emerald-50); }
+    .advisory-detail.recommendation h4 { color: var(--emerald-700); }
+
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -341,579 +540,81 @@
       .ticker-track.is-animated { animation: none; }
       .ticker-viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
     }
-
-    .hero { position: relative; overflow: hidden; background: #fff; border-bottom: 1px solid var(--slate-200); }
-    .hero::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 45% 48% at 2% 0%, rgba(6, 182, 212, .10), transparent 68%),
-        radial-gradient(ellipse 36% 36% at 100% 18%, rgba(16, 185, 129, .07), transparent 72%),
-        radial-gradient(ellipse 50% 42% at 50% 112%, rgba(8, 145, 178, .045), transparent 72%);
-    }
-    .hero::after {
-      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .65;
-      background-image:
-        linear-gradient(rgba(148, 163, 184, .10) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, .10) 1px, transparent 1px);
-      background-size: 54px 54px;
-      mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, .55) 55%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, .55) 55%, transparent 100%);
-    }
-    .hero-inner {
-      position: relative; z-index: 1; display: grid; grid-template-columns: 1.06fr .94fr;
-      align-items: center; gap: 54px; padding: 68px 0 102px;
-    }
-    .hero-pill {
-      display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; margin-bottom: 20px;
-      border: 1px solid var(--cyan-200); border-radius: 999px; background: rgba(236, 254, 255, .82);
-      color: var(--cyan-800); font-size: 12.5px; font-weight: 750; letter-spacing: .02em;
-    }
-    .hero-pill .icon { color: var(--cyan-700); }
-    .hero-title {
-      margin-bottom: 20px; font-family: var(--font-display); font-size: clamp(2.5rem, 4.6vw, 4.05rem);
-      line-height: 1.055; letter-spacing: -.045em; font-weight: 800; color: var(--slate-900);
-    }
-    .hero-title .title-accent {
-      color: var(--cyan-700); position: relative; display: inline;
-      background-image: linear-gradient(transparent 77%, rgba(6, 182, 212, .22) 77%, rgba(6, 182, 212, .22) 94%, transparent 94%);
-      -webkit-box-decoration-break: clone; box-decoration-break: clone;
-    }
-    .hero-desc { max-width: 620px; margin-bottom: 28px; color: var(--slate-600); font-size: 17.5px; line-height: 1.8; }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
-    .hero-actions .btn { min-height: 51px; padding-inline: 21px; }
-    .hero-points { display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 0; padding: 0; list-style: none; color: var(--slate-600); font-size: 13px; font-weight: 650; }
-    .hero-points li { display: inline-flex; align-items: center; gap: 7px; }
-    .hero-points .icon { color: var(--emerald-600); }
-
-    .hero-visual { position: relative; padding: 10px 0; }
-    .visual-stage {
-      position: relative; z-index: 1; border: 1px solid var(--slate-200); border-radius: var(--radius-xl);
-      background: #fff; box-shadow: var(--shadow-lg), 0 4px 12px rgba(15, 23, 42, .04); overflow: hidden;
-    }
-    .soc-head {
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      padding: 16px 18px; border-bottom: 1px solid var(--slate-200); background: #fff;
-    }
-    .soc-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .soc-brand-mark {
-      width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
-      background: var(--cyan-50); border: 1px solid var(--cyan-100); color: var(--cyan-700);
-    }
-    .soc-brand-title { display: block; font-family: var(--font-display); font-size: 13.5px; font-weight: 800; line-height: 1.2; color: var(--slate-900); letter-spacing: -.01em; }
-    .soc-brand-sub { display: block; margin-top: 2px; font-size: 11px; line-height: 1.3; color: var(--slate-500); font-weight: 600; }
-    .live-pill {
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--emerald-200);
-      border-radius: 999px; background: var(--emerald-50); color: var(--emerald-700);
-      font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
-    }
-    .soc-body { padding: 16px; background: var(--slate-50); }
-    .health-banner {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;
-      padding: 10px 12px; border: 1px solid var(--emerald-200); border-radius: 12px; background: #fff;
-    }
-    .health-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
-    .health-icon { width: 30px; height: 30px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; background: var(--emerald-50); color: var(--emerald-700); }
-    .health-title { display: block; font-size: 12px; line-height: 1.25; font-weight: 750; color: var(--slate-800); }
-    .health-sub { display: block; margin-top: 1px; font-size: 10.5px; line-height: 1.25; color: var(--slate-500); }
-    .health-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: var(--emerald-50); color: var(--emerald-700); font-size: 10px; font-weight: 800; letter-spacing: .06em; white-space: nowrap; }
-    .chart-card { padding: 13px 13px 10px; border: 1px solid var(--slate-200); border-radius: 14px; background: #fff; box-shadow: var(--shadow-xs); }
-    .chart-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
-    .chart-label { font-size: 10.5px; font-weight: 750; color: var(--slate-500); letter-spacing: .02em; }
-    .chart-value { font-family: var(--font-mono); font-size: 10px; color: var(--slate-400); }
-    .chart-svg { width: 100%; height: 124px; overflow: visible; }
-    .chart-caption { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 2px; font-size: 9.5px; font-weight: 600; color: var(--slate-400); font-family: var(--font-mono); }
-    .feed-list { display: grid; gap: 7px; margin-top: 11px; }
-    .feed-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--slate-200); border-radius: 10px; background: #fff; font-size: 11px; line-height: 1.35; }
-    .feed-icon { width: 25px; height: 25px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; }
-    .feed-icon.cyan { background: var(--cyan-50); color: var(--cyan-700); }
-    .feed-icon.green { background: var(--emerald-50); color: var(--emerald-700); }
-    .feed-icon.amber { background: var(--amber-50); color: var(--amber-700); }
-    .feed-text { min-width: 0; flex: 1; color: var(--slate-700); font-weight: 600; }
-    .feed-text b { color: var(--slate-900); font-weight: 750; }
-    .feed-meta { display: block; margin-top: 1px; font-size: 9.5px; color: var(--slate-400); font-weight: 500; }
-    .feed-status { flex: 0 0 auto; padding: 2px 6px; border-radius: 5px; font-size: 8.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: var(--slate-100); color: var(--slate-600); }
-    .feed-status.green { background: var(--emerald-50); color: var(--emerald-700); }
-    .feed-status.cyan { background: var(--cyan-50); color: var(--cyan-700); }
-    .feed-status.amber { background: var(--amber-50); color: var(--amber-700); }
-    .soc-foot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 11px; }
-    .soc-metric { padding: 8px 9px; border: 1px solid var(--slate-200); border-radius: 10px; background: #fff; }
-    .soc-metric strong { display: block; font-family: var(--font-display); font-size: 13.5px; line-height: 1.2; color: var(--slate-900); }
-    .soc-metric span { display: block; margin-top: 2px; font-size: 9.5px; color: var(--slate-500); font-weight: 600; }
-    .float-card {
-      position: absolute; z-index: 3; display: flex; align-items: center; gap: 9px; padding: 10px 12px;
-      border: 1px solid var(--slate-200); border-radius: 13px; background: #fff; box-shadow: 0 18px 44px rgba(15, 23, 42, .13);
-    }
-    .float-card .fc-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--cyan-50); color: var(--cyan-700); flex: 0 0 auto; }
-    .float-card .fc-title { display: block; font-size: 10.5px; font-weight: 800; color: var(--slate-900); line-height: 1.2; white-space: nowrap; }
-    .float-card .fc-sub { display: block; margin-top: 1px; font-size: 9px; color: var(--slate-500); font-weight: 600; white-space: nowrap; }
-    .float-card.top-right { top: 80px; right: -20px; }
-    .float-card.bottom-left { bottom: 84px; left: -24px; }
-    .float-card.bottom-left .fc-icon { background: var(--emerald-50); color: var(--emerald-700); }
-
-    .stats-wrap { position: relative; z-index: 2; margin-top: -54px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .stat-card {
-      padding: 22px 20px; border: 1px solid var(--slate-200); border-radius: var(--radius-md);
-      background: #fff; box-shadow: 0 14px 34px rgba(15, 23, 42, .065);
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    }
-    .stat-card:hover { transform: translateY(-3px); border-color: var(--cyan-200); box-shadow: 0 20px 44px rgba(15, 23, 42, .09); }
-    .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; margin-bottom: 15px; border-radius: 12px; background: var(--cyan-50); color: var(--cyan-700); }
-    .stat-icon.green { background: var(--emerald-50); color: var(--emerald-700); }
-    .stat-icon.amber { background: var(--amber-50); color: var(--amber-700); }
-    .stat-icon.red { background: var(--red-50); color: var(--red-700); }
-    .stat-label { display: block; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--slate-500); }
-    .stat-value { display: block; margin: 4px 0 3px; font-family: var(--font-display); font-size: 26px; line-height: 1.16; letter-spacing: -.03em; font-weight: 800; color: var(--slate-900); }
-    .stat-value.green { color: var(--emerald-700); }
-    .stat-copy { margin: 0; font-size: 12px; line-height: 1.5; color: var(--slate-500); }
-
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-    .about-copy .section-title { margin-top: 0; }
-    .about-lead { font-size: 17px; line-height: 1.75; color: var(--slate-700); font-weight: 550; }
-    .about-copy p { color: var(--slate-600); font-size: 15px; line-height: 1.8; }
-    .about-points { display: grid; gap: 13px; margin: 26px 0 24px; }
-    .about-point { display: flex; gap: 12px; align-items: flex-start; padding: 13px 14px; border: 1px solid var(--slate-200); border-radius: 12px; background: #fff; }
-    .about-point-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; background: var(--cyan-50); color: var(--cyan-700); }
-    .about-point strong { display: block; font-size: 13.5px; line-height: 1.35; color: var(--slate-900); }
-    .about-point span { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.55; color: var(--slate-500); }
-    .about-note { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; border-left: 3px solid var(--cyan-600); border-radius: 0 10px 10px 0; background: var(--cyan-50); color: #164e63; font-size: 13px; line-height: 1.6; font-weight: 600; }
-    .about-note .icon { color: var(--cyan-700); margin-top: 1px; }
-    .company-panel { border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-md); overflow: hidden; }
-    .company-banner { position: relative; padding: 28px 28px 50px; border-bottom: 1px solid var(--slate-200); background: radial-gradient(ellipse 60% 110% at 100% 0%, rgba(6, 182, 212, .15), transparent 65%), linear-gradient(135deg, #f0fdff 0%, #f8fafc 100%); }
-    .company-label { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--cyan-700); }
-    .company-banner h3 { margin: 7px 0 4px; font-family: var(--font-display); font-size: 25px; line-height: 1.2; letter-spacing: -.035em; font-weight: 800; color: var(--slate-900); }
-    .company-banner p { margin: 0; color: var(--slate-600); font-size: 14px; font-weight: 600; }
-    .company-badge { position: absolute; right: 24px; bottom: -19px; display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 8px 12px; border: 1px solid var(--cyan-200); border-radius: 10px; background: #fff; box-shadow: 0 8px 22px rgba(15, 23, 42, .08); color: var(--cyan-800); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-    .company-body { padding: 29px 28px 28px; }
-    .company-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; padding-bottom: 22px; border-bottom: 1px solid var(--slate-200); }
-    .company-fact span { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--slate-400); }
-    .company-fact strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.45; color: var(--slate-800); }
-    .product-title { margin: 20px 0 10px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--slate-400); }
-    .product-tags { display: flex; flex-wrap: wrap; gap: 7px; }
-    .product-tag { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid var(--slate-200); border-radius: 7px; background: var(--slate-50); color: var(--slate-700); font-size: 11.5px; font-weight: 650; }
-    .product-tag .icon { width: 12px; height: 12px; color: var(--cyan-700); }
-    .company-address { display: flex; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--slate-200); color: var(--slate-600); font-size: 12.5px; line-height: 1.6; }
-    .company-address .icon { color: var(--cyan-700); flex: 0 0 auto; margin-top: 2px; }
-    .company-address strong { color: var(--slate-800); }
-
-    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .service-card { position: relative; display: flex; flex-direction: column; min-height: 290px; padding: 26px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-xs); overflow: hidden; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-    .service-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: var(--cyan-600); opacity: .9; }
-    .service-card:hover { transform: translateY(-4px); border-color: var(--cyan-200); box-shadow: var(--shadow-md); }
-    .service-card.blue::before { background: #0284c7; }
-    .service-card.emerald::before { background: var(--emerald-600); }
-    .service-card.amber::before { background: var(--amber-600); }
-    .service-card.red::before { background: var(--red-600); }
-    .service-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-    .service-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 15px; background: var(--cyan-50); color: var(--cyan-700); }
-    .service-card.blue .service-icon { background: #eff6ff; color: #0369a1; }
-    .service-card.emerald .service-icon { background: var(--emerald-50); color: var(--emerald-700); }
-    .service-card.amber .service-icon { background: var(--amber-50); color: var(--amber-700); }
-    .service-card.red .service-icon { background: var(--red-50); color: var(--red-700); }
-    .service-icon .icon { width: 27px; height: 27px; }
-    .service-num { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--slate-300); letter-spacing: .05em; }
-    .service-card h3 { margin-bottom: 9px; font-family: var(--font-display); font-size: 19px; line-height: 1.28; letter-spacing: -.02em; font-weight: 800; color: var(--slate-900); }
-    .service-card p { margin-bottom: 17px; font-size: 13.5px; line-height: 1.7; color: var(--slate-600); }
-    .service-list { margin: auto 0 0; padding: 15px 0 0; border-top: 1px solid var(--slate-200); list-style: none; display: grid; gap: 7px; }
-    .service-list li { display: flex; gap: 7px; align-items: flex-start; font-size: 12px; line-height: 1.45; color: var(--slate-600); font-weight: 600; }
-    .service-list .icon { width: 14px; height: 14px; margin-top: 2px; color: var(--emerald-600); }
-    .service-card.service-cta { justify-content: center; border-color: var(--cyan-200); background: radial-gradient(ellipse 80% 100% at 100% 0%, rgba(6, 182, 212, .12), transparent 65%), linear-gradient(135deg, #ecfeff, #f8fafc); }
-    .service-card.service-cta::before { background: var(--cyan-700); }
-    .service-card.service-cta .service-icon { background: #fff; }
-    .service-card.service-cta p { margin-bottom: 20px; }
-    .service-cta-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-    .service-cta-actions .btn { min-height: 42px; padding: 9px 14px; font-size: 12.5px; }
-    .process-strip { margin-top: 24px; padding: 22px 24px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-xs); }
-    .process-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-    .process-head h3 { margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 800; letter-spacing: -.02em; color: var(--slate-900); }
-    .process-head span { font-size: 12px; font-weight: 650; color: var(--slate-500); }
-    .process-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-    .process-step { position: relative; display: flex; gap: 9px; align-items: flex-start; }
-    .process-step:not(:last-child)::after { content: ""; position: absolute; top: 15px; left: 31px; right: -10px; height: 1px; background: var(--slate-200); }
-    .process-num { position: relative; z-index: 1; width: 31px; height: 31px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--cyan-200); border-radius: 50%; background: var(--cyan-50); color: var(--cyan-800); font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; }
-    .process-step:last-child .process-num { border-color: var(--emerald-200); background: var(--emerald-50); color: var(--emerald-700); }
-    .process-step strong { display: block; margin-top: 3px; font-size: 12px; line-height: 1.3; color: var(--slate-800); }
-    .process-step span { display: block; margin-top: 1px; font-size: 10.5px; line-height: 1.35; color: var(--slate-500); }
-
-    .report-section { background: linear-gradient(180deg, var(--slate-50) 0%, #fff 72%); }
-    .report-layout { display: grid; grid-template-columns: .78fr 1.22fr; gap: 30px; align-items: start; }
-    .report-aside { display: grid; gap: 16px; }
-    .urgent-card { position: relative; padding: 25px; border: 1px solid var(--red-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); overflow: hidden; }
-    .urgent-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: var(--red-600); }
-    .urgent-badge { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 12px; padding: 4px 9px; border-radius: 999px; background: var(--red-50); color: var(--red-700); font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-    .urgent-card h3 { margin-bottom: 7px; font-family: var(--font-display); font-size: 21px; line-height: 1.25; letter-spacing: -.025em; font-weight: 800; color: var(--slate-900); }
-    .urgent-card p { margin-bottom: 17px; color: var(--slate-600); font-size: 13px; line-height: 1.65; }
-    .urgent-links { display: grid; gap: 8px; }
-    .urgent-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--slate-200); border-radius: 10px; background: var(--slate-50); color: var(--slate-800); font-size: 13px; font-weight: 700; transition: border-color .18s ease, background .18s ease; }
-    .urgent-link:hover { border-color: var(--red-200); background: var(--red-50); color: var(--red-700); }
-    .urgent-link .icon { color: var(--red-600); }
-    .urgent-link small { display: block; font-size: 10.5px; font-weight: 500; color: var(--slate-500); }
-    .checklist-card { padding: 23px 24px; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-xs); }
-    .checklist-card h3 { margin-bottom: 13px; font-family: var(--font-display); font-size: 16.5px; font-weight: 800; letter-spacing: -.02em; color: var(--slate-900); }
-    .checklist { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
-    .checklist li { display: flex; gap: 9px; align-items: flex-start; color: var(--slate-600); font-size: 12.5px; line-height: 1.55; }
-    .checklist .icon { width: 15px; height: 15px; margin-top: 2px; color: var(--cyan-700); flex: 0 0 auto; }
-    .privacy-note { display: flex; gap: 10px; padding: 14px 16px; border: 1px solid var(--cyan-200); border-radius: 12px; background: var(--cyan-50); color: #164e63; font-size: 12px; line-height: 1.6; font-weight: 550; }
-    .privacy-note .icon { color: var(--cyan-700); margin-top: 1px; flex: 0 0 auto; }
-
-    .form-card { border: 1px solid var(--slate-300); border-radius: var(--radius-xl); background: #fff; box-shadow: var(--shadow-md); overflow: hidden; }
-    .form-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 25px 28px 21px; border-bottom: 1px solid var(--slate-200); background: linear-gradient(135deg, #f0fdff 0%, #fff 72%); }
-    .form-kicker { display: block; margin-bottom: 5px; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan-700); }
-    .form-head h3 { margin-bottom: 5px; font-family: var(--font-display); font-size: 24px; line-height: 1.2; letter-spacing: -.03em; font-weight: 800; color: var(--slate-900); }
-    .form-head p { margin: 0; color: var(--slate-500); font-size: 12.5px; line-height: 1.5; }
-    .secure-badge { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; padding: 5px 9px; border: 1px solid var(--emerald-200); border-radius: 7px; background: var(--emerald-50); color: var(--emerald-700); font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
-    .incident-form { padding: 25px 28px 28px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .field-group { margin-bottom: 17px; }
-    .field-group label, .field-group legend { display: block; margin-bottom: 6px; color: var(--slate-800); font-size: 13px; line-height: 1.4; font-weight: 750; }
-    .req { color: var(--red-600); }
-    .field { display: block; width: 100%; min-height: 48px; padding: 11px 13px; border: 1px solid var(--slate-300); border-radius: 10px; background: #fff; color: var(--slate-900); font-size: 14.5px; line-height: 1.4; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
-    .field::placeholder { color: var(--slate-400); opacity: 1; }
-    .field:hover { border-color: var(--slate-400); }
-    .field:focus { outline: none; border-color: var(--cyan-600); box-shadow: 0 0 0 3px rgba(8, 145, 178, .13); }
-    select.field { appearance: none; -webkit-appearance: none; padding-right: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; }
-    textarea.field { min-height: 132px; resize: vertical; }
-    .field-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 5px; font-size: 11px; color: var(--slate-400); }
-    .field-meta .counter { font-family: var(--font-mono); font-size: 10.5px; white-space: nowrap; }
-    .field-error { display: none; margin-top: 5px; color: var(--red-700); font-size: 11.5px; line-height: 1.4; font-weight: 650; }
-    .field-group.invalid .field { border-color: var(--red-600); background: #fffafa; }
-    .field-group.invalid .field:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .12); }
-    .field-group.invalid .field-error { display: block; }
-    .severity-group { margin: 0 0 17px; padding: 0; border: 0; }
-    .severity-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .sev-option { position: relative; display: block; cursor: pointer; }
-    .sev-option input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-    .sev-option span { display: flex; flex-direction: column; justify-content: center; min-height: 54px; padding: 8px 10px; border: 1.5px solid var(--slate-300); border-radius: 9px; background: #fff; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
-    .sev-option b { display: block; font-size: 12.5px; line-height: 1.2; color: var(--slate-800); }
-    .sev-option small { display: block; margin-top: 2px; font-size: 9.5px; line-height: 1.2; color: var(--slate-500); font-weight: 500; }
-    .sev-option:hover span { border-color: var(--slate-400); }
-    .sev-option input:focus-visible + span { outline: 3px solid var(--cyan-500); outline-offset: 2px; }
-    .sev-option[data-level="Low"] input:checked + span { border-color: var(--emerald-600); background: var(--emerald-50); box-shadow: inset 0 0 0 1px var(--emerald-600); }
-    .sev-option[data-level="Low"] input:checked + span b { color: var(--emerald-700); }
-    .sev-option[data-level="Medium"] input:checked + span { border-color: var(--amber-600); background: var(--amber-50); box-shadow: inset 0 0 0 1px var(--amber-600); }
-    .sev-option[data-level="Medium"] input:checked + span b { color: var(--amber-700); }
-    .sev-option[data-level="High"] input:checked + span { border-color: var(--orange-700); background: var(--orange-50); box-shadow: inset 0 0 0 1px var(--orange-700); }
-    .sev-option[data-level="High"] input:checked + span b { color: var(--orange-700); }
-    .sev-option[data-level="Critical"] input:checked + span { border-color: var(--red-600); background: var(--red-50); box-shadow: inset 0 0 0 1px var(--red-600); }
-    .sev-option[data-level="Critical"] input:checked + span b { color: var(--red-700); }
-    .severity-group.invalid .sev-option span { border-color: #fca5a5; }
-    .severity-group.invalid .field-error { display: block; }
-    .file-drop { display: flex; align-items: center; gap: 13px; padding: 14px; border: 1.5px dashed var(--slate-300); border-radius: 11px; background: var(--slate-50); cursor: pointer; transition: border-color .18s ease, background .18s ease; }
-    .file-drop:hover, .file-drop:focus-within { border-color: var(--cyan-600); background: var(--cyan-50); }
-    .file-drop-icon { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; background: #fff; border: 1px solid var(--slate-200); color: var(--cyan-700); }
-    .file-drop-copy { min-width: 0; }
-    .file-drop-copy strong { display: block; font-size: 12.5px; line-height: 1.4; color: var(--slate-800); }
-    .file-drop-copy span { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.4; color: var(--slate-500); }
-    .file-drop input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
-    .consent-row { display: flex; gap: 10px; align-items: flex-start; margin: 18px 0 20px; }
-    .consent-row input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 2px; accent-color: var(--cyan-700); }
-    .consent-row label { margin: 0; color: var(--slate-600); font-size: 12px; line-height: 1.55; font-weight: 500; }
-    .consent-row a { color: var(--cyan-700); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-    .consent-row.invalid label { color: var(--red-700); }
-    .consent-row .field-error { display: none; margin: 0; }
-    .consent-row.invalid .field-error { display: block; }
-    .submit-btn { min-height: 51px; font-size: 15px; }
-    .submit-btn[disabled] { cursor: wait; opacity: .78; transform: none; }
-    .spinner { width: 17px; height: 17px; border: 2px solid rgba(255, 255, 255, .35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
-    .submit-btn.loading .spinner { display: block; }
-    .submit-btn.loading .submit-arrow { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .form-footnote { margin: 11px 0 0; text-align: center; font-size: 10.5px; line-height: 1.5; color: var(--slate-500); }
-
-    .advisory-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-    .search-box { position: relative; width: min(380px, 100%); }
-    .search-box .icon { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: var(--slate-400); pointer-events: none; }
-    .search-box .field { padding-left: 41px; min-height: 45px; font-size: 13.5px; }
-    .filter-group { display: flex; flex-wrap: wrap; gap: 7px; }
-    .filter-btn { min-height: 37px; padding: 7px 12px; border: 1px solid var(--slate-300); border-radius: 8px; background: #fff; color: var(--slate-600); font-size: 12px; font-weight: 700; transition: all .16s ease; }
-    .filter-btn:hover { border-color: #67e8f9; background: var(--cyan-50); color: var(--cyan-700); }
-    .filter-btn.active { border-color: var(--cyan-700); background: var(--cyan-700); color: #fff; box-shadow: 0 5px 14px rgba(14, 116, 144, .18); }
-    .advisory-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: var(--slate-500); font-size: 12px; }
-    .advisory-meta strong { color: var(--slate-700); font-weight: 750; }
-    .advisory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .advisory-card { display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-xs); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-    .advisory-card:hover { transform: translateY(-3px); border-color: var(--slate-300); box-shadow: var(--shadow-md); }
-    .advisory-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
-    .sev-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border: 1px solid transparent; border-radius: 6px; font-size: 9.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
-    .sev-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-    .sev-critical { border-color: var(--red-200); background: var(--red-50); color: var(--red-700); }
-    .sev-high { border-color: var(--orange-200); background: var(--orange-50); color: var(--orange-700); }
-    .sev-medium { border-color: var(--amber-200); background: var(--amber-50); color: var(--amber-700); }
-    .advisory-date { font-family: var(--font-mono); font-size: 9.5px; color: var(--slate-400); white-space: nowrap; padding-top: 3px; }
-    .advisory-id { margin-bottom: 7px; font-family: var(--font-mono); font-size: 9.5px; line-height: 1.4; color: var(--slate-400); }
-    .advisory-card h3 { margin-bottom: 8px; font-family: var(--font-display); font-size: 16px; line-height: 1.36; letter-spacing: -.015em; font-weight: 800; color: var(--slate-900); }
-    .advisory-card p { margin-bottom: 16px; color: var(--slate-600); font-size: 12.5px; line-height: 1.65; }
-    .advisory-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--slate-200); }
-    .advisory-cat { padding: 3px 7px; border-radius: 5px; background: var(--slate-100); color: var(--slate-500); font-size: 9.5px; font-weight: 700; white-space: nowrap; }
-    .advisory-link { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--cyan-700); font-size: 11.5px; font-weight: 800; }
-    .advisory-link:hover { color: var(--cyan-800); }
-    .advisory-link .icon { width: 13px; height: 13px; transition: transform .18s ease; }
-    .advisory-link:hover .icon { transform: translateX(2px); }
-    .advisory-empty { display: none; padding: 56px 24px; border: 1.5px dashed var(--slate-300); border-radius: var(--radius-md); background: rgba(255, 255, 255, .65); text-align: center; }
-    .advisory-empty.show { display: block; }
-    .advisory-empty-icon { width: 52px; height: 52px; margin: 0 auto 13px; display: grid; place-items: center; border-radius: 15px; background: var(--slate-100); color: var(--slate-500); }
-    .advisory-empty h3 { margin-bottom: 5px; font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--slate-800); }
-    .advisory-empty p { margin: 0; color: var(--slate-500); font-size: 13px; }
-
-    .rfc-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-    .rfc-card, .pgp-card { border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); overflow: hidden; }
-    .rfc-head, .pgp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; padding: 21px 24px; border-bottom: 1px solid var(--slate-200); background: linear-gradient(135deg, #f0fdff 0%, #fff 70%); }
-    .rfc-title-wrap, .pgp-title-wrap { display: flex; align-items: flex-start; gap: 12px; }
-    .doc-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--cyan-200); border-radius: 11px; background: #fff; color: var(--cyan-700); }
-    .doc-icon.green { border-color: var(--emerald-200); background: var(--emerald-50); color: var(--emerald-700); }
-    .rfc-head h3, .pgp-head h3 { margin: 1px 0 2px; font-family: var(--font-display); font-size: 18px; line-height: 1.25; letter-spacing: -.025em; font-weight: 800; color: var(--slate-900); }
-    .rfc-head p, .pgp-head p { margin: 0; font-size: 11px; line-height: 1.4; color: var(--slate-500); }
-    .doc-status { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; background: var(--emerald-50); color: var(--emerald-700); font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
-    .rfc-body { padding: 6px 24px 22px; }
-    .rfc-row { display: grid; grid-template-columns: 132px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--slate-100); font-size: 12.5px; line-height: 1.5; }
-    .rfc-row:last-of-type { border-bottom: 0; }
-    .rfc-row dt { color: var(--slate-500); font-weight: 600; }
-    .rfc-row dd { margin: 0; color: var(--slate-800); font-weight: 650; text-align: right; }
-    .rfc-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
-    .rfc-actions .btn { flex: 1 1 auto; }
-    .pgp-body { padding: 20px 24px 23px; }
-    .fingerprint { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 13px; padding: 10px 12px; border: 1px solid var(--slate-200); border-radius: 9px; background: var(--slate-50); }
-    .fingerprint .icon { width: 15px; height: 15px; color: var(--cyan-700); flex: 0 0 auto; margin-top: 2px; }
-    .fingerprint span { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--slate-400); }
-    .fingerprint code { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 10px; line-height: 1.5; color: var(--slate-700); word-break: break-word; }
-    .pgp-key-box { position: relative; max-height: 228px; overflow: auto; margin-bottom: 13px; padding: 14px; border: 1px solid var(--slate-300); border-radius: 10px; background: var(--slate-50); scrollbar-color: var(--slate-300) transparent; }
-    .pgp-key { margin: 0; font-family: var(--font-mono); font-size: 9.7px; line-height: 1.65; color: var(--slate-600); white-space: pre-wrap; word-break: break-all; }
-    .pgp-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .pgp-actions .btn { flex: 1 1 auto; }
-    .tooltip-wrap { position: relative; display: inline-flex; flex: 1 1 auto; }
-    .tooltip-wrap .btn { width: 100%; }
-    .copy-tooltip { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 5; padding: 6px 9px; border-radius: 6px; background: var(--slate-900); color: #fff; font-size: 10.5px; font-weight: 650; white-space: nowrap; opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; box-shadow: 0 6px 18px rgba(15, 23, 42, .18); }
-    .copy-tooltip::after { content: ""; position: absolute; top: 100%; right: 16px; border: 5px solid transparent; border-top-color: var(--slate-900); }
-    .tooltip-wrap.show .copy-tooltip { opacity: 1; transform: translateY(0); }
-    .pgp-note { display: flex; gap: 7px; align-items: flex-start; margin: 13px 0 0; color: var(--slate-500); font-size: 10.5px; line-height: 1.5; }
-    .pgp-note .icon { width: 13px; height: 13px; flex: 0 0 auto; margin-top: 1px; color: var(--emerald-600); }
-
-    .site-footer { border-top: 1px solid var(--slate-200); background: var(--slate-50); }
-    .footer-contact { padding: 68px 0 44px; }
-    .footer-heading { margin-bottom: 23px; }
-    .footer-heading .eyebrow { margin-bottom: 10px; }
-    .footer-heading h2 { margin: 0; font-family: var(--font-display); font-size: clamp(1.7rem, 2.6vw, 2.25rem); line-height: 1.16; letter-spacing: -.035em; font-weight: 800; color: var(--slate-900); }
-    .footer-heading p { max-width: 660px; margin: 8px 0 0; color: var(--slate-600); font-size: 14px; line-height: 1.65; }
-    .office-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
-    .office-card { padding: 20px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-xs); }
-    .office-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
-    .office-city { display: flex; align-items: center; gap: 7px; font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--slate-900); }
-    .office-city .icon { color: var(--cyan-700); }
-    .office-hq { padding: 2px 7px; border-radius: 5px; background: var(--cyan-50); color: var(--cyan-800); font-size: 8.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-    .office-card p { margin: 0; color: var(--slate-600); font-size: 12.5px; line-height: 1.65; }
-    .office-card p + p { margin-top: 6px; }
-    .office-card a { color: var(--cyan-700); font-weight: 650; }
-    .office-card a:hover { text-decoration: underline; text-underline-offset: 2px; }
-    .contact-strip { display: grid; grid-template-columns: 1.1fr .9fr .85fr .95fr; gap: 1px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: var(--slate-200); overflow: hidden; box-shadow: var(--shadow-xs); }
-    .contact-item { display: flex; align-items: flex-start; gap: 11px; padding: 18px 20px; background: #fff; }
-    .contact-item .icon { color: var(--cyan-700); margin-top: 2px; }
-    .contact-item span { display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--slate-400); }
-    .contact-item strong { display: block; margin-top: 2px; color: var(--slate-800); font-size: 13px; line-height: 1.45; }
-    .contact-item a { color: var(--slate-800); font-weight: 700; }
-    .contact-item a:hover { color: var(--cyan-700); }
-    .footer-main { border-top: 1px solid var(--slate-200); background: #fff; }
-    .footer-main-inner { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.15fr; gap: 36px; padding: 46px 0 40px; }
-    .footer-brand .brand { margin-bottom: 13px; }
-    .footer-brand p { max-width: 320px; margin: 0 0 14px; color: var(--slate-500); font-size: 12.5px; line-height: 1.7; }
-    .footer-social { display: flex; flex-wrap: wrap; gap: 8px; }
-    .footer-social a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid var(--slate-200); border-radius: 6px; color: var(--slate-500); font-size: 10.5px; font-weight: 650; transition: color .18s ease, border-color .18s ease, background .18s ease; }
-    .footer-social a:hover { border-color: var(--cyan-200); background: var(--cyan-50); color: var(--cyan-700); }
-    .footer-social .icon { width: 12px; height: 12px; }
-    .footer-col h3 { margin: 2px 0 13px; font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; color: var(--slate-400); }
-    .footer-links { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-    .footer-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--slate-600); font-size: 12.5px; font-weight: 550; transition: color .16s ease; }
-    .footer-links a:hover { color: var(--cyan-700); }
-    .footer-links .icon { width: 12px; height: 12px; color: var(--slate-300); }
-    .footer-contact-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
-    .footer-contact-list li { display: flex; gap: 7px; align-items: flex-start; color: var(--slate-600); font-size: 12px; line-height: 1.5; }
-    .footer-contact-list .icon { width: 13px; height: 13px; margin-top: 2px; color: var(--cyan-700); flex: 0 0 auto; }
-    .footer-contact-list a:hover { color: var(--cyan-700); text-decoration: underline; text-underline-offset: 2px; }
-    .footer-bottom { border-top: 1px solid var(--slate-200); background: #fff; }
-    .footer-bottom-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; color: var(--slate-500); font-size: 11px; }
-    .footer-bottom-inner p { margin: 0; }
-    .footer-bottom-links { display: flex; flex-wrap: wrap; gap: 16px; }
-    .footer-bottom-links a { color: var(--slate-500); font-weight: 600; }
-    .footer-bottom-links a:hover { color: var(--cyan-700); }
-
-    .modal { position: fixed; inset: 0; z-index: 120; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal.open { display: flex; }
-    .modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .58); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-    .modal-card { position: relative; z-index: 1; width: min(620px, 100%); max-height: min(90vh, 820px); overflow: auto; padding: 30px; border: 1px solid var(--slate-200); border-radius: var(--radius-xl); background: #fff; box-shadow: 0 35px 90px rgba(15, 23, 42, .28); animation: modalIn .22s ease-out both; }
-    @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .modal-close { position: absolute; top: 14px; right: 14px; width: 37px; height: 37px; display: grid; place-items: center; border: 1px solid var(--slate-200); border-radius: 9px; background: #fff; color: var(--slate-500); transition: background .16s ease, color .16s ease, border-color .16s ease; }
-    .modal-close:hover { background: var(--slate-50); color: var(--slate-900); border-color: var(--slate-300); }
-    .modal-success-icon { width: 66px; height: 66px; margin: 4px auto 17px; display: grid; place-items: center; border: 1px solid var(--emerald-200); border-radius: 50%; background: var(--emerald-50); color: var(--emerald-700); }
-    .modal-success-icon .icon { width: 34px; height: 34px; stroke-width: 2.2; }
-    .modal-title { margin-bottom: 7px; text-align: center; font-family: var(--font-display); font-size: 26px; line-height: 1.2; letter-spacing: -.035em; font-weight: 800; color: var(--slate-900); }
-    .modal-subtitle { max-width: 460px; margin: 0 auto 20px; text-align: center; color: var(--slate-600); font-size: 13.5px; line-height: 1.65; }
-    .ticket-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 15px 16px; border: 1px solid var(--cyan-200); border-radius: 12px; background: var(--cyan-50); }
-    .ticket-left span { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan-700); }
-    .ticket-left strong { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 18px; line-height: 1.3; letter-spacing: .02em; color: var(--cyan-800); }
-    .ticket-copy { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 6px 10px; border: 1px solid var(--cyan-200); border-radius: 7px; background: #fff; color: var(--cyan-700); font-size: 10.5px; font-weight: 750; transition: border-color .16s ease, background .16s ease; }
-    .ticket-copy:hover { border-color: var(--cyan-500); background: var(--cyan-50); }
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 16px; padding: 14px; border: 1px solid var(--slate-200); border-radius: 11px; background: var(--slate-50); }
-    .summary-grid div { min-width: 0; }
-    .summary-grid dt { margin-bottom: 2px; font-size: 9.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--slate-400); }
-    .summary-grid dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--slate-800); font-size: 11.5px; font-weight: 650; }
-    .summary-grid dd.mono { font-family: var(--font-mono); font-size: 10.5px; }
-    .modal-note { display: flex; gap: 9px; align-items: flex-start; padding: 11px 13px; border: 1px solid var(--slate-200); border-radius: 9px; background: #fff; color: var(--slate-600); font-size: 11.5px; line-height: 1.55; }
-    .modal-note .icon { color: var(--cyan-700); flex: 0 0 auto; margin-top: 1px; }
-    .modal-actions { display: flex; gap: 9px; margin-top: 18px; }
-    .modal-actions .btn { flex: 1; }
-    .advisory-modal-card { width: min(700px, 100%); }
-    .advisory-modal-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 13px; padding-right: 36px; }
-    .advisory-modal-id { font-family: var(--font-mono); font-size: 10px; color: var(--slate-400); }
-    .advisory-modal-title { margin-bottom: 9px; font-family: var(--font-display); font-size: clamp(1.45rem, 3vw, 1.85rem); line-height: 1.25; letter-spacing: -.03em; font-weight: 800; color: var(--slate-900); }
-    .advisory-modal-info { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 19px; color: var(--slate-500); font-size: 11.5px; font-weight: 600; }
-    .advisory-modal-info span { display: inline-flex; align-items: center; gap: 5px; }
-    .advisory-modal-info .icon { width: 13px; height: 13px; color: var(--cyan-700); }
-    .advisory-detail { margin-bottom: 17px; padding: 15px 16px; border: 1px solid var(--slate-200); border-radius: 11px; background: var(--slate-50); }
-    .advisory-detail h4 { margin: 0 0 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan-700); }
-    .advisory-detail p { margin: 0; color: var(--slate-700); font-size: 12.5px; line-height: 1.7; }
-    .advisory-detail.recommendation { border-color: var(--emerald-200); background: var(--emerald-50); }
-    .advisory-detail.recommendation h4 { color: var(--emerald-700); }
-
-    .toast { position: fixed; left: 50%; bottom: 28px; z-index: 160; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 11px 16px; border: 1px solid var(--slate-700); border-radius: 10px; background: var(--slate-900); color: #fff; box-shadow: 0 16px 38px rgba(15, 23, 42, .24); font-size: 12px; font-weight: 650; opacity: 0; transform: translate(-50%, 12px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
-    .toast .icon { color: #34d399; }
-    .back-to-top { position: fixed; right: 20px; bottom: 20px; z-index: 50; width: 43px; height: 43px; display: grid; place-items: center; border: 1px solid var(--slate-300); border-radius: 11px; background: rgba(255, 255, 255, .96); color: var(--slate-600); box-shadow: var(--shadow-md); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s ease, transform .2s ease, color .2s ease, border-color .2s ease; backdrop-filter: blur(8px); }
-    .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .back-to-top:hover { color: var(--cyan-700); border-color: #67e8f9; }
-
-    @media (max-width: 1180px) {
+    @media (max-width: 1080px) {
       .nav-links { display: none; }
       .mobile-toggle { display: inline-flex; }
-      .hero-inner { gap: 38px; }
-      .float-card.top-right { right: -8px; }
-      .float-card.bottom-left { left: -8px; }
-      .footer-main-inner { grid-template-columns: 1.35fr 1fr 1fr; }
-      .footer-main-inner .footer-col:last-child { grid-column: 1 / -1; }
-      .footer-contact-list { grid-template-columns: repeat(3, 1fr); }
+      .hero-grid { gap: 34px; }
+      .footer-inner { grid-template-columns: 1.4fr 1fr 1.1fr; gap: 28px; }
     }
-    @media (max-width: 1020px) {
-      .hero-inner { grid-template-columns: 1fr; gap: 38px; padding-top: 54px; padding-bottom: 92px; }
-      .hero-copy { max-width: 760px; }
-      .hero-visual { max-width: 660px; width: 100%; margin-inline: auto; }
-      .float-card.top-right { right: 18px; top: 72px; }
-      .float-card.bottom-left { left: 18px; bottom: 76px; }
-      .about-grid { grid-template-columns: 1fr; gap: 32px; }
-      .company-panel { max-width: 700px; }
-      .services-grid { grid-template-columns: repeat(2, 1fr); }
-      .report-layout { grid-template-columns: 1fr; }
-      .report-aside { grid-template-columns: 1fr 1fr; align-items: start; }
-      .privacy-note { grid-column: 1 / -1; }
-      .rfc-layout { grid-template-columns: 1fr; }
+    @media (max-width: 960px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+      .hero-copy { max-width: 740px; }
+      .quick-card { max-width: 640px; }
+      .about-grid { grid-template-columns: 1fr; gap: 28px; }
+      .report-grid { grid-template-columns: 1fr; }
+      .docs-grid { grid-template-columns: 1fr; }
       .advisory-grid { grid-template-columns: repeat(2, 1fr); }
       .office-grid { grid-template-columns: 1fr 1fr; }
-      .contact-strip { grid-template-columns: 1fr 1fr; }
-      .contact-strip .contact-item:last-child { grid-column: auto; }
+      .contact-bar { grid-template-columns: 1fr 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: 1 / -1; }
     }
     @media (max-width: 780px) {
       .container { width: calc(100% - 36px); }
-      .topbar-hours, .topbar-divider, .live-clock { display: none; }
-      .ticker-inner { min-height: 50px; gap: 10px; }
-      .ticker-label { font-size: 9.5px; padding: 5px 8px; }
-      .ticker-meta { display: none; }
-      .ticker-item { font-size: 11.5px; padding-right: 22px; }
-      .ticker-item::after { margin-left: 15px; }
-      .topbar-inner { min-height: 62px; align-items: flex-start; padding: 10px 0; gap: 8px; }
-      .topbar-contacts { gap: 8px 15px; }
-      .topbar-right { margin-left: auto; }
-      .soc-badge { font-size: 10.5px; padding: 4px 9px; }
-      .navbar { min-height: 70px; gap: 12px; }
-      .brand-mark { width: 42px; height: 42px; border-radius: 12px; }
-      .brand-name { font-size: 19px; }
+      .topbar-inner { min-height: 56px; padding: 8px 0; align-items: flex-start; }
+      .topbar-links { gap: 8px 14px; }
+      .live-clock { display: none; }
+      .navbar { min-height: 66px; gap: 12px; }
+      .brand-mark { width: 38px; height: 38px; }
+      .brand-name { font-size: 17.5px; }
       .brand-sub { font-size: 9.5px; }
-      .nav-actions .btn-sm { display: none; }
-      .section { padding: 66px 0; }
-      .section-head { margin-bottom: 30px; }
-      .section-desc { font-size: 15.5px; }
-      .hero-inner { padding-top: 44px; padding-bottom: 84px; }
-      .hero-title { font-size: clamp(2.3rem, 8.2vw, 3.1rem); }
-      .hero-desc { font-size: 16px; }
+      .nav-actions .nav-report { display: none; }
+      .ticker-inner { min-height: 40px; gap: 10px; }
+      .ticker-label { font-size: 9px; }
+      .ticker-meta { display: none; }
+      .ticker-item { font-size: 11px; padding-right: 20px; }
+      .ticker-item::after { margin-left: 13px; }
+      .section { padding: 64px 0; }
+      .section-head { margin-bottom: 28px; }
+      .section-desc { font-size: 14.5px; }
+      .hero { padding: 54px 0 48px; }
+      .hero-title { font-size: clamp(2.1rem, 7.5vw, 2.8rem); }
+      .hero-desc { font-size: 15.5px; }
       .hero-actions .btn { width: 100%; }
-      .hero-points { gap: 9px 16px; font-size: 12.5px; }
-      .float-card.top-right { top: 66px; right: 9px; }
-      .float-card.bottom-left { left: 9px; bottom: 70px; }
-      .soc-body { padding: 13px; }
-      .stats-wrap { margin-top: -42px; }
-      .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-      .stat-card { padding: 18px 16px; }
-      .stat-value { font-size: 23px; }
-      .stat-icon { width: 40px; height: 40px; margin-bottom: 11px; }
-      .company-banner, .company-body { padding-left: 21px; padding-right: 21px; }
-      .company-badge { right: 18px; }
-      .services-grid { grid-template-columns: 1fr; }
-      .service-card { min-height: auto; padding: 23px; }
-      .process-strip { padding: 19px; }
-      .process-head { display: block; }
-      .process-head span { display: block; margin-top: 2px; }
-      .process-flow { grid-template-columns: 1fr; gap: 12px; }
-      .process-step:not(:last-child)::after { top: 31px; bottom: -12px; left: 15px; right: auto; width: 1px; height: auto; }
-      .process-step strong { margin-top: 1px; }
-      .report-aside { grid-template-columns: 1fr; }
-      .form-head { padding: 21px 20px 18px; }
-      .form-head h3 { font-size: 21px; }
-      .incident-form { padding: 21px 20px 23px; }
+      .fact-strip { grid-template-columns: 1fr; margin-top: -20px; }
+      .fact + .fact { border-left: 0; border-top: 1px solid var(--slate-200); }
+      .service-grid { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; gap: 0; }
       .severity-options { grid-template-columns: 1fr 1fr; }
-      .advisory-toolbar { align-items: stretch; }
-      .search-box { width: 100%; }
-      .filter-group { width: 100%; }
+      .form-head { padding: 18px 19px 15px; }
+      .form-head h3 { font-size: 19px; }
+      .incident-form { padding: 19px 19px 21px; }
       .advisory-grid { grid-template-columns: 1fr; }
-      .rfc-head, .pgp-head, .rfc-body, .pgp-body { padding-left: 19px; padding-right: 19px; }
-      .rfc-row { grid-template-columns: 118px 1fr; font-size: 12px; }
+      .toolbar { align-items: stretch; }
+      .search-box { max-width: none; width: 100%; }
       .office-grid { grid-template-columns: 1fr; }
-      .contact-strip { grid-template-columns: 1fr; }
-      .contact-strip .contact-item:last-child { grid-column: auto; }
-      .footer-contact { padding: 54px 0 36px; }
-      .footer-main-inner { grid-template-columns: 1fr 1fr; gap: 28px; padding: 36px 0 32px; }
-      .footer-brand { grid-column: 1 / -1; }
-      .footer-main-inner .footer-col:last-child { grid-column: 1 / -1; }
-      .footer-contact-list { grid-template-columns: 1fr 1fr; }
-      .footer-bottom-inner { display: block; padding: 16px 0; }
-      .footer-bottom-links { margin-top: 7px; gap: 13px; }
-      .modal { padding: 12px; }
-      .modal-card { padding: 26px 20px 23px; border-radius: 20px; }
-      .modal-title { font-size: 22px; }
+      .contact-bar { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .footer-main { padding: 38px 0 28px; }
+      .footer-bottom-inner { display: block; }
+      .footer-bottom-links { margin-top: 6px; }
+      .modal-card { padding: 24px 19px 21px; }
       .summary-grid { grid-template-columns: 1fr; }
-      .back-to-top { right: 14px; bottom: 14px; }
+      .doc-actions .btn, .pgp-actions .btn { flex: 1 1 100%; }
     }
     @media (max-width: 480px) {
-      .topbar { font-size: 11.5px; }
-      .topbar-contacts { gap: 7px 12px; }
+      .topbar { font-size: 11px; }
+      .topbar-links { gap: 6px 11px; }
       .topbar-link .icon { width: 14px; height: 14px; }
-      .soc-badge { font-size: 9.5px; letter-spacing: .02em; }
-      .brand { gap: 9px; }
-      .brand-name { font-size: 18px; }
-      .brand-sub { font-size: 8.5px; }
-      .hero-title { font-size: clamp(2.15rem, 9.5vw, 2.8rem); }
-      .hero-pill { font-size: 11.5px; }
-      .float-card { padding: 8px 9px; gap: 7px; }
-      .float-card .fc-icon { width: 26px; height: 26px; }
-      .float-card .fc-title { font-size: 9.5px; }
-      .float-card .fc-sub { font-size: 8px; }
-      .float-card.top-right { top: 58px; right: 5px; }
-      .float-card.bottom-left { left: 5px; bottom: 61px; }
-      .soc-brand-title { font-size: 12px; }
-      .soc-brand-sub { font-size: 9.5px; }
-      .live-pill { font-size: 9px; padding: 3px 7px; }
-      .feed-list { display: none; }
-      .stats-grid { grid-template-columns: 1fr; }
-      .company-facts { grid-template-columns: 1fr; gap: 12px; }
-      .company-badge { position: static; margin-top: 14px; }
-      .company-banner { padding-bottom: 22px; }
-      .rfc-row { grid-template-columns: 1fr; gap: 2px; }
-      .rfc-row dd { text-align: left; }
-      .rfc-actions .btn, .pgp-actions .btn { flex: 1 1 100%; }
-      .tooltip-wrap { flex: 1 1 100%; }
-      .footer-main-inner { grid-template-columns: 1fr; }
-      .footer-brand, .footer-main-inner .footer-col:last-child { grid-column: auto; }
-      .footer-contact-list { grid-template-columns: 1fr; }
+      .status-text { font-size: 10px; }
+      .ticker-more { display: none; }
+      .hero-title { font-size: clamp(1.95rem, 9vw, 2.45rem); }
+      .quick-card { padding: 20px; }
+      .hero-points { gap: 8px 14px; font-size: 11.5px; }
+      .section-title { font-size: 1.8rem; }
+      .rfc-row { grid-template-columns: 1fr; gap: 1px; }
       .modal-actions { flex-direction: column; }
-      .ticket-box { align-items: flex-start; }
-      .ticket-left strong { font-size: 15px; }
-      .advisory-modal-title { font-size: 1.35rem; }
+      .footer-social { gap: 5px; }
     }
   </style>
 </head>
@@ -956,9 +657,10 @@
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
     <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><path d="M18 19a2 2 0 0 1-2 2h-3"/><rect x="2" y="12" width="4" height="7" rx="2"/><rect x="18" y="12" width="4" height="7" rx="2"/></symbol>
   </svg>
+
   <div class="topbar">
     <div class="container topbar-inner">
-      <div class="topbar-contacts">
+      <div class="topbar-links">
         <a class="topbar-link" href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">
           <svg class="icon icon-sm" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
           <span>WhatsApp <strong>08155044434</strong></span>
@@ -967,14 +669,14 @@
           <svg class="icon icon-sm" aria-hidden="true"><use href="#i-mail"></use></svg>
           <span>csirt@radnet-digital.id</span>
         </a>
-        <span class="topbar-divider" aria-hidden="true"></span>
-        <span class="topbar-hours"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"></use></svg>Layanan 24/7 · WIB</span>
+        <a class="topbar-link" href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-globe"></use></svg>
+          <span>radnet-digital.id</span>
+        </a>
       </div>
-      <div class="topbar-right">
-        <span class="soc-badge" role="status" aria-label="Status SOC 24/7 normal dan siaga">
-          <span class="pulse-dot" aria-hidden="true"></span>
-          <span>24/7 SOC STATUS:</span><strong>NORMAL / SIAGA</strong>
-        </span>
+      <div class="topbar-status">
+        <span class="soc-dot" aria-hidden="true"></span>
+        <span class="status-text">24/7 SOC · Normal / Siaga</span>
         <span class="live-clock" id="liveClock" aria-live="polite">--:--:-- WIB</span>
       </div>
     </div>
@@ -991,15 +693,17 @@
           <span class="brand-sub">PT Radnet Digital Indonesia</span>
         </span>
       </a>
+
       <nav class="nav-links" aria-label="Navigasi utama">
         <a class="nav-link active" href="#beranda" data-nav="beranda">Beranda</a>
         <a class="nav-link" href="#tentang" data-nav="tentang">Tentang Kami</a>
         <a class="nav-link" href="#layanan" data-nav="layanan">Layanan</a>
         <a class="nav-link" href="#lapor" data-nav="lapor">Lapor Insiden</a>
-        <a class="nav-link" href="#advisori" data-nav="advisori">Advisori Keamanan</a>
+        <a class="nav-link" href="#advisori" data-nav="advisori">Advisori</a>
         <a class="nav-link" href="#rfc" data-nav="rfc">RFC 2350</a>
         <a class="nav-link" href="#kontak" data-nav="kontak">Kontak</a>
       </nav>
+
       <div class="nav-actions">
         <a class="btn btn-danger btn-sm nav-report" href="#lapor">
           <svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg>
@@ -1011,6 +715,7 @@
         </button>
       </div>
     </div>
+
     <div class="mobile-drawer" id="mobileDrawer">
       <div class="container">
         <nav class="mobile-nav" aria-label="Navigasi seluler">
@@ -1018,12 +723,12 @@
           <a class="mobile-link" href="#tentang" data-nav="tentang">Tentang Kami <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
           <a class="mobile-link" href="#layanan" data-nav="layanan">Layanan <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
           <a class="mobile-link" href="#lapor" data-nav="lapor">Lapor Insiden <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
-          <a class="mobile-link" href="#advisori" data-nav="advisori">Advisori Keamanan <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
+          <a class="mobile-link" href="#advisori" data-nav="advisori">Advisori <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
           <a class="mobile-link" href="#rfc" data-nav="rfc">RFC 2350 <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
           <a class="mobile-link" href="#kontak" data-nav="kontak">Kontak <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"></use></svg></a>
           <a class="btn btn-danger btn-block mobile-cta" href="#lapor">
             <svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg>
-            Laporkan Insiden Siber
+            Laporkan Insiden
           </a>
         </nav>
       </div>
@@ -1063,133 +768,61 @@
 
   <main id="main">
     <section class="hero" id="beranda">
-      <div class="container hero-inner">
-        <div class="hero-copy">
-          <span class="hero-pill">
-            <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg>
-            CSIRT Perusahaan · PT Radnet Digital Indonesia
-          </span>
-          <h1 class="hero-title">PT Radnet Digital Indonesia <span class="title-accent">Computer Security Incident Response Team</span></h1>
-          <p class="hero-desc">Mitigasi insiden siber, perlindungan infrastruktur digital, dan keamanan jaringan enterprise. RADNET-CSIRT menjadi titik koordinasi resmi untuk deteksi, respons, pemulihan, dan berbagi informasi keamanan di ekosistem layanan digital Radnet.</p>
-          <div class="hero-actions">
-            <a class="btn btn-danger" href="#lapor">
-              <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
-              Laporkan Insiden Siber
-            </a>
-            <a class="btn btn-outline" href="#rfc" id="downloadProfileBtn">
-              <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
-              Unduh Profil RFC 2350 &amp; Kunci PGP
-            </a>
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <span class="hero-badge">
+              <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg>
+              CSIRT Resmi PT Radnet Digital Indonesia
+            </span>
+            <h1 class="hero-title">Respons cepat untuk <span class="accent">insiden siber</span> dan keamanan digital.</h1>
+            <p class="hero-desc">RADNET-CSIRT menjadi titik koordinasi resmi untuk deteksi, penanganan, pemulihan, dan berbagi informasi keamanan di lingkungan layanan digital Radnet.</p>
+            <div class="hero-actions">
+              <a class="btn btn-danger" href="#lapor">
+                <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                Laporkan Insiden Siber
+              </a>
+              <a class="btn btn-outline" href="#rfc" id="downloadProfileBtn">
+                <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+                Unduh Profil RFC 2350
+              </a>
+            </div>
+            <ul class="hero-points" aria-label="Keunggulan layanan">
+              <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Respons awal &lt; 15 menit</li>
+              <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Monitoring 24/7</li>
+              <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Kanal terenkripsi PGP</li>
+            </ul>
           </div>
-          <ul class="hero-points" aria-label="Keunggulan layanan">
-            <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Respons awal &lt; 15 menit</li>
-            <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Monitoring 24/7</li>
-            <li><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>Kanal terenkripsi PGP</li>
-          </ul>
-        </div>
 
-        <div class="hero-visual" aria-label="Visualisasi pemantauan keamanan RADNET SOC">
-          <div class="float-card top-right" aria-hidden="true">
-            <span class="fc-icon"><svg class="icon icon-sm"><use href="#i-fingerprint"></use></svg></span>
-            <span><span class="fc-title">Threat Intelligence</span><span class="fc-sub">Pemantauan aktif</span></span>
-          </div>
-          <div class="float-card bottom-left" aria-hidden="true">
-            <span class="fc-icon"><svg class="icon icon-sm"><use href="#i-clock"></use></svg></span>
-            <span><span class="fc-title">SLA Triage 12 Menit</span><span class="fc-sub">Di bawah target 15 menit</span></span>
-          </div>
-          <div class="visual-stage">
-            <div class="soc-head">
-              <div class="soc-brand">
-                <span class="soc-brand-mark"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-activity"></use></svg></span>
-                <span><span class="soc-brand-title">RADNET SOC</span><span class="soc-brand-sub">Security Operations Center</span></span>
-              </div>
-              <span class="live-pill"><span class="pulse-dot" aria-hidden="true"></span>Live</span>
+          <aside class="quick-card" aria-label="Kanal darurat RADNET-CSIRT">
+            <span class="quick-kicker">Kanal Darurat</span>
+            <h2>Butuh bantuan segera?</h2>
+            <p>Hubungi tim SOC atau kirim laporan resmi. Untuk insiden aktif, utamakan WhatsApp agar segera masuk antrean triase.</p>
+            <div class="quick-links">
+              <a class="quick-link" href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">
+                <span class="quick-link-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-whatsapp"></use></svg></span>
+                <span class="quick-link-text"><span>WhatsApp Hotline</span><strong>08155044434</strong></span>
+              </a>
+              <a class="quick-link" href="mailto:csirt@radnet-digital.id">
+                <span class="quick-link-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-mail"></use></svg></span>
+                <span class="quick-link-text"><span>Email CSIRT</span><strong>csirt@radnet-digital.id</strong></span>
+              </a>
             </div>
-            <div class="soc-body">
-              <div class="health-banner">
-                <div class="health-left">
-                  <span class="health-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg></span>
-                  <span><span class="health-title">Sistem berada dalam kondisi normal</span><span class="health-sub">Tidak ada insiden kritis yang aktif</span></span>
-                </div>
-                <span class="health-badge"><svg class="icon" style="width:11px;height:11px" aria-hidden="true"><use href="#i-check"></use></svg>Aman</span>
-              </div>
-              <div class="chart-card">
-                <div class="chart-top">
-                  <span class="chart-label">AKTIVITAS ANCAMAN DIBLOKIR</span>
-                  <span class="chart-value">24 JAM TERAKHIR</span>
-                </div>
-                <svg class="chart-svg" viewBox="0 0 420 124" role="img" aria-label="Grafik aktivitas ancaman yang diblokir dalam 24 jam terakhir">
-                  <defs>
-                    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#0891b2" stop-opacity=".22"/>
-                      <stop offset="100%" stop-color="#0891b2" stop-opacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  <g stroke="#e2e8f0" stroke-width="1">
-                    <line x1="0" y1="24" x2="420" y2="24"/>
-                    <line x1="0" y1="58" x2="420" y2="58"/>
-                    <line x1="0" y1="92" x2="420" y2="92"/>
-                  </g>
-                  <path d="M0 98 C28 95 42 76 70 80 S112 92 138 70 S180 46 208 57 S250 81 278 62 S320 30 350 39 S390 56 420 28 L420 124 L0 124 Z" fill="url(#chartFill)"/>
-                  <path d="M0 98 C28 95 42 76 70 80 S112 92 138 70 S180 46 208 57 S250 81 278 62 S320 30 350 39 S390 56 420 28" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round"/>
-                  <circle cx="420" cy="28" r="4.5" fill="#0891b2" stroke="#fff" stroke-width="2.5"/>
-                </svg>
-                <div class="chart-caption"><span>00:00</span><span>12:00</span><span>24:00 WIB</span></div>
-              </div>
-              <div class="feed-list" aria-label="Aktivitas keamanan terbaru">
-                <div class="feed-item">
-                  <span class="feed-icon green"><svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-shield"></use></svg></span>
-                  <span class="feed-text"><b>Phishing domain</b> berhasil diblokir<span class="feed-meta">Threat intelligence · 2 menit lalu</span></span>
-                  <span class="feed-status green">Mitigated</span>
-                </div>
-                <div class="feed-item">
-                  <span class="feed-icon cyan"><svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-network"></use></svg></span>
-                  <span class="feed-text"><b>Brute force SSH</b> pada edge server<span class="feed-meta">Network monitoring · 8 menit lalu</span></span>
-                  <span class="feed-status cyan">Isolated</span>
-                </div>
-                <div class="feed-item">
-                  <span class="feed-icon amber"><svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-bug"></use></svg></span>
-                  <span class="feed-text"><b>Malware hash</b> sedang dianalisis<span class="feed-meta">Forensic sandbox · 14 menit lalu</span></span>
-                  <span class="feed-status amber">Analysis</span>
-                </div>
-              </div>
-              <div class="soc-foot">
-                <div class="soc-metric"><strong>99.99%</strong><span>Network uptime</span></div>
-                <div class="soc-metric"><strong>1.2M</strong><span>Events/hari</span></div>
-                <div class="soc-metric"><strong>12 mnt</strong><span>Avg. triage</span></div>
-              </div>
-            </div>
-          </div>
+            <div class="quick-status"><span class="soc-dot" aria-hidden="true"></span>Operasional 24 jam · WIB</div>
+            <a class="btn btn-danger btn-block" href="#lapor" style="margin-top:14px">
+              <svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg>
+              Kirim Laporan Insiden
+            </a>
+          </aside>
         </div>
       </div>
     </section>
 
-    <div class="container stats-wrap">
-      <div class="stats-grid">
-        <article class="stat-card reveal">
-          <span class="stat-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-radar"></use></svg></span>
-          <span class="stat-label">Monitoring</span>
-          <strong class="stat-value">24/7</strong>
-          <p class="stat-copy">SOC aktif setiap hari, termasuk hari libur.</p>
-        </article>
-        <article class="stat-card reveal">
-          <span class="stat-icon amber"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-clock"></use></svg></span>
-          <span class="stat-label">SLA Triage</span>
-          <strong class="stat-value">&lt; 15 Menit</strong>
-          <p class="stat-copy">Verifikasi awal dan klasifikasi laporan insiden.</p>
-        </article>
-        <article class="stat-card reveal">
-          <span class="stat-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-file"></use></svg></span>
-          <span class="stat-label">Standar Kepatuhan</span>
-          <strong class="stat-value">RFC 2350</strong>
-          <p class="stat-copy">Profil, mandat, dan kanal komunikasi resmi.</p>
-        </article>
-        <article class="stat-card reveal">
-          <span class="stat-icon green"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-network"></use></svg></span>
-          <span class="stat-label">Status Keamanan Jaringan</span>
-          <strong class="stat-value green">NORMAL</strong>
-          <p class="stat-copy">Tidak ada insiden mayor yang terdeteksi.</p>
-        </article>
+    <div class="container">
+      <div class="fact-strip reveal">
+        <div class="fact"><strong>&lt; 15 menit</strong><span>Target respons awal tim SOC</span></div>
+        <div class="fact"><strong>24 / 7</strong><span>Monitoring dan kesiapan tanggap</span></div>
+        <div class="fact"><strong>RFC 2350</strong><span>Profil dan kanal komunikasi resmi</span></div>
       </div>
     </div>
 
@@ -1198,56 +831,28 @@
         <div class="about-grid">
           <div class="about-copy reveal">
             <span class="eyebrow">Tentang Kami</span>
-            <h2 class="section-title">Tim respons insiden di balik <span class="accent">infrastruktur digital</span> Radnet.</h2>
-            <p class="about-lead">PT Radnet Digital Indonesia adalah perusahaan penyedia solusi digital yang membantu bisnis dan individu bertumbuh melalui konektivitas, komputasi, dan keamanan yang andal.</p>
-            <p>Berdiri sebagai bagian dari ekosistem Radnet, RADNET-CSIRT mengoordinasikan pencegahan, penanganan, dan pemulihan insiden siber. Kami bekerja di sisi teknologi maupun manusia: memperkuat konfigurasi, mempercepat respons, dan meningkatkan kesadaran keamanan seluruh konstituen.</p>
-            <div class="about-points">
-              <div class="about-point">
-                <span class="about-point-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-network"></use></svg></span>
-                <span><strong>Infrastruktur &amp; konektivitas enterprise</strong><span>Perlindungan menyeluruh untuk jaringan, transit, dan layanan akses internet.</span></span>
-              </div>
-              <div class="about-point">
-                <span class="about-point-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-server"></use></svg></span>
-                <span><strong>Cloud, server, dan layanan inti Radnet</strong><span>Koordinasi kerentanan untuk RadneXt Internet, Private Peering, DNS, dan ekosistem layanan digital.</span></span>
-              </div>
-              <div class="about-point">
-                <span class="about-point-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-users"></use></svg></span>
-                <span><strong>Kolaborasi &amp; peningkatan kapasitas</strong><span>Berbagi advisori, edukasi, dan koordinasi dengan CSIRT serta pemangku kepentingan terkait.</span></span>
-              </div>
-            </div>
-            <div class="about-note">
-              <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg>
-              <span>Keamanan bukan hanya produk, melainkan proses berkelanjutan yang menghubungkan teknologi, kebijakan, dan kesiapan manusia.</span>
-            </div>
+            <h2 class="section-title">Tim keamanan yang terkoordinasi dan mudah dihubungi.</h2>
+            <p>PT Radnet Digital Indonesia bergerak di bidang layanan solusi digital, termasuk konektivitas internet, cloud, DNS, dan keamanan infrastruktur. RADNET-CSIRT hadir sebagai pusat koordinasi penanganan insiden siber untuk perusahaan, pelanggan, dan mitra.</p>
+            <p>Kami menjalankan proses triase yang terstruktur, menjaga kerahasiaan informasi pelapor, dan berkoordinasi dengan pemangku kepentingan terkait sesuai kebutuhan penanganan.</p>
+            <ul class="about-points">
+              <li class="about-point"><svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg><span>Mandat penanganan insiden, koordinasi kerentanan, dan advisori keamanan.</span></li>
+              <li class="about-point"><svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg><span>Kanal komunikasi resmi yang tervalidasi dan tercatat dalam sistem tiket.</span></li>
+              <li class="about-point"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg><span>Dukungan tim yang tersebar di Surabaya, Jakarta, dan Bandung.</span></li>
+            </ul>
           </div>
 
-          <div class="company-panel reveal">
-            <div class="company-banner">
-              <span class="company-label">Profil Perusahaan</span>
-              <h3>PT Radnet Digital Indonesia</h3>
-              <p>Your Digital Solution Provider</p>
-              <span class="company-badge"><svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-building"></use></svg>Kantor Pusat · Surabaya</span>
-            </div>
-            <div class="company-body">
-              <div class="company-facts">
-                <div class="company-fact"><span>Bidang usaha</span><strong>Solusi digital &amp; infrastruktur telekomunikasi</strong></div>
-                <div class="company-fact"><span>Wilayah layanan</span><strong>Indonesia</strong></div>
-                <div class="company-fact"><span>Layanan utama</span><strong>Internet, cloud, DNS, keamanan digital</strong></div>
-                <div class="company-fact"><span>Zona waktu operasi</span><strong>Asia/Jakarta (UTC+7)</strong></div>
-              </div>
-              <p class="product-title">Ekosistem layanan</p>
-              <div class="product-tags">
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>RadneXt Internet</span>
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Private Peering</span>
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Cloud &amp; Bare Metal</span>
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>EzyDNS</span>
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Internet Security</span>
-                <span class="product-tag"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Infrastruktur Telekomunikasi</span>
-              </div>
-              <div class="company-address">
-                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-pin"></use></svg>
-                <span><strong>Headquarters — Surabaya</strong><br>Intiland Tower Suites Level 3, Jl. Panglima Sudirman Kav. 101-103, Surabaya 60271</span>
-              </div>
+          <div class="info-card reveal">
+            <h3>Informasi Kelembagaan</h3>
+            <p>Ringkasan profil resmi RADNET-CSIRT.</p>
+            <div class="info-row"><span>Organisasi</span><strong>PT Radnet Digital Indonesia</strong></div>
+            <div class="info-row"><span>Tipe CSIRT</span><strong>Corporate / Enterprise CSIRT</strong></div>
+            <div class="info-row"><span>Cakupan</span><strong>Indonesia</strong></div>
+            <div class="info-row"><span>Zona waktu</span><strong>Asia/Jakarta (UTC+7)</strong></div>
+            <div class="info-row"><span>Kantor pusat</span><strong>Intiland Tower Suites Level 3, Surabaya</strong></div>
+            <div class="info-row"><span>Website</span><strong><a href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">radnet-digital.id</a></strong></div>
+            <div class="info-note">
+              <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg>
+              <span>Profil lengkap dan kunci PGP publik tersedia pada bagian RFC 2350.</span>
             </div>
           </div>
         </div>
@@ -1256,130 +861,59 @@
 
     <section class="section section-alt" id="layanan">
       <div class="container">
-        <div class="section-head center reveal">
-          <span class="eyebrow">Layanan Utama CSIRT</span>
-          <h2 class="section-title">Respons terkoordinasi untuk <span class="accent">setiap ancaman</span>.</h2>
-          <p class="section-desc">Mengadaptasi praktik layanan CSIRT sektor publik dan kebutuhan proteksi infrastruktur enterprise Radnet, dengan pendekatan yang terukur, terdokumentasi, dan berorientasi pemulihan.</p>
+        <div class="section-head reveal">
+          <span class="eyebrow">Layanan</span>
+          <h2 class="section-title">Dukungan keamanan yang <span class="accent">jelas dan terarah.</span></h2>
+          <p class="section-desc">Layanan inti RADNET-CSIRT untuk membantu organisasi mendeteksi, merespons, dan memulihkan diri dari insiden siber.</p>
         </div>
 
-        <div class="services-grid">
+        <div class="service-grid">
           <article class="service-card reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield-alert"></use></svg></span>
-              <span class="service-num">01</span>
-            </div>
-            <h3>Penanganan Insiden Siber &amp; Triase</h3>
-            <p>Penerimaan laporan, verifikasi awal, klasifikasi dampak, hingga koordinasi containment dan pemulihan layanan.</p>
-            <ul class="service-list">
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Triage cepat &amp; terprioritaskan</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Koordinasi respons lintas tim</li>
-            </ul>
+            <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield-alert"></use></svg></span>
+            <h3>Penanganan Insiden Siber</h3>
+            <p>Verifikasi, triase, containment, eradikasi, dan pendampingan pemulihan layanan yang terdampak.</p>
           </article>
-
-          <article class="service-card blue reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-network"></use></svg></span>
-              <span class="service-num">02</span>
-            </div>
-            <h3>Koordinasi Kerentanan Sistem &amp; Infrastruktur</h3>
-            <p>Identifikasi, validasi, dan tindak lanjut kerentanan pada jaringan, server, DNS, serta layanan digital Radnet.</p>
-            <ul class="service-list">
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>RadneXt Internet &amp; Private Peering</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Hardening &amp; rekomendasi patch</li>
-            </ul>
+          <article class="service-card reveal">
+            <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-network"></use></svg></span>
+            <h3>Koordinasi Kerentanan</h3>
+            <p>Koordinasi pengungkapan kerentanan secara bertanggung jawab dengan vendor dan pemangku kepentingan.</p>
           </article>
-
-          <article class="service-card amber reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-radar"></use></svg></span>
-              <span class="service-num">03</span>
-            </div>
-            <h3>Peringatan Dini &amp; Advisori Keamanan</h3>
-            <p>Diseminasi informasi ancaman, indikator kompromi, dan rekomendasi mitigasi yang relevan bagi konstituen.</p>
-            <ul class="service-list">
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Advisori terkurasi &amp; terverifikasi</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Informasi tingkat keparahan jelas</li>
-            </ul>
+          <article class="service-card reveal">
+            <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-radar"></use></svg></span>
+            <h3>Peringatan Dini &amp; Advisori</h3>
+            <p>Informasi keamanan yang dapat ditindaklanjuti, mencakup kerentanan aktif dan rekomendasi mitigasi.</p>
           </article>
-
-          <article class="service-card emerald reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-fingerprint"></use></svg></span>
-              <span class="service-num">04</span>
-            </div>
-            <h3>Analisis Forensik Digital &amp; Artefak</h3>
-            <p>Pemeriksaan bukti digital, analisis artefak, dan rekonstruksi kejadian untuk mendukung investigasi serta pemulihan.</p>
-            <ul class="service-list">
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Analisis log &amp; bukti digital</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Dokumentasi pasca-insiden</li>
-            </ul>
+          <article class="service-card reveal">
+            <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-fingerprint"></use></svg></span>
+            <h3>Forensik Digital &amp; Edukasi</h3>
+            <p>Analisis artefak insiden serta sosialisasi keamanan untuk meningkatkan kesiapan konstituen.</p>
           </article>
-
-          <article class="service-card red reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></span>
-              <span class="service-num">05</span>
-            </div>
-            <h3>Sosialisasi &amp; Edukasi Keamanan Siber</h3>
-            <p>Peningkatan kesadaran pengguna melalui kampanye, pelatihan, simulasi phishing, dan panduan praktik aman.</p>
-            <ul class="service-list">
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Security awareness &amp; drill</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Panduan tanggap insiden</li>
-            </ul>
-          </article>
-
-          <article class="service-card service-cta reveal">
-            <div class="service-top">
-              <span class="service-icon"><svg class="icon" aria-hidden="true"><use href="#i-headset"></use></svg></span>
-              <span class="service-num">24/7</span>
-            </div>
-            <h3>Butuh respons cepat?</h3>
-            <p>Hubungi SOC atau kirim laporan melalui formulir resmi. Jangan menunggu hingga dampak insiden meluas.</p>
-            <div class="service-cta-actions">
-              <a class="btn btn-danger btn-sm" href="#lapor">Lapor Insiden</a>
-              <a class="btn btn-outline btn-sm" href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">WhatsApp SOC</a>
-            </div>
-          </article>
-        </div>
-
-        <div class="process-strip reveal">
-          <div class="process-head">
-            <h3>Alur Penanganan Insiden</h3>
-            <span>Terstruktur, terdokumentasi, dan berorientasi pemulihan</span>
-          </div>
-          <div class="process-flow">
-            <div class="process-step"><span class="process-num">01</span><span><strong>Deteksi</strong><span>Monitoring &amp; laporan</span></span></div>
-            <div class="process-step"><span class="process-num">02</span><span><strong>Triase</strong><span>Verifikasi &amp; prioritas</span></span></div>
-            <div class="process-step"><span class="process-num">03</span><span><strong>Analisis</strong><span>Investigasi &amp; forensik</span></span></div>
-            <div class="process-step"><span class="process-num">04</span><span><strong>Mitigasi</strong><span>Containment &amp; eradikasi</span></span></div>
-            <div class="process-step"><span class="process-num">05</span><span><strong>Pemulihan</strong><span>Restorasi &amp; pelajaran</span></span></div>
-          </div>
         </div>
       </div>
     </section>
 
-    <section class="section report-section" id="lapor">
+    <section class="section" id="lapor">
       <div class="container">
         <div class="section-head reveal">
           <span class="eyebrow">Pelaporan Insiden</span>
-          <h2 class="section-title">Laporkan insiden siber. <span class="accent">Kami siap merespons.</span></h2>
-          <p class="section-desc">Sampaikan kronologi dan bukti yang tersedia. Tim SOC akan melakukan triase, menghubungi pelapor, dan mengoordinasikan langkah penanganan sesuai tingkat keparahan.</p>
+          <h2 class="section-title">Laporkan insiden. <span class="accent">Kami siap merespons.</span></h2>
+          <p class="section-desc">Sampaikan kronologi dan bukti yang tersedia. Tim SOC akan melakukan triase dan menghubungi pelapor sesuai tingkat keparahan.</p>
         </div>
 
-        <div class="report-layout">
+        <div class="report-grid">
           <aside class="report-aside">
-            <div class="urgent-card reveal">
-              <span class="urgent-badge"><span class="pulse-dot" aria-hidden="true"></span>Hotline Insiden</span>
+            <div class="help-card reveal">
+              <span class="help-badge"><span class="soc-dot" aria-hidden="true"></span>Hotline Insiden</span>
               <h3>Terjadi insiden aktif?</h3>
               <p>Untuk kondisi yang berdampak langsung pada layanan atau data sensitif, hubungi kanal darurat kami segera.</p>
-              <div class="urgent-links">
-                <a class="urgent-link" href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">
+              <div class="help-links">
+                <a class="help-link" href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">
                   <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
-                  <span>08155044434<small>WhatsApp · 24/7</small></span>
+                  <span>08155044434 · WhatsApp 24/7</span>
                 </a>
-                <a class="urgent-link" href="mailto:csirt@radnet-digital.id">
+                <a class="help-link" href="mailto:csirt@radnet-digital.id">
                   <svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg>
-                  <span>csirt@radnet-digital.id<small>Email resmi CSIRT</small></span>
+                  <span>csirt@radnet-digital.id</span>
                 </a>
               </div>
             </div>
@@ -1391,13 +925,12 @@
                 <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Sistem, akun, atau layanan yang terdampak.</li>
                 <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Log, tangkapan layar, atau indikator kompromi.</li>
                 <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Tindakan yang sudah dilakukan.</li>
-                <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Kontak yang dapat dihubungi untuk klarifikasi.</li>
               </ul>
             </div>
 
             <div class="privacy-note reveal">
               <svg class="icon icon-sm" aria-hidden="true"><use href="#i-lock"></use></svg>
-              <span>Informasi pelapor dan bukti insiden ditangani secara terbatas sesuai kebutuhan operasional. Hindari mengirim kata sandi atau kunci privat melalui formulir ini.</span>
+              <span>Hindari mengirim kata sandi atau kunci privat melalui formulir ini. Informasi pelapor ditangani secara terbatas.</span>
             </div>
           </aside>
 
@@ -1408,7 +941,7 @@
                 <h3>Formulir Pelaporan Insiden</h3>
                 <p>Field bertanda <span class="req">*</span> wajib diisi. Estimasi pengisian 3–5 menit.</p>
               </div>
-              <span class="secure-badge"><svg class="icon" style="width:12px;height:12px" aria-hidden="true"><use href="#i-lock"></use></svg>Kanal Resmi</span>
+              <span class="secure-badge"><svg class="icon" style="width:11px;height:11px" aria-hidden="true"><use href="#i-lock"></use></svg>Kanal Resmi</span>
             </div>
 
             <form class="incident-form" id="incidentForm" novalidate>
@@ -1458,7 +991,7 @@
                 <div class="severity-options">
                   <label class="sev-option" data-level="Low">
                     <input type="radio" name="severity" value="Low" required />
-                    <span><b>Low</b><small>Dampak terbatas</small></span>
+                    <span><b>Low</b><small>Terbatas</small></span>
                   </label>
                   <label class="sev-option" data-level="Medium">
                     <input type="radio" name="severity" value="Medium" />
@@ -1466,11 +999,11 @@
                   </label>
                   <label class="sev-option" data-level="High">
                     <input type="radio" name="severity" value="High" />
-                    <span><b>High</b><small>Dampak signifikan</small></span>
+                    <span><b>High</b><small>Signifikan</small></span>
                   </label>
                   <label class="sev-option" data-level="Critical">
                     <input type="radio" name="severity" value="Critical" />
-                    <span><b>Critical</b><small>Darurat &amp; meluas</small></span>
+                    <span><b>Critical</b><small>Darurat</small></span>
                   </label>
                 </div>
                 <span class="field-error" id="errSeverity">Pilih tingkat keparahan insiden.</span>
@@ -1479,7 +1012,7 @@
               <div class="field-group" data-field="desc">
                 <label for="incidentDesc">Deskripsi Kronologi <span class="req">*</span></label>
                 <textarea class="field" id="incidentDesc" name="incidentDesc" rows="5" maxlength="2000" minlength="20" placeholder="Jelaskan kronologi, sistem yang terdampak, indikator kompromi, dan tindakan yang sudah dilakukan..." required aria-describedby="errDesc"></textarea>
-                <div class="field-meta"><span>Minimal 20 karakter. Sertakan detail yang relevan.</span><span class="counter" id="descCount">0 / 2000</span></div>
+                <div class="field-meta"><span>Minimal 20 karakter.</span><span class="counter" id="descCount">0 / 2000</span></div>
                 <span class="field-error" id="errDesc">Deskripsi kronologi minimal 20 karakter.</span>
               </div>
 
@@ -1506,7 +1039,7 @@
                 <span id="submitLabel">Kirim Laporan Insiden</span>
                 <svg class="icon submit-arrow" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
               </button>
-              <p class="form-footnote"><svg class="icon" style="width:12px;height:12px;display:inline;vertical-align:-2px;margin-right:3px" aria-hidden="true"><use href="#i-lock"></use></svg>Dengan mengirim laporan, Anda akan menerima kode tiket untuk pelacakan.</p>
+              <p class="form-footnote"><svg class="icon" style="width:11px;height:11px;display:inline;vertical-align:-2px;margin-right:3px" aria-hidden="true"><use href="#i-lock"></use></svg>Dengan mengirim laporan, Anda akan menerima kode tiket untuk pelacakan.</p>
             </form>
           </div>
         </div>
@@ -1516,12 +1049,12 @@
     <section class="section section-alt" id="advisori">
       <div class="container">
         <div class="section-head reveal">
-          <span class="eyebrow">Advisori &amp; Peringatan</span>
-          <h2 class="section-title">Informasi keamanan yang <span class="accent">dapat ditindaklanjuti</span>.</h2>
-          <p class="section-desc">Pantau advisori terbaru dari RADNET-CSIRT. Gunakan pencarian atau filter tingkat keparahan untuk menemukan informasi yang paling relevan dengan lingkungan Anda.</p>
+          <span class="eyebrow">Advisori Keamanan</span>
+          <h2 class="section-title">Informasi keamanan yang <span class="accent">dapat ditindaklanjuti.</span></h2>
+          <p class="section-desc">Pantau advisori terbaru RADNET-CSIRT. Gunakan pencarian atau filter tingkat keparahan untuk menemukan informasi yang relevan.</p>
         </div>
 
-        <div class="advisory-toolbar reveal">
+        <div class="toolbar reveal">
           <div class="search-box">
             <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
             <label class="sr-only" for="advisorySearch">Cari advisori keamanan</label>
@@ -1555,34 +1088,32 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="eyebrow">Dokumen Resmi</span>
-          <h2 class="section-title">Profil RFC 2350 &amp; <span class="accent">kunci PGP publik</span>.</h2>
-          <p class="section-desc">RADNET-CSIRT mempublikasikan profil kelembagaan sesuai RFC 2350 agar konstituen, mitra, dan otoritas dapat memahami mandat, cakupan, kebijakan, serta kanal komunikasi resmi kami.</p>
+          <h2 class="section-title">Profil RFC 2350 &amp; <span class="accent">kunci PGP publik.</span></h2>
+          <p class="section-desc">Dokumen ini membantu konstituen, mitra, dan otoritas memahami mandat, cakupan, kebijakan, serta kanal komunikasi resmi RADNET-CSIRT.</p>
         </div>
 
-        <div class="rfc-layout">
-          <div class="rfc-card reveal">
-            <div class="rfc-head">
-              <div class="rfc-title-wrap">
+        <div class="docs-grid">
+          <div class="doc-card reveal">
+            <div class="doc-head">
+              <div class="doc-title-wrap">
                 <span class="doc-icon"><svg class="icon" aria-hidden="true"><use href="#i-file"></use></svg></span>
                 <div>
                   <h3>RFC 2350 Profile</h3>
                   <p>RADNET-CSIRT-RFC2350 · Versi 2.0</p>
                 </div>
               </div>
-              <span class="doc-status"><svg class="icon" style="width:10px;height:10px" aria-hidden="true"><use href="#i-check"></use></svg>Aktif</span>
+              <span class="doc-status"><svg class="icon" style="width:9px;height:9px" aria-hidden="true"><use href="#i-check"></use></svg>Aktif</span>
             </div>
-            <div class="rfc-body">
-              <dl style="margin:0">
+            <div class="doc-body">
+              <dl class="rfc-list">
                 <div class="rfc-row"><dt>Nama tim</dt><dd>RADNET-CSIRT</dd></div>
                 <div class="rfc-row"><dt>Organisasi</dt><dd>PT Radnet Digital Indonesia</dd></div>
                 <div class="rfc-row"><dt>Tipe CSIRT</dt><dd>Corporate / Enterprise CSIRT</dd></div>
                 <div class="rfc-row"><dt>Konstituen</dt><dd>Perusahaan, pelanggan, dan mitra Radnet</dd></div>
                 <div class="rfc-row"><dt>Cakupan</dt><dd>Indonesia</dd></div>
-                <div class="rfc-row"><dt>Zona waktu</dt><dd>Asia/Jakarta (UTC+7)</dd></div>
-                <div class="rfc-row"><dt>Bahasa</dt><dd>Indonesia / English</dd></div>
                 <div class="rfc-row"><dt>Pembaruan</dt><dd>30 Oktober 2026</dd></div>
               </dl>
-              <div class="rfc-actions">
+              <div class="doc-actions">
                 <button class="btn btn-primary btn-sm" id="downloadRfcBtn" type="button">
                   <svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"></use></svg>
                   Unduh RFC 2350
@@ -1595,18 +1126,18 @@
             </div>
           </div>
 
-          <div class="pgp-card reveal">
-            <div class="pgp-head">
-              <div class="pgp-title-wrap">
+          <div class="doc-card reveal">
+            <div class="doc-head">
+              <div class="doc-title-wrap">
                 <span class="doc-icon green"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg></span>
                 <div>
                   <h3>PGP Public Key</h3>
-                  <p>Enkripsi laporan sensitif · Key ID 02AD 4118</p>
+                  <p>Enkripsi laporan sensitif · Key ID B3D7 7C28</p>
                 </div>
               </div>
-              <span class="doc-status"><svg class="icon" style="width:10px;height:10px" aria-hidden="true"><use href="#i-lock"></use></svg>Public</span>
+              <span class="doc-status"><svg class="icon" style="width:9px;height:9px" aria-hidden="true"><use href="#i-lock"></use></svg>Public</span>
             </div>
-            <div class="pgp-body">
+            <div class="doc-body">
               <div class="fingerprint">
                 <svg class="icon" aria-hidden="true"><use href="#i-fingerprint"></use></svg>
                 <div>
@@ -1652,12 +1183,12 @@ RIcRSnB0AQ==
   </main>
 
   <footer class="site-footer" id="kontak">
-    <section class="footer-contact">
+    <section class="footer-main">
       <div class="container">
-        <div class="footer-heading reveal">
+        <div class="section-head reveal" style="margin-bottom:26px">
           <span class="eyebrow">Kontak Resmi</span>
-          <h2>Jaringan kantor dan kanal komunikasi RADNET-CSIRT.</h2>
-          <p>Tim kami tersebar di Surabaya, Jakarta, dan Bandung. Untuk laporan insiden, utamakan kanal CSIRT agar tervalidasi dan tercatat dalam sistem tiket.</p>
+          <h2 class="section-title">Jaringan kantor dan kanal komunikasi.</h2>
+          <p class="section-desc">Tim kami tersebar di Surabaya, Jakarta, dan Bandung. Untuk laporan insiden, utamakan kanal CSIRT agar tervalidasi dan tercatat.</p>
         </div>
 
         <div class="office-grid">
@@ -1667,14 +1198,14 @@ RIcRSnB0AQ==
               <span class="office-hq">HQ</span>
             </div>
             <p>Intiland Tower Suites Level 3<br>Jl. Panglima Sudirman Kav. 101-103<br>Surabaya 60271</p>
-            <p><a href="https://maps.google.com/?q=Intiland+Tower+Suites+Surabaya" target="_blank" rel="noopener noreferrer">Lihat lokasi kantor pusat</a></p>
+            <p><a href="https://maps.google.com/?q=Intiland+Tower+Suites+Surabaya" target="_blank" rel="noopener noreferrer">Lihat lokasi</a></p>
           </article>
           <article class="office-card reveal">
             <div class="office-top">
               <span class="office-city"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-pin"></use></svg>Jakarta</span>
             </div>
             <p>Graha Induk KUD lantai 8<br>Jl. Warung Buncit Raya No. 18-20<br>Pejaten, Jakarta Selatan</p>
-            <p><a href="https://maps.google.com/?q=Graha+Induk+KUD+Warung+Buncit+Jakarta" target="_blank" rel="noopener noreferrer">Lihat lokasi kantor Jakarta</a></p>
+            <p><a href="https://maps.google.com/?q=Graha+Induk+KUD+Warung+Buncit+Jakarta" target="_blank" rel="noopener noreferrer">Lihat lokasi</a></p>
           </article>
           <article class="office-card reveal">
             <div class="office-top">
@@ -1685,10 +1216,10 @@ RIcRSnB0AQ==
           </article>
         </div>
 
-        <div class="contact-strip reveal">
+        <div class="contact-bar reveal">
           <div class="contact-item">
-            <svg class="icon" aria-hidden="true"><use href="#i-headset"></use></svg>
-            <div><span>Hotline insiden &amp; WhatsApp</span><strong><a href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">08155044434</a></strong></div>
+            <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
+            <div><span>WhatsApp 24/7</span><strong><a href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">08155044434</a></strong></div>
           </div>
           <div class="contact-item">
             <svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg>
@@ -1696,69 +1227,55 @@ RIcRSnB0AQ==
           </div>
           <div class="contact-item">
             <svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>
-            <div><span>Instagram Resmi</span><strong><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a></strong></div>
+            <div><span>Instagram</span><strong><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a></strong></div>
           </div>
           <div class="contact-item">
-            <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
-            <div><span>Jam operasional</span><strong>24 jam / 7 hari · WIB</strong></div>
+            <svg class="icon" aria-hidden="true"><use href="#i-globe"></use></svg>
+            <div><span>Website</span><strong><a href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">radnet-digital.id</a></strong></div>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="footer-main">
-      <div class="container footer-main-inner">
-        <div class="footer-brand">
-          <a class="brand" href="#beranda" aria-label="RADNET-CSIRT">
-            <span class="brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 5.8v5.4c0 4.3 2.9 7.8 7 9.8 4.1-2 7-5.5 7-9.8V5.8L12 3Z"/><path d="m9 11.8 2 2 4-4.4"/></svg>
-            </span>
-            <span class="brand-text">
-              <span class="brand-name">RADNET<span>-CSIRT</span></span>
-              <span class="brand-sub">PT Radnet Digital Indonesia</span>
-            </span>
-          </a>
-          <p>Computer Security Incident Response Team PT Radnet Digital Indonesia. Mendukung keamanan layanan digital, konektivitas, cloud, dan infrastruktur telekomunikasi.</p>
-          <div class="footer-social">
-            <a href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">Website Resmi <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg></a>
-            <a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>@radnetdigital</a>
-            <a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a>
-          </div>
+    <div class="footer-inner container">
+      <div class="footer-brand">
+        <a class="brand" href="#beranda" aria-label="RADNET-CSIRT">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 5.8v5.4c0 4.3 2.9 7.8 7 9.8 4.1-2 7-5.5 7-9.8V5.8L12 3Z"/><path d="m9 11.8 2 2 4-4.4"/></svg>
+          </span>
+          <span class="brand-text">
+            <span class="brand-name">RADNET<span>-CSIRT</span></span>
+            <span class="brand-sub">PT Radnet Digital Indonesia</span>
+          </span>
+        </a>
+        <p>Computer Security Incident Response Team PT Radnet Digital Indonesia. Mendukung keamanan layanan digital, konektivitas, cloud, dan infrastruktur telekomunikasi.</p>
+        <div class="footer-social">
+          <a href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">Website <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg></a>
+          <a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>@radnetdigital</a>
+          <a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a>
         </div>
+      </div>
 
-        <div class="footer-col">
-          <h3>Navigasi</h3>
-          <ul class="footer-links">
-            <li><a href="#beranda"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Beranda</a></li>
-            <li><a href="#tentang"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Tentang Kami</a></li>
-            <li><a href="#layanan"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Layanan</a></li>
-            <li><a href="#lapor"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Lapor Insiden</a></li>
-            <li><a href="#advisori"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Advisori Keamanan</a></li>
-            <li><a href="#rfc"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>RFC 2350</a></li>
-          </ul>
-        </div>
+      <div class="footer-col">
+        <h3>Navigasi</h3>
+        <ul class="footer-links">
+          <li><a href="#beranda"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Beranda</a></li>
+          <li><a href="#tentang"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Tentang Kami</a></li>
+          <li><a href="#layanan"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Layanan</a></li>
+          <li><a href="#lapor"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Lapor Insiden</a></li>
+          <li><a href="#advisori"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>Advisori</a></li>
+          <li><a href="#rfc"><svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>RFC 2350</a></li>
+        </ul>
+      </div>
 
-        <div class="footer-col">
-          <h3>Layanan CSIRT</h3>
-          <ul class="footer-links">
-            <li><a href="#layanan">Penanganan insiden &amp; triase</a></li>
-            <li><a href="#layanan">Koordinasi kerentanan</a></li>
-            <li><a href="#advisori">Peringatan dini</a></li>
-            <li><a href="#layanan">Forensik digital</a></li>
-            <li><a href="#layanan">Edukasi keamanan</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h3>Kontak</h3>
-          <ul class="footer-contact-list">
-            <li><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg><span><a href="mailto:csirt@radnet-digital.id">csirt@radnet-digital.id</a><br><a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a></span></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg><span><a href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">08155044434</a> (chat only)</span></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg><span><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a> · Instagram</span></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg><span>Operasional 24/7 · WIB</span></li>
-            <li><svg class="icon" aria-hidden="true"><use href="#i-globe"></use></svg><span>https://radnet-digital.id</span></li>
-          </ul>
-        </div>
+      <div class="footer-col">
+        <h3>Kontak</h3>
+        <ul class="footer-contact-list">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg><span><a href="mailto:csirt@radnet-digital.id">csirt@radnet-digital.id</a><br><a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a></span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg><span><a href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">08155044434</a> (24/7)</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg><span><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a></span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg><span>Operasional 24/7 · WIB</span></li>
+        </ul>
       </div>
     </div>
 
@@ -1783,6 +1300,7 @@ RIcRSnB0AQ==
     <svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-circle"></use></svg>
     <span id="toastMessage">Tersalin</span>
   </div>
+
   <div class="modal" id="successModal" aria-hidden="true">
     <div class="modal-backdrop" data-close-modal></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
@@ -1850,6 +1368,7 @@ RIcRSnB0AQ==
       </div>
     </div>
   </div>
+
   <script>
     (function () {
       "use strict";
