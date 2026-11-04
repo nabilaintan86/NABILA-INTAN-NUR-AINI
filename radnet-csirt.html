@@ -149,6 +149,59 @@
     }
     .live-clock { font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; color: var(--slate-500); white-space: nowrap; }
 
+    .security-ticker {
+      position: relative; z-index: 55; overflow: hidden;
+      background: linear-gradient(90deg, #0f172a 0%, #164e63 52%, #0e7490 100%);
+      color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12);
+    }
+    .security-ticker::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 45% 120% at 0% 0%, rgba(34, 211, 238, .22), transparent 70%);
+    }
+    .ticker-inner { position: relative; z-index: 1; min-height: 54px; display: flex; align-items: center; gap: 16px; }
+    .ticker-label {
+      display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto;
+      padding: 6px 11px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 999px;
+      background: rgba(255, 255, 255, .08); font-size: 10.5px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+    }
+    .ticker-live {
+      width: 7px; height: 7px; border-radius: 50%; background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); animation: pulseDot 2s infinite;
+    }
+    .ticker-viewport {
+      flex: 1 1 auto; min-width: 0; overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    }
+    .ticker-track { display: flex; width: max-content; will-change: transform; }
+    .ticker-track.is-animated { animation: tickerScroll 46s linear infinite; }
+    .security-ticker:hover .ticker-track.is-animated,
+    .security-ticker:focus-within .ticker-track.is-animated { animation-play-state: paused; }
+    .ticker-sequence { display: flex; align-items: center; flex: 0 0 auto; }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 9px; padding: 4px 30px 4px 0;
+      color: #e2e8f0; font-size: 12.5px; font-weight: 600; white-space: nowrap;
+      transition: color .18s ease;
+    }
+    .ticker-item:hover, .ticker-item:focus-visible { color: #fff; }
+    .ticker-item::after { content: ""; width: 5px; height: 5px; margin-left: 21px; border-radius: 50%; background: rgba(255, 255, 255, .35); }
+    .ticker-item:hover .ticker-text { text-decoration: underline; text-underline-offset: 3px; }
+    .ticker-sev { flex: 0 0 auto; padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .ticker-sev.critical { background: rgba(248, 113, 113, .18); color: #fecaca; border: 1px solid rgba(248, 113, 113, .35); }
+    .ticker-sev.high { background: rgba(251, 191, 36, .16); color: #fde68a; border: 1px solid rgba(251, 191, 36, .32); }
+    .ticker-sev.medium { background: rgba(125, 211, 252, .16); color: #bae6fd; border: 1px solid rgba(125, 211, 252, .3); }
+    .ticker-meta { color: #94a3b8; font-family: var(--font-mono); font-size: 10px; }
+    .ticker-more {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 10px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 8px;
+      color: #fff; font-size: 11px; font-weight: 750; white-space: nowrap;
+      transition: background .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .ticker-more:hover { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .4); transform: translateY(-1px); }
+    .ticker-more .icon { width: 13px; height: 13px; }
+    @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
     .site-header {
       position: sticky; top: 0; z-index: 60; background: rgba(255, 255, 255, .94);
       border-bottom: 1px solid var(--slate-200); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -285,6 +338,8 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
       .js .reveal { opacity: 1; transform: none; }
+      .ticker-track.is-animated { animation: none; }
+      .ticker-viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
     }
 
     .hero { position: relative; overflow: hidden; background: #fff; border-bottom: 1px solid var(--slate-200); }
@@ -649,7 +704,7 @@
     .office-card p + p { margin-top: 6px; }
     .office-card a { color: var(--cyan-700); font-weight: 650; }
     .office-card a:hover { text-decoration: underline; text-underline-offset: 2px; }
-    .contact-strip { display: grid; grid-template-columns: 1.1fr .9fr .9fr; gap: 1px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: var(--slate-200); overflow: hidden; box-shadow: var(--shadow-xs); }
+    .contact-strip { display: grid; grid-template-columns: 1.1fr .9fr .85fr .95fr; gap: 1px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: var(--slate-200); overflow: hidden; box-shadow: var(--shadow-xs); }
     .contact-item { display: flex; align-items: flex-start; gap: 11px; padding: 18px 20px; background: #fff; }
     .contact-item .icon { color: var(--cyan-700); margin-top: 2px; }
     .contact-item span { display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--slate-400); }
@@ -751,11 +806,16 @@
       .advisory-grid { grid-template-columns: repeat(2, 1fr); }
       .office-grid { grid-template-columns: 1fr 1fr; }
       .contact-strip { grid-template-columns: 1fr 1fr; }
-      .contact-strip .contact-item:last-child { grid-column: 1 / -1; }
+      .contact-strip .contact-item:last-child { grid-column: auto; }
     }
     @media (max-width: 780px) {
       .container { width: calc(100% - 36px); }
       .topbar-hours, .topbar-divider, .live-clock { display: none; }
+      .ticker-inner { min-height: 50px; gap: 10px; }
+      .ticker-label { font-size: 9.5px; padding: 5px 8px; }
+      .ticker-meta { display: none; }
+      .ticker-item { font-size: 11.5px; padding-right: 22px; }
+      .ticker-item::after { margin-left: 15px; }
       .topbar-inner { min-height: 62px; align-items: flex-start; padding: 10px 0; gap: 8px; }
       .topbar-contacts { gap: 8px 15px; }
       .topbar-right { margin-left: auto; }
@@ -883,6 +943,7 @@
     <symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M12 10a3 3 0 0 0-3 3c0 3-1 5-2 6"/><path d="M12 6a7 7 0 0 0-7 7c0 1.5-.2 3-.8 4.3"/><path d="M12 2a11 11 0 0 0-11 11c0 2.1-.4 4.2-1.1 6"/><path d="M15 13a3 3 0 0 0-3-3"/><path d="M12 18c0 2-.4 3.4-1 4.2"/><path d="M18 10a6 6 0 0 0-6-6"/><path d="M16 13c0 4-.7 6.4-2.5 8.5"/><path d="M20 10a8 8 0 0 0-8-8"/><path d="M20 13c0 5.1-1.2 7.4-3.3 9"/></symbol>
     <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></symbol>
     <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
     <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 8.1-8.1"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></symbol>
     <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4"/><path d="M8 7h.01"/><path d="M12 7h.01"/><path d="M16 7h.01"/><path d="M8 11h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/></symbol>
@@ -902,9 +963,9 @@
           <svg class="icon icon-sm" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
           <span>WhatsApp <strong>08155044434</strong></span>
         </a>
-        <a class="topbar-link" href="mailto:csirt@radnet.co.id">
+        <a class="topbar-link" href="mailto:csirt@radnet-digital.id">
           <svg class="icon icon-sm" aria-hidden="true"><use href="#i-mail"></use></svg>
-          <span>csirt@radnet.co.id</span>
+          <span>csirt@radnet-digital.id</span>
         </a>
         <span class="topbar-divider" aria-hidden="true"></span>
         <span class="topbar-hours"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"></use></svg>Layanan 24/7 · WIB</span>
@@ -968,6 +1029,37 @@
       </div>
     </div>
   </header>
+
+  <div class="security-ticker" id="securityTicker" aria-label="Pengumuman dan advisori keamanan terbaru RADNET-CSIRT">
+    <div class="container ticker-inner">
+      <span class="ticker-label"><span class="ticker-live" aria-hidden="true"></span>Advisori Terbaru</span>
+      <div class="ticker-viewport">
+        <div class="ticker-track" id="tickerTrack">
+          <span class="ticker-sequence">
+            <a class="ticker-item" href="#advisori">
+              <span class="ticker-sev critical">Critical</span>
+              <span class="ticker-text">Kerentanan aktif pada sistem — patch segera</span>
+              <span class="ticker-meta">RADNET-ADV-2026</span>
+            </a>
+            <a class="ticker-item" href="#advisori">
+              <span class="ticker-sev high">High</span>
+              <span class="ticker-text">Patch update OpenSSL dan layanan edge</span>
+              <span class="ticker-meta">Advisori keamanan</span>
+            </a>
+            <a class="ticker-item" href="#advisori">
+              <span class="ticker-sev medium">Info</span>
+              <span class="ticker-text">Advisori keamanan terbaru 2026</span>
+              <span class="ticker-meta">Diperbarui berkala</span>
+            </a>
+          </span>
+        </div>
+      </div>
+      <a class="ticker-more" href="#advisori">
+        Lihat Semua
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+      </a>
+    </div>
+  </div>
 
   <main id="main">
     <section class="hero" id="beranda">
@@ -1285,9 +1377,9 @@
                   <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
                   <span>08155044434<small>WhatsApp · 24/7</small></span>
                 </a>
-                <a class="urgent-link" href="mailto:csirt@radnet.co.id">
+                <a class="urgent-link" href="mailto:csirt@radnet-digital.id">
                   <svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg>
-                  <span>csirt@radnet.co.id<small>Email resmi CSIRT</small></span>
+                  <span>csirt@radnet-digital.id<small>Email resmi CSIRT</small></span>
                 </a>
               </div>
             </div>
@@ -1519,23 +1611,23 @@
                 <svg class="icon" aria-hidden="true"><use href="#i-fingerprint"></use></svg>
                 <div>
                   <span>Fingerprint</span>
-                  <code>2C57 5D19 2557 E8FB 5800 27A5 8A7F 469D 02AD 4118</code>
+                  <code>A2B6 AA04 57FB 12C6 E870 BFE5 BD55 FF8A B3D7 7C28</code>
                 </div>
               </div>
               <div class="pgp-key-box">
                 <pre class="pgp-key" id="pgpKeyBlock">-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-mDMEauR4NBYJKwYBBAHaRw8BAQdAF3ijPwxWfzcplxpXzdIMzN8vFYCjaNN/IBam
-LQvgeLG0NVJBRE5FVC1DU0lSVCAoSW5jaWRlbnQgUmVzcG9uc2UpIDxjc2lydEBy
-YWRuZXQuY28uaWQ+iJYEExYKAD4WIQQsV10ZJVfo+1gAJ6WKf0adAq1BGAUCauR4
-NAIbAwUJA8JnAAULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRCKf0adAq1BGCzn
-AP9ctjEjfk6qOVzDYxFPOQAHC/Vxm4Hf76CPpNl7CLlfrwD/eC+nE6a6Ke7orfPk
-0OB9lo2Zx9pEOxKf64ZCu/+S0AC4OARq5Hg0EgorBgEEAZdVAQUBAQdA8jWQkaWi
-zbZoYxLzCIeCrRE2J3LvCY4maLqfRnCzyxYDAQgHiH4EGBYKACYWIQQsV10ZJVfo
-+1gAJ6WKf0adAq1BGAUCauR4NAIbDAUJA8JnAAAKCRCKf0adAq1BGAOdAPwKarJ8
-/JfjJdO32K9IneCYbeVXsnX1jiQzsk5z9dig3AEAtnLNMgVGO5pJupGB+dHn20//
-wNy8J7MPESN1OAOnkQo=
-=VizH
+mDMEausojxYJKwYBBAHaRw8BAQdAulSW6PosXrXuhLnizDL+pBU+G9ao4ghucFLU
+7tmjKj20OlJBRE5FVC1DU0lSVCAoSW5jaWRlbnQgUmVzcG9uc2UpIDxjc2lydEBy
+YWRuZXQtZGlnaXRhbC5pZD6IkAQTFgoAOBYhBKK2qgRX+xLG6HC/5b1V/4qz13wo
+BQJq6yiPAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEL1V/4qz13woM3cA
+/RPrprysBJu7wT1GCFMg8k1sspHidJ474crvulvdkoYsAQDLixWPXkM5bKADz03A
+kGeobGyYeVTAvDMJaDc9ApNqCLg4BGrrKI8SCisGAQQBl1UBBQEBB0ArbAVijII7
+9e3+8qi01JlkyqmtJ2L2QLa4CUyYz5rWYQMBCAeIeAQYFgoAIBYhBKK2qgRX+xLG
+6HC/5b1V/4qz13woBQJq6yiPAhsMAAoJEL1V/4qz13woeEgA/04+fqIamTE2N2J/
+zWWt3XtukjHT6mIb9iz2q1XEa6gcAQCGwlfYjXsfPhTwPYFC/OYRfBI9y4N+5E8U
+RIcRSnB0AQ==
+=edJ7
 -----END PGP PUBLIC KEY BLOCK-----</pre>
               </div>
               <div class="pgp-actions">
@@ -1551,7 +1643,7 @@ wNy8J7MPESN1OAOnkQo=
                   Salin Fingerprint
                 </button>
               </div>
-              <p class="pgp-note"><svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg><span>Gunakan kunci ini untuk melindungi informasi sensitif sebelum dikirim ke csirt@radnet.co.id. Jangan pernah membagikan kunci privat.</span></p>
+              <p class="pgp-note"><svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg><span>Gunakan kunci ini untuk melindungi informasi sensitif sebelum dikirim ke csirt@radnet-digital.id. Jangan pernah membagikan kunci privat.</span></p>
             </div>
           </div>
         </div>
@@ -1600,7 +1692,11 @@ wNy8J7MPESN1OAOnkQo=
           </div>
           <div class="contact-item">
             <svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg>
-            <div><span>Email CSIRT</span><strong><a href="mailto:csirt@radnet.co.id">csirt@radnet.co.id</a></strong></div>
+            <div><span>Email CSIRT</span><strong><a href="mailto:csirt@radnet-digital.id">csirt@radnet-digital.id</a></strong></div>
+          </div>
+          <div class="contact-item">
+            <svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>
+            <div><span>Instagram Resmi</span><strong><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a></strong></div>
           </div>
           <div class="contact-item">
             <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
@@ -1625,6 +1721,7 @@ wNy8J7MPESN1OAOnkQo=
           <p>Computer Security Incident Response Team PT Radnet Digital Indonesia. Mendukung keamanan layanan digital, konektivitas, cloud, dan infrastruktur telekomunikasi.</p>
           <div class="footer-social">
             <a href="https://radnet-digital.id/" target="_blank" rel="noopener noreferrer">Website Resmi <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg></a>
+            <a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>@radnetdigital</a>
             <a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a>
           </div>
         </div>
@@ -1655,8 +1752,9 @@ wNy8J7MPESN1OAOnkQo=
         <div class="footer-col">
           <h3>Kontak</h3>
           <ul class="footer-contact-list">
-            <li><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg><span><a href="mailto:csirt@radnet.co.id">csirt@radnet.co.id</a><br><a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a></span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg><span><a href="mailto:csirt@radnet-digital.id">csirt@radnet-digital.id</a><br><a href="mailto:sales@radnet-digital.id">sales@radnet-digital.id</a></span></li>
             <li><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg><span><a href="https://wa.me/628155044434" target="_blank" rel="noopener noreferrer">08155044434</a> (chat only)</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg><span><a href="https://instagram.com/radnetdigital" target="_blank" rel="noopener noreferrer">@radnetdigital</a> · Instagram</span></li>
             <li><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg><span>Operasional 24/7 · WIB</span></li>
             <li><svg class="icon" aria-hidden="true"><use href="#i-globe"></use></svg><span>https://radnet-digital.id</span></li>
           </ul>
@@ -1763,7 +1861,7 @@ wNy8J7MPESN1OAOnkQo=
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
       const year = new Date().getFullYear();
-      const PGP_FINGERPRINT = "2C57 5D19 2557 E8FB 5800 27A5 8A7F 469D 02AD 4118";
+      const PGP_FINGERPRINT = "A2B6 AA04 57FB 12C6 E870 BFE5 BD55 FF8A B3D7 7C28";
 
       /* ---------- Live clock ---------- */
       const clockEl = $("#liveClock");
@@ -1947,7 +2045,7 @@ Coverage         : Indonesia
 Timezone         : Asia/Jakarta (UTC+7)
 
 3. CONTACT INFORMATION
-Email CSIRT      : csirt@radnet.co.id
+Email CSIRT      : csirt@radnet-digital.id
 Email Sales      : sales@radnet-digital.id
 WhatsApp         : 08155044434
 Operational Hours: 24 hours / 7 days
@@ -2396,6 +2494,41 @@ Versi terbaru selalu tersedia melalui portal resmi RADNET-CSIRT.
         }
       ];
 
+      /* ---------- Security announcement ticker ---------- */
+      const tickerTrack = $("#tickerTrack");
+      const tickerSeverity = {
+        Critical: "critical",
+        High: "high",
+        Medium: "medium"
+      };
+
+      function renderTicker() {
+        if (!tickerTrack) return;
+        const items = advisories.map((item) => `
+          <a class="ticker-item" href="#advisori" data-advisory-id="${item.id}" aria-label="Advisori ${item.severity}: ${item.title}">
+            <span class="ticker-sev ${tickerSeverity[item.severity] || "medium"}">${item.severity}</span>
+            <span class="ticker-text">${item.title}</span>
+            <span class="ticker-meta">${item.cve} · ${item.date}</span>
+          </a>
+        `).join("");
+
+        const sequence = document.createElement("span");
+        sequence.className = "ticker-sequence";
+        sequence.innerHTML = items;
+
+        const clone = sequence.cloneNode(true);
+        clone.setAttribute("aria-hidden", "true");
+        clone.querySelectorAll("a").forEach((link) => {
+          link.tabIndex = -1;
+          link.setAttribute("aria-hidden", "true");
+        });
+
+        tickerTrack.replaceChildren(sequence, clone);
+        tickerTrack.classList.add("is-animated");
+      }
+
+      renderTicker();
+
       const severityClass = {
         Critical: "sev-critical",
         High: "sev-high",
@@ -2455,28 +2588,40 @@ Versi terbaru selalu tersedia melalui portal resmi RADNET-CSIRT.
 
       if (advisorySearch) advisorySearch.addEventListener("input", renderAdvisories);
 
+      function openAdvisoryDetail(item) {
+        if (!item) return;
+        const modal = $("#advisoryModal");
+        const severityEl = $("#advisoryModalSeverity");
+        if (severityEl) {
+          severityEl.className = "sev-badge " + severityClass[item.severity];
+          severityEl.textContent = item.severity;
+        }
+        $("#advisoryModalId").textContent = item.id;
+        $("#advisoryModalTitle").textContent = item.title;
+        $("#advisoryModalDate").textContent = item.date;
+        $("#advisoryModalCve").textContent = item.cve;
+        $("#advisoryModalCvss").textContent = item.cvss + " · " + item.category;
+        $("#advisoryModalSummary").textContent = item.summary;
+        $("#advisoryModalAffected").textContent = item.affected;
+        $("#advisoryModalAction").textContent = item.action;
+        openModal(modal);
+      }
+
+      function handleAdvisoryClick(event, preventNavigation) {
+        const trigger = event.target.closest("[data-advisory-id]");
+        if (!trigger) return;
+        const item = advisories.find((advisory) => advisory.id === trigger.dataset.advisoryId);
+        if (!item) return;
+        if (preventNavigation) event.preventDefault();
+        openAdvisoryDetail(item);
+      }
+
       if (advisoryGrid) {
-        advisoryGrid.addEventListener("click", (event) => {
-          const trigger = event.target.closest("[data-advisory-id]");
-          if (!trigger) return;
-          const item = advisories.find((advisory) => advisory.id === trigger.dataset.advisoryId);
-          if (!item) return;
-          const modal = $("#advisoryModal");
-          const severityEl = $("#advisoryModalSeverity");
-          if (severityEl) {
-            severityEl.className = "sev-badge " + severityClass[item.severity];
-            severityEl.textContent = item.severity;
-          }
-          $("#advisoryModalId").textContent = item.id;
-          $("#advisoryModalTitle").textContent = item.title;
-          $("#advisoryModalDate").textContent = item.date;
-          $("#advisoryModalCve").textContent = item.cve;
-          $("#advisoryModalCvss").textContent = item.cvss + " · " + item.category;
-          $("#advisoryModalSummary").textContent = item.summary;
-          $("#advisoryModalAffected").textContent = item.affected;
-          $("#advisoryModalAction").textContent = item.action;
-          openModal(modal);
-        });
+        advisoryGrid.addEventListener("click", (event) => handleAdvisoryClick(event, false));
+      }
+
+      if (tickerTrack) {
+        tickerTrack.addEventListener("click", (event) => handleAdvisoryClick(event, true));
       }
 
       renderAdvisories();
