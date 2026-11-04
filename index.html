@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RADNET-CSIRT — Computer Security Incident Response Team PT Radnet Digital Indonesia. Pusat koordinasi penanganan insiden siber, kerentanan, dan advisori keamanan 24/7." />
+  <meta name="theme-color" content="#0f172a" />
+  <title>RADNET-CSIRT | PT Radnet Digital Indonesia</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Cpath d='M16 6 8 9.5v6c0 4.7 3.2 8.2 8 10.5 4.8-2.3 8-5.8 8-10.5v-6L16 6Z' fill='none' stroke='%2306b6d4' stroke-width='2'/%3E%3Cpath d='m12.7 15.5 2.1 2.1 4.6-5' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { 950: '#060e1b', 900: '#0f172a', 850: '#101b31', 800: '#16233d' },
+            electric: { 300: '#67e8f9', 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2' },
+            success: { 400: '#34d399', 500: '#10b981', 600: '#059669' }
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          },
+          boxShadow: {
+            glow: '0 0 50px rgba(6, 182, 212, 0.16)',
+            'glow-sm': '0 0 28px rgba(6, 182, 212, 0.12)',
+            panel: '0 24px 80px rgba(2, 8, 23, 0.45)'
+          },
+          keyframes: {
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+            scan: { '0%': { transform: 'translateY(-100%)', opacity: '0' }, '10%': { opacity: '.6' }, '90%': { opacity: '.6' }, '100%': { transform: 'translateY(600%)', opacity: '0' } },
+            blink: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '.35' } },
+            modalIn: { from: { opacity: '0', transform: 'translateY(16px) scale(.98)' }, to: { opacity: '1', transform: 'translateY(0) scale(1)' } },
+            bar: { '0%, 100%': { transform: 'scaleY(.45)' }, '50%': { transform: 'scaleY(1)' } }
+          },
+          animation: {
+            float: 'float 5s ease-in-out infinite',
+            scan: 'scan 5s linear infinite',
+            blink: 'blink 1.8s ease-in-out infinite',
+            'modal-in': 'modalIn .25s ease-out both',
+            bar: 'bar 3.2s ease-in-out infinite'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root { color-scheme: dark; }
+    html { scroll-padding-top: 96px; }
+    body {
+      background-color: #0f172a;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 12% -5%, rgba(6, 182, 212, 0.12), transparent 65%),
+        radial-gradient(ellipse 45% 35% at 92% 18%, rgba(16, 185, 129, 0.07), transparent 65%),
+        radial-gradient(ellipse 50% 45% at 50% 105%, rgba(8, 145, 178, 0.06), transparent 70%);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 40%, transparent 92%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 40%, transparent 92%);
+    }
+    ::selection { background: rgba(6, 182, 212, 0.3); color: #fff; }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #08111f; }
+    ::-webkit-scrollbar-thumb { background: #26344d; border-radius: 999px; border: 2px solid #08111f; }
+    ::-webkit-scrollbar-thumb:hover { background: #33445f; }
+
+    .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+    .text-gradient {
+      background: linear-gradient(100deg, #67e8f9 0%, #22d3ee 38%, #06b6d4 62%, #34d399 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glass {
+      background: linear-gradient(145deg, rgba(22, 35, 61, 0.7), rgba(15, 23, 42, 0.55));
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .grid-glow {
+      background-image:
+        linear-gradient(rgba(6, 182, 212, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.055) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(ellipse at center, black 15%, transparent 72%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 72%);
+    }
+
+    .nav-link { position: relative; color: #94a3b8; transition: color .2s ease; }
+    .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -26px; height: 2px; background: linear-gradient(90deg, #06b6d4, #10b981); transform: scaleX(0); transform-origin: center; transition: transform .25s ease; border-radius: 999px; }
+    .nav-link:hover, .nav-link.active { color: #f8fafc; }
+    .nav-link.active::after { transform: scaleX(1); }
+
+    .btn-primary { background: linear-gradient(135deg, #06b6d4, #0891b2); box-shadow: 0 12px 30px rgba(6, 182, 212, 0.22), inset 0 1px 0 rgba(255,255,255,.18); transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
+    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255,255,255,.18); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary { background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(148, 163, 184, 0.22); transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+    .btn-secondary:hover { border-color: rgba(34, 211, 238, 0.5); background: rgba(22, 35, 61, 0.75); transform: translateY(-2px); }
+
+    .field { width: 100%; border-radius: 0.75rem; border: 1px solid rgba(148, 163, 184, 0.17); background: rgba(8, 17, 31, 0.7); color: #f1f5f9; padding: 0.75rem 0.9rem; font-size: 0.875rem; line-height: 1.45; outline: none; transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+    .field::placeholder { color: #64748b; }
+    .field:focus { border-color: rgba(34, 211, 238, 0.65); box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12); background: rgba(8, 17, 31, 0.9); }
+    .field:user-invalid, .field.was-validated:invalid { border-color: rgba(251, 113, 133, 0.6); }
+    select.field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.8rem center; background-size: 1rem; padding-right: 2.5rem; }
+    select.field option { background: #0f172a; color: #e2e8f0; }
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.8); opacity: .65; cursor: pointer; }
+
+    .severity-option input:checked + span { border-color: currentColor; background: rgba(255,255,255,.055); box-shadow: 0 0 0 3px rgba(6,182,212,.06); }
+    .severity-option input:focus-visible + span { outline: 2px solid #22d3ee; outline-offset: 2px; }
+
+    .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+    .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    .advisory-card { background: linear-gradient(150deg, rgba(22, 35, 61, 0.62), rgba(15, 23, 42, 0.5)); border: 1px solid rgba(148, 163, 184, 0.11); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+    .advisory-card:hover { transform: translateY(-4px); border-color: rgba(34, 211, 238, 0.28); box-shadow: 0 18px 45px rgba(2, 8, 23, 0.35); }
+    .sev-badge { display: inline-flex; align-items: center; gap: .4rem; border-radius: .3rem; border: 1px solid; padding: .28rem .55rem; font-size: 8px; font-weight: 700; line-height: 1; letter-spacing: .09em; text-transform: uppercase; }
+    .sev-dot { display: inline-block; width: 4px; height: 4px; border-radius: 999px; background: currentColor; }
+    .sev-critical { border-color: rgba(244, 63, 94, .32); background: rgba(244, 63, 94, .1); color: #fda4af; }
+    .sev-high { border-color: rgba(245, 158, 11, .32); background: rgba(245, 158, 11, .1); color: #fcd34d; }
+    .sev-medium { border-color: rgba(6, 182, 212, .32); background: rgba(6, 182, 212, .1); color: #67e8f9; }
+
+    .modal { display: none; }
+    .modal.is-open { display: flex; }
+    .modal.is-open .modal-panel { animation: modalIn .25s ease-out both; }
+    .no-scroll { overflow: hidden; }
+    .traffic-bar { animation: bar 3.2s ease-in-out infinite; transform-origin: bottom; }
+
+    .skip-link { position: fixed; top: -100px; left: 16px; z-index: 200; transition: top .2s; }
+    .skip-link:focus { top: 16px; }
+
+    .status-dot { position: relative; display: inline-flex; width: 7px; height: 7px; border-radius: 999px; background: #10b981; }
+    .status-dot::after { content: ''; position: absolute; inset: -4px; border-radius: 999px; border: 1px solid rgba(16,185,129,.55); animation: ping 2s cubic-bezier(0,0,.2,1) infinite; }
+    @keyframes ping { 75%, 100% { transform: scale(2.1); opacity: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .js .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+  <a href="#beranda" class="skip-link rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950">Langsung ke konten</a>
+
+  <!-- TOP BAR -->
+  <div class="border-b border-slate-800/70 bg-[#07101e]">
+    <div class="mx-auto flex min-h-9 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-4 sm:gap-6">
+        <a href="tel:+628112000247" class="group inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 transition hover:text-cyan-300">
+          <svg class="h-3.5 w-3.5 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5c0-.83.67-1.5 1.5-1.5h2.2c.68 0 1.27.46 1.44 1.12l.66 2.64a1.5 1.5 0 0 1-.43 1.45L6.6 10.48a14.8 14.8 0 0 0 6.92 6.92l1.27-1.27a1.5 1.5 0 0 1 1.45-.43l2.64.66c.66.17 1.12.76 1.12 1.44V20a1.5 1.5 0 0 1-1.5 1.5C10.42 21.5 2.5 13.58 2.5 5.5Z" /></svg>
+          <span class="hidden sm:inline">Hotline Insiden:</span>
+          <span class="font-mono text-slate-300 group-hover:text-cyan-300">+62 811 2000 247</span>
+        </a>
+        <a href="mailto:csirt@radnet.co.id" class="hidden items-center gap-1.5 text-[11px] font-medium text-slate-400 transition hover:text-cyan-300 sm:inline-flex">
+          <svg class="h-3.5 w-3.5 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m3.5 6.5 8.5 6 8.5-6" /></svg>
+          csirt@radnet.co.id
+        </a>
+      </div>
+      <div class="flex items-center gap-3 sm:gap-5">
+        <span id="liveClock" class="hidden font-mono text-[10px] tracking-wide text-slate-500 md:inline" aria-live="polite">--:--:-- WIB</span>
+        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-emerald-300">
+          <span class="status-dot"></span>
+          <span class="hidden sm:inline">24/7 SOC:</span>
+          <span class="text-emerald-400">NORMAL</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header id="siteHeader" class="sticky top-0 z-50 border-b border-slate-800/60 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300">
+    <nav class="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8" aria-label="Navigasi utama">
+      <a href="#beranda" class="group flex shrink-0 items-center gap-3" aria-label="RADNET-CSIRT Beranda">
+        <span class="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 shadow-glow-sm transition group-hover:border-cyan-300/50">
+          <span class="absolute inset-0 bg-gradient-to-br from-cyan-400/15 to-transparent"></span>
+          <svg class="relative h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg>
+        </span>
+        <span class="leading-none">
+          <span class="block font-display text-[17px] font-semibold tracking-tight text-white">RADNET<span class="text-cyan-400">-</span>CSIRT</span>
+          <span class="mt-1 block text-[9px] font-medium uppercase tracking-[0.19em] text-slate-500">Digital Indonesia · CSIRT</span>
+        </span>
+      </a>
+
+      <div class="hidden items-center gap-7 lg:flex">
+        <a href="#beranda" class="nav-link text-[13px] font-medium" data-nav="beranda">Beranda</a>
+        <a href="#tentang" class="nav-link text-[13px] font-medium" data-nav="tentang">Tentang Kami</a>
+        <a href="#layanan" class="nav-link text-[13px] font-medium" data-nav="layanan">Layanan</a>
+        <a href="#rfc" class="nav-link text-[13px] font-medium" data-nav="rfc">Panduan RFC 2350</a>
+        <a href="#advisori" class="nav-link text-[13px] font-medium" data-nav="advisori">Advisori Keamanan</a>
+        <a href="#kontak" class="nav-link text-[13px] font-medium" data-nav="kontak">Kontak &amp; PGP Key</a>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="#lapor" class="btn-primary hidden items-center gap-2 rounded-lg px-4 py-2.5 text-[12px] font-semibold text-white sm:inline-flex" data-focus-form>
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.29 3.86 2.82 17a1.97 1.97 0 0 0 1.71 2.96h14.94A1.97 1.97 0 0 0 21.18 17L13.7 3.86a1.95 1.95 0 0 0-3.41 0Z" /></svg>
+          Laporkan Insiden
+        </a>
+        <button id="mobileMenuBtn" type="button" class="grid h-10 w-10 place-items-center rounded-lg border border-slate-700/70 bg-slate-800/40 text-slate-300 transition hover:border-cyan-500/40 hover:text-white lg:hidden" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="mobileMenu">
+          <svg id="menuIconOpen" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+          <svg id="menuIconClose" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-800/70 bg-[#0b1526]/95 px-4 pb-5 pt-3 backdrop-blur-xl lg:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-1">
+        <a href="#beranda" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Beranda</a>
+        <a href="#tentang" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Tentang Kami</a>
+        <a href="#layanan" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Layanan</a>
+        <a href="#rfc" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Panduan RFC 2350</a>
+        <a href="#advisori" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Advisori Keamanan</a>
+        <a href="#kontak" class="mobile-link rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800/60 hover:text-white">Kontak &amp; PGP Key</a>
+        <a href="#lapor" class="btn-primary mt-2 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-white" data-focus-form>Laporkan Insiden Siber</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="beranda" class="relative overflow-hidden pb-24 pt-16 sm:pt-20 lg:pb-32 lg:pt-28">
+      <div class="pointer-events-none absolute inset-0 grid-glow" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-cyan-500/[0.07] blur-3xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -right-32 top-48 h-96 w-96 rounded-full bg-emerald-500/[0.05] blur-3xl" aria-hidden="true"></div>
+
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid items-center gap-16 lg:grid-cols-[1.04fr_0.96fr] lg:gap-12 xl:gap-20">
+          <div class="reveal">
+            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/[0.06] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
+              CSIRT Berstandar RFC 2350
+              <span class="h-3 w-px bg-cyan-500/30"></span>
+              <span class="text-emerald-300">Terverifikasi</span>
+            </div>
+
+            <h1 class="font-display text-[2.65rem] font-semibold leading-[1.06] tracking-[-0.035em] text-white sm:text-5xl xl:text-[4.15rem]">
+              PT Radnet Digital Indonesia
+              <span class="text-gradient mt-2 block">Computer Security Incident Response Team</span>
+            </h1>
+
+            <p class="mt-7 max-w-xl text-[15px] leading-7 text-slate-400 sm:text-base">
+              RADNET-CSIRT melindungi infrastruktur digital, merespons insiden siber, dan mengoordinasikan penanganan kerentanan secara cepat, terukur, dan terpercaya — <span class="font-medium text-slate-200">24 jam sehari, 7 hari seminggu.</span>
+            </p>
+
+            <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+              <a href="#lapor" class="btn-primary inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-white" data-focus-form>
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.29 3.86 2.82 17a1.97 1.97 0 0 0 1.71 2.96h14.94A1.97 1.97 0 0 0 21.18 17L13.7 3.86a1.95 1.95 0 0 0-3.41 0Z" /></svg>
+                Laporkan Insiden Siber
+              </a>
+              <a href="#rfc" class="btn-secondary inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-slate-200">
+                <svg class="h-4 w-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
+                Unduh Kunci PGP / RFC 2350
+              </a>
+            </div>
+
+            <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-800/70 pt-6 text-[11px] font-medium text-slate-500">
+              <span class="inline-flex items-center gap-2"><svg class="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>Respon awal &lt; 30 menit</span>
+              <span class="inline-flex items-center gap-2"><svg class="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>Enkripsi PGP tersedia</span>
+              <span class="inline-flex items-center gap-2"><svg class="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>Koordinasi lintas sektor</span>
+            </div>
+          </div>
+
+          <!-- SOC CONSOLE -->
+          <div class="reveal relative mx-auto w-full max-w-[520px]" style="transition-delay: 120ms">
+            <div class="absolute -inset-8 rounded-full bg-cyan-500/10 blur-3xl" aria-hidden="true"></div>
+            <div class="relative rounded-[28px] border border-slate-700/50 bg-slate-900/70 p-2.5 shadow-panel backdrop-blur-xl">
+              <div class="overflow-hidden rounded-[21px] border border-slate-800/90 bg-[#081221]">
+                <div class="flex items-center justify-between border-b border-slate-800/80 px-4 py-3.5">
+                  <div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-rose-400/70"></span><span class="h-2 w-2 rounded-full bg-amber-400/70"></span><span class="h-2 w-2 rounded-full bg-emerald-400/70"></span></div>
+                  <div class="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500"><span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>SOC Live Monitor</div>
+                  <svg class="h-4 w-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4" /><circle cx="12" cy="12" r="3.5" /></svg>
+                </div>
+
+                <div class="relative p-5">
+                  <div class="pointer-events-none absolute inset-x-0 top-10 h-16 animate-scan bg-gradient-to-b from-cyan-400/[0.055] to-transparent" aria-hidden="true"></div>
+                  <div class="flex items-center justify-between gap-4">
+                    <div>
+                      <p class="text-[10px] font-semibold uppercase tracking-[0.17em] text-slate-500">Threat Level</p>
+                      <div class="mt-3 flex items-center gap-4">
+                        <div class="relative grid h-[104px] w-[104px] place-items-center rounded-full" style="background: conic-gradient(#10b981 0deg 301deg, #1e293b 301deg 360deg);">
+                          <div class="grid h-[86px] w-[86px] place-items-center rounded-full bg-[#0b1628]">
+                            <div class="text-center"><span class="block font-display text-xl font-semibold text-emerald-400">LOW</span><span class="font-mono text-[8px] uppercase tracking-[0.2em] text-slate-500">Risk score</span></div>
+                          </div>
+                        </div>
+                        <div><p class="text-sm font-semibold text-slate-200">Sistem terkendali</p><p class="mt-1 max-w-[120px] text-[10px] leading-4 text-slate-500">Tidak ada ancaman kritis aktif pada perimeter.</p></div>
+                      </div>
+                    </div>
+                    <div class="grid flex-1 grid-cols-2 gap-2">
+                      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5"><p class="font-mono text-[8px] uppercase tracking-wider text-slate-500">Blocked</p><p class="mt-1 font-display text-lg font-semibold text-white">4.827</p></div>
+                      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5"><p class="font-mono text-[8px] uppercase tracking-wider text-slate-500">Uptime</p><p class="mt-1 font-display text-lg font-semibold text-emerald-400">99.9%</p></div>
+                      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5"><p class="font-mono text-[8px] uppercase tracking-wider text-slate-500">Sensors</p><p class="mt-1 font-display text-lg font-semibold text-white">128</p></div>
+                      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2.5"><p class="font-mono text-[8px] uppercase tracking-wider text-slate-500">MTTD</p><p class="mt-1 font-display text-lg font-semibold text-cyan-400">4m</p></div>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 rounded-2xl border border-slate-800/90 bg-slate-900/40 p-4">
+                    <div class="mb-3 flex items-center justify-between"><span class="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">Network Traffic</span><span class="inline-flex items-center gap-1.5 font-mono text-[9px] text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Realtime</span></div>
+                    <div class="flex h-20 items-end gap-1.5">
+                      <span class="traffic-bar w-full rounded-t bg-cyan-500/25" style="height:32%; animation-delay:-.2s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/30" style="height:48%; animation-delay:-1.1s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/25" style="height:38%; animation-delay:-2s"></span><span class="traffic-bar w-full rounded-t bg-cyan-400/45" style="height:66%; animation-delay:-.5s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/30" style="height:51%; animation-delay:-1.5s"></span><span class="traffic-bar w-full rounded-t bg-emerald-400/40" style="height:74%; animation-delay:-2.4s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/30" style="height:43%; animation-delay:-.8s"></span><span class="traffic-bar w-full rounded-t bg-cyan-400/50" style="height:82%; animation-delay:-1.8s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/30" style="height:58%; animation-delay:-2.8s"></span><span class="traffic-bar w-full rounded-t bg-emerald-400/35" style="height:69%; animation-delay:-.3s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/25" style="height:40%; animation-delay:-1.3s"></span><span class="traffic-bar w-full rounded-t bg-cyan-400/40" style="height:61%; animation-delay:-2.2s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/30" style="height:47%; animation-delay:-.6s"></span><span class="traffic-bar w-full rounded-t bg-emerald-400/45" style="height:78%; animation-delay:-1.6s"></span><span class="traffic-bar w-full rounded-t bg-cyan-500/25" style="height:36%; animation-delay:-2.6s"></span><span class="traffic-bar w-full rounded-t bg-cyan-400/35" style="height:55%; animation-delay:-1s"></span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 space-y-2.5">
+                    <div class="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/50 px-3 py-2"><span class="flex items-center gap-2 text-[10px] text-slate-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Outbound C2 connection blocked</span><span class="font-mono text-[9px] text-slate-600">12:42</span></div>
+                    <div class="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/50 px-3 py-2"><span class="flex items-center gap-2 text-[10px] text-slate-400"><span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>Phishing report triaged</span><span class="font-mono text-[9px] text-slate-600">12:39</span></div>
+                    <div class="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/50 px-3 py-2"><span class="flex items-center gap-2 text-[10px] text-slate-400"><span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>Threat intelligence feed synced</span><span class="font-mono text-[9px] text-slate-600">12:33</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="absolute -right-2 top-20 hidden animate-float items-center gap-2.5 rounded-xl border border-slate-700/60 bg-[#0b1628]/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:flex" style="animation-delay:-1s">
+              <span class="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg></span>
+              <div><p class="text-[9px] font-semibold uppercase tracking-wider text-slate-500">Perimeter</p><p class="text-[11px] font-semibold text-emerald-300">Protected</p></div>
+            </div>
+            <div class="absolute -bottom-5 -left-2 hidden items-center gap-2.5 rounded-xl border border-slate-700/60 bg-[#0b1628]/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:flex">
+              <span class="grid h-7 w-7 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3.5 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></span>
+              <div><p class="text-[9px] font-semibold uppercase tracking-wider text-slate-500">MTTD</p><p class="text-[11px] font-semibold text-slate-200">4 menit 12 detik</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK STATS -->
+    <section class="relative z-10 -mt-12 pb-20 sm:-mt-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 gap-3 rounded-2xl border border-slate-700/50 bg-[#0b1628]/75 p-3 shadow-panel backdrop-blur-xl sm:gap-4 sm:p-4 lg:grid-cols-4">
+          <article class="group rounded-xl border border-slate-800/80 bg-slate-900/45 p-4 transition hover:border-emerald-500/25 sm:p-5">
+            <div class="flex items-start justify-between">
+              <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /></svg></span>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-emerald-400"><span class="h-1 w-1 animate-pulse rounded-full bg-emerald-400"></span>Live</span>
+            </div>
+            <p class="mt-4 text-[10px] font-medium uppercase tracking-[0.13em] text-slate-500">Status Operasional</p>
+            <p class="mt-1.5 font-display text-base font-semibold text-white sm:text-lg">Active &amp; Monitored</p>
+            <p class="mt-1 text-[10px] text-slate-500">SOC beroperasi penuh 24/7</p>
+          </article>
+
+          <article class="group rounded-xl border border-slate-800/80 bg-slate-900/45 p-4 transition hover:border-cyan-500/25 sm:p-5">
+            <div class="flex items-start justify-between">
+              <span class="grid h-9 w-9 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V8" /></svg></span>
+              <span class="font-mono text-[8px] font-medium text-emerald-400">+12.4%</span>
+            </div>
+            <p class="mt-4 text-[10px] font-medium uppercase tracking-[0.13em] text-slate-500">Insiden Ditangani</p>
+            <p class="mt-1.5 font-display text-2xl font-semibold text-white sm:text-[26px]"><span data-counter="1284">0</span><span class="text-cyan-400">+</span></p>
+            <p class="mt-1 text-[10px] text-slate-500">Sejak operasional pertama</p>
+          </article>
+
+          <article class="group rounded-xl border border-slate-800/80 bg-slate-900/45 p-4 transition hover:border-cyan-500/25 sm:p-5">
+            <div class="flex items-start justify-between">
+              <span class="grid h-9 w-9 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3.5 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></span>
+              <span class="font-mono text-[8px] font-medium text-slate-500">SLA</span>
+            </div>
+            <p class="mt-4 text-[10px] font-medium uppercase tracking-[0.13em] text-slate-500">Rata-rata Respon</p>
+            <p class="mt-1.5 font-display text-2xl font-semibold text-white sm:text-[26px]"><span data-counter="17">0</span><span class="ml-1 text-sm font-medium text-slate-400">menit</span></p>
+            <p class="mt-1 text-[10px] text-slate-500">Respon awal &lt; 30 menit</p>
+          </article>
+
+          <article class="group rounded-xl border border-slate-800/80 bg-slate-900/45 p-4 transition hover:border-emerald-500/25 sm:p-5">
+            <div class="flex items-start justify-between">
+              <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 3.75h7.5L19 8.25v12H7a2 2 0 0 1-2-2V5.75a2 2 0 0 1 2-2Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.75V8.5h4.75M8.75 13h6.5m-6.5 3.25h4.5" /></svg></span>
+              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-emerald-400"><svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>Verified</span>
+            </div>
+            <p class="mt-4 text-[10px] font-medium uppercase tracking-[0.13em] text-slate-500">Dokumen RFC 2350</p>
+            <p class="mt-1.5 font-display text-base font-semibold text-white sm:text-lg">Versi 2.0 · Aktif</p>
+            <p class="mt-1 text-[10px] text-slate-500">Dipublikasikan Oktober 2026</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="tentang" class="relative py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20">
+          <div class="reveal">
+            <div class="mb-4 flex items-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-cyan-400 to-transparent"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Tentang Kami</span></div>
+            <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Titik kontak tunggal untuk keamanan siber Anda.</h2>
+            <p class="mt-5 text-[15px] leading-7 text-slate-400">RADNET-CSIRT adalah unit respons insiden siber resmi PT Radnet Digital Indonesia. Kami menjadi titik kontak tunggal bagi pelanggan, mitra, dan pemangku kepentingan dalam menerima laporan, menganalisis ancaman, serta mengoordinasikan pemulihan layanan.</p>
+            <p class="mt-4 text-[15px] leading-7 text-slate-400">Pendekatan kami menggabungkan intelijen ancaman, forensik digital, dan koordinasi lintas sektor untuk meminimalkan dampak insiden dan memperkuat ketahanan digital secara berkelanjutan.</p>
+
+            <div class="mt-8 grid gap-3 sm:grid-cols-3">
+              <div class="rounded-xl border border-slate-800/80 bg-slate-900/40 p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.5 12h3l2-5 4 10 2-5h6" /></svg></span>
+                <p class="mt-3 text-xs font-semibold text-slate-200">Deteksi Dini</p>
+                <p class="mt-1 text-[10px] leading-4 text-slate-500">Monitoring ancaman secara berkelanjutan.</p>
+              </div>
+              <div class="rounded-xl border border-slate-800/80 bg-slate-900/40 p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20.5h-5a4 4 0 0 1-4-4v-3a4 4 0 0 1 4-4h5m0 11 3-3-3-3m-3-7 3-3-3-3m-5 6H4" /></svg></span>
+                <p class="mt-3 text-xs font-semibold text-slate-200">Respons Terkoordinasi</p>
+                <p class="mt-1 text-[10px] leading-4 text-slate-500">Triage cepat dan penanganan terukur.</p>
+              </div>
+              <div class="rounded-xl border border-slate-800/80 bg-slate-900/40 p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg></span>
+                <p class="mt-3 text-xs font-semibold text-slate-200">Pemulihan Terpercaya</p>
+                <p class="mt-1 text-[10px] leading-4 text-slate-500">Pemulihan layanan dengan jejak audit.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal" style="transition-delay: 100ms">
+            <div class="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-[#0b1628]/80 p-6 shadow-panel backdrop-blur-xl sm:p-7">
+              <div class="absolute right-0 top-0 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" aria-hidden="true"></div>
+              <div class="relative flex items-start justify-between gap-4 border-b border-slate-800/80 pb-5">
+                <div><p class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Profil Kelembagaan</p><h3 class="mt-2 font-display text-lg font-semibold text-white">RADNET-CSIRT</h3></div>
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.07] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Aktif</span>
+              </div>
+              <dl class="relative divide-y divide-slate-800/70">
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Organisasi</dt><dd class="text-[11px] font-medium text-slate-200">PT Radnet Digital Indonesia</dd></div>
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Tipe CSIRT</dt><dd class="text-[11px] font-medium text-slate-200">Corporate / Internal CSIRT</dd></div>
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Konstituen</dt><dd class="text-[11px] font-medium text-slate-200">Pelanggan, mitra, dan infrastruktur digital Radnet</dd></div>
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Cakupan</dt><dd class="text-[11px] font-medium text-slate-200">Nasional — Indonesia</dd></div>
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Kerahasiaan</dt><dd class="text-[11px] font-medium text-slate-200">TLP:CLEAR · Laporan sensitif via PGP</dd></div>
+                <div class="grid grid-cols-[120px_1fr] gap-4 py-3.5 sm:grid-cols-[150px_1fr]"><dt class="text-[11px] text-slate-500">Registrasi</dt><dd class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-200">Terdaftar &amp; terverifikasi <span class="inline-flex items-center gap-1 rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-cyan-300">RFC 2350</span></dd></div>
+              </dl>
+              <div class="relative mt-5 flex items-center gap-3 rounded-xl border border-cyan-500/15 bg-cyan-500/[0.04] p-3.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-cyan-500/10 text-cyan-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13.5v3.75m0 3.75h.008v.008H12v-.008Z" /></svg></span>
+                <p class="text-[10px] leading-4 text-slate-400">Seluruh komunikasi sensitif dapat dienkripsi menggunakan kunci PGP resmi RADNET-CSIRT.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="layanan" class="relative border-y border-slate-800/50 bg-[#0b1526]/40 py-20 sm:py-24">
+      <div class="pointer-events-none absolute inset-0 grid-glow opacity-60" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <div class="mb-4 flex items-center justify-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-transparent to-cyan-400"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Layanan Utama</span><span class="h-px w-8 bg-gradient-to-l from-transparent to-cyan-400"></span></div>
+          <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Kapabilitas respons siber end-to-end.</h2>
+          <p class="mt-4 text-sm leading-6 text-slate-400">Layanan yang dirancang mengikuti praktik terbaik CSIRT nasional dan standar penanganan insiden internasional.</p>
+        </div>
+
+        <div class="mt-12 grid gap-4 sm:grid-cols-2">
+          <article class="reveal group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-slate-900/60 hover:shadow-glow sm:p-7">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-500/[0.05] blur-2xl transition group-hover:bg-cyan-500/10" aria-hidden="true"></div>
+            <div class="relative flex items-start justify-between">
+              <span class="grid h-12 w-12 place-items-center rounded-xl border border-cyan-500/15 bg-cyan-500/[0.07] text-cyan-400 transition group-hover:border-cyan-400/35 group-hover:bg-cyan-500/10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg></span>
+              <span class="font-mono text-[10px] text-slate-600">01 / IR</span>
+            </div>
+            <h3 class="relative mt-6 font-display text-lg font-semibold text-white">Penanganan Insiden</h3>
+            <p class="relative mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-cyan-500/80">Incident Handling &amp; Triage</p>
+            <p class="relative mt-3 text-[13px] leading-6 text-slate-400">Penerimaan, klasifikasi, analisis, containment, eradikasi, dan pemulihan insiden dengan dokumentasi forensik yang lengkap.</p>
+            <ul class="relative mt-5 flex flex-wrap gap-2">
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Triage 24/7</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Forensik digital</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Pasca-insiden</li>
+            </ul>
+          </article>
+
+          <article class="reveal group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-slate-900/60 hover:shadow-glow sm:p-7" style="transition-delay: 70ms">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-500/[0.05] blur-2xl transition group-hover:bg-cyan-500/10" aria-hidden="true"></div>
+            <div class="relative flex items-start justify-between">
+              <span class="grid h-12 w-12 place-items-center rounded-xl border border-cyan-500/15 bg-cyan-500/[0.07] text-cyan-400 transition group-hover:border-cyan-400/35 group-hover:bg-cyan-500/10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6.5a4 4 0 1 1 8 0v3h-8v-3Zm-5 5h13a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 18.5 21h-13A1.5 1.5 0 0 1 4 19.5v-7A1.5 1.5 0 0 1 5.5 11.5Zm6.5 3v3" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 16.5h.01M16.5 16.5h.01" /></svg></span>
+              <span class="font-mono text-[10px] text-slate-600">02 / VC</span>
+            </div>
+            <h3 class="relative mt-6 font-display text-lg font-semibold text-white">Koordinasi Kerentanan</h3>
+            <p class="relative mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-cyan-500/80">Vulnerability Coordination</p>
+            <p class="relative mt-3 text-[13px] leading-6 text-slate-400">Validasi temuan, koordinasi perbaikan dengan vendor, dan pengungkapan kerentanan secara bertanggung jawab dan terkoordinasi.</p>
+            <ul class="relative mt-5 flex flex-wrap gap-2">
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Disclosure terkoordinasi</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Validasi PoC</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Panduan mitigasi</li>
+            </ul>
+          </article>
+
+          <article class="reveal group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-slate-900/60 hover:shadow-glow sm:p-7" style="transition-delay: 140ms">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500/[0.05] blur-2xl transition group-hover:bg-amber-500/10" aria-hidden="true"></div>
+            <div class="relative flex items-start justify-between">
+              <span class="grid h-12 w-12 place-items-center rounded-xl border border-amber-500/15 bg-amber-500/[0.07] text-amber-400 transition group-hover:border-amber-400/35 group-hover:bg-amber-500/10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.29 3.86 2.82 17a1.97 1.97 0 0 0 1.71 2.96h14.94A1.97 1.97 0 0 0 21.18 17L13.7 3.86a1.95 1.95 0 0 0-3.41 0Z" /></svg></span>
+              <span class="font-mono text-[10px] text-slate-600">03 / EW</span>
+            </div>
+            <h3 class="relative mt-6 font-display text-lg font-semibold text-white">Peringatan Dini &amp; Advisori</h3>
+            <p class="relative mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-cyan-500/80">Early Warning &amp; Advisories</p>
+            <p class="relative mt-3 text-[13px] leading-6 text-slate-400">Pemantauan ancaman, notifikasi proaktif, dan publikasi advisori teknis untuk memitigasi risiko sebelum berdampak.</p>
+            <ul class="relative mt-5 flex flex-wrap gap-2">
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Intelijen ancaman</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Advisori teknis</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Notifikasi proaktif</li>
+            </ul>
+          </article>
+
+          <article class="reveal group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-slate-900/60 hover:shadow-glow sm:p-7" style="transition-delay: 210ms">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-500/[0.05] blur-2xl transition group-hover:bg-emerald-500/10" aria-hidden="true"></div>
+            <div class="relative flex items-start justify-between">
+              <span class="grid h-12 w-12 place-items-center rounded-xl border border-emerald-500/15 bg-emerald-500/[0.07] text-emerald-400 transition group-hover:border-emerald-400/35 group-hover:bg-emerald-500/10"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.25 3.5 10l8.5 3.75L20.5 10 12 6.25Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 11.5v4.25c0 1.1 2.46 2.5 5.5 2.5s5.5-1.4 5.5-2.5V11.5M20.5 10v6" /></svg></span>
+              <span class="font-mono text-[10px] text-slate-600">04 / SA</span>
+            </div>
+            <h3 class="relative mt-6 font-display text-lg font-semibold text-white">Edukasi &amp; Kesadaran</h3>
+            <p class="relative mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-cyan-500/80">Security Awareness</p>
+            <p class="relative mt-3 text-[13px] leading-6 text-slate-400">Meningkatkan kesadaran dan kesiapan tim melalui pelatihan phishing, tabletop exercise, serta materi edukasi keamanan.</p>
+            <ul class="relative mt-5 flex flex-wrap gap-2">
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Simulasi phishing</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Tabletop exercise</li>
+              <li class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[9px] font-medium text-slate-400">Materi edukasi</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- INCIDENT REPORT -->
+    <section id="lapor" class="relative py-20 sm:py-24">
+      <div class="pointer-events-none absolute left-0 top-1/3 h-80 w-80 rounded-full bg-cyan-500/[0.05] blur-3xl" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <div class="mb-4 flex items-center justify-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-transparent to-cyan-400"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Pelaporan Insiden</span><span class="h-px w-8 bg-gradient-to-l from-transparent to-cyan-400"></span></div>
+          <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Laporkan insiden. Kami mengambil alih dari sana.</h2>
+          <p class="mt-4 text-sm leading-6 text-slate-400">Sampaikan detail insiden dengan lengkap. Tim RADNET-CSIRT akan melakukan verifikasi dan menghubungi Anda melalui kanal resmi.</p>
+        </div>
+
+        <div class="mt-12 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+          <div class="reveal space-y-4 lg:sticky lg:top-28">
+            <div class="rounded-2xl border border-slate-800/80 bg-[#0b1628]/75 p-6 backdrop-blur-xl">
+              <div class="flex items-start gap-3">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/10 text-amber-400"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.29 3.86 2.82 17a1.97 1.97 0 0 0 1.71 2.96h14.94A1.97 1.97 0 0 0 21.18 17L13.7 3.86a1.95 1.95 0 0 0-3.41 0Z" /></svg></span>
+                <div><p class="text-sm font-semibold text-white">Insiden kritis?</p><p class="mt-1 text-[11px] leading-5 text-slate-400">Hubungi hotline 24/7 kami untuk respons immediat.</p></div>
+              </div>
+              <a href="tel:+628112000247" class="mt-5 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.05] px-4 py-3 transition hover:border-amber-400/40 hover:bg-amber-500/[0.08]">
+                <span class="flex items-center gap-2 text-xs font-semibold text-amber-300"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5c0-.83.67-1.5 1.5-1.5h2.2c.68 0 1.27.46 1.44 1.12l.66 2.64a1.5 1.5 0 0 1-.43 1.45L6.6 10.48a14.8 14.8 0 0 0 6.92 6.92l1.27-1.27a1.5 1.5 0 0 1 1.45-.43l2.64.66c.66.17 1.12.76 1.12 1.44V20a1.5 1.5 0 0 1-1.5 1.5C10.42 21.5 2.5 13.58 2.5 5.5Z" /></svg>+62 811 2000 247</span>
+                <svg class="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" /></svg>
+              </a>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800/80 bg-[#0b1628]/75 p-6 backdrop-blur-xl">
+              <p class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Alur Penanganan</p>
+              <ol class="mt-5 space-y-4">
+                <li class="flex gap-3">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-cyan-500/25 bg-cyan-500/10 font-mono text-[9px] font-semibold text-cyan-300">01</span>
+                  <div><p class="text-xs font-semibold text-slate-200">Penerimaan &amp; verifikasi</p><p class="mt-0.5 text-[10px] leading-4 text-slate-500">Laporan dicatat dan diverifikasi oleh analis.</p></div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-slate-700 bg-slate-800/50 font-mono text-[9px] font-semibold text-slate-400">02</span>
+                  <div><p class="text-xs font-semibold text-slate-200">Triage &amp; klasifikasi</p><p class="mt-0.5 text-[10px] leading-4 text-slate-500">Penentuan tingkat keparahan dan prioritas.</p></div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-slate-700 bg-slate-800/50 font-mono text-[9px] font-semibold text-slate-400">03</span>
+                  <div><p class="text-xs font-semibold text-slate-200">Containment &amp; pemulihan</p><p class="mt-0.5 text-[10px] leading-4 text-slate-500">Isolasi ancaman dan pemulihan layanan.</p></div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 font-mono text-[9px] font-semibold text-emerald-300">04</span>
+                  <div><p class="text-xs font-semibold text-slate-200">Laporan &amp; rekomendasi</p><p class="mt-0.5 text-[10px] leading-4 text-slate-500">Post-incident review dan hardening.</p></div>
+                </li>
+              </ol>
+            </div>
+
+            <div class="flex items-start gap-2.5 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4">
+              <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg>
+              <p class="text-[10px] leading-5 text-slate-400">Informasi Anda ditangani secara rahasia. Jangan menghapus log atau bukti sebelum tim kami melakukan analisis.</p>
+            </div>
+          </div>
+
+          <div class="reveal" style="transition-delay: 100ms">
+            <div class="rounded-2xl border border-slate-700/50 bg-[#0b1628]/80 p-5 shadow-panel backdrop-blur-xl sm:p-8">
+              <div class="mb-6 flex items-center justify-between border-b border-slate-800/80 pb-5">
+                <div><h3 class="font-display text-lg font-semibold text-white">Formulir Laporan Insiden</h3><p class="mt-1 text-[11px] text-slate-500">Kolom bertanda <span class="text-cyan-400">*</span> wajib diisi.</p></div>
+                <span class="hidden rounded-lg border border-slate-700/70 bg-slate-800/40 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-slate-500 sm:block">Secure Form</span>
+              </div>
+
+              <form id="incidentForm" novalidate class="space-y-5">
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label for="reporterName" class="mb-2 block text-[11px] font-medium text-slate-300">Nama Pelapor <span class="text-cyan-400">*</span></label>
+                    <input id="reporterName" name="reporterName" type="text" class="field" placeholder="Nama lengkap" autocomplete="name" required />
+                  </div>
+                  <div>
+                    <label for="reporterOrg" class="mb-2 block text-[11px] font-medium text-slate-300">Organisasi / Instansi <span class="text-cyan-400">*</span></label>
+                    <input id="reporterOrg" name="reporterOrg" type="text" class="field" placeholder="Nama organisasi" autocomplete="organization" required />
+                  </div>
+                  <div>
+                    <label for="reporterEmail" class="mb-2 block text-[11px] font-medium text-slate-300">Email Kontak <span class="text-cyan-400">*</span></label>
+                    <input id="reporterEmail" name="reporterEmail" type="email" class="field" placeholder="nama@organisasi.co.id" autocomplete="email" required />
+                  </div>
+                  <div>
+                    <label for="reporterPhone" class="mb-2 block text-[11px] font-medium text-slate-300">Nomor Telepon <span class="text-cyan-400">*</span></label>
+                    <input id="reporterPhone" name="reporterPhone" type="tel" class="field" placeholder="+62 812 3456 7890" autocomplete="tel" pattern="[+0-9()\s-]{8,20}" required />
+                  </div>
+                  <div>
+                    <label for="incidentType" class="mb-2 block text-[11px] font-medium text-slate-300">Jenis Insiden <span class="text-cyan-400">*</span></label>
+                    <select id="incidentType" name="incidentType" class="field" required>
+                      <option value="" selected disabled>Pilih jenis insiden</option>
+                      <option value="Malware / Ransomware">Malware / Ransomware</option>
+                      <option value="Phishing">Phishing</option>
+                      <option value="Unauthorized Access">Unauthorized Access</option>
+                      <option value="DDoS">DDoS</option>
+                      <option value="Web Defacement">Web Defacement</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="incidentDate" class="mb-2 block text-[11px] font-medium text-slate-300">Tanggal &amp; Waktu Kejadian <span class="text-cyan-400">*</span></label>
+                    <input id="incidentDate" name="incidentDate" type="datetime-local" class="field" required />
+                  </div>
+                </div>
+
+                <fieldset>
+                  <legend class="mb-2.5 block text-[11px] font-medium text-slate-300">Tingkat Keparahan <span class="text-cyan-400">*</span></legend>
+                  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <label class="severity-option cursor-pointer text-emerald-400">
+                      <input type="radio" name="severity" value="Low" class="peer sr-only" required />
+                      <span class="flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/50 px-3 py-2.5 text-[11px] font-semibold text-slate-400 transition hover:border-slate-600 hover:text-slate-200"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Low</span>
+                    </label>
+                    <label class="severity-option cursor-pointer text-cyan-400">
+                      <input type="radio" name="severity" value="Medium" class="peer sr-only" required />
+                      <span class="flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/50 px-3 py-2.5 text-[11px] font-semibold text-slate-400 transition hover:border-slate-600 hover:text-slate-200"><span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>Medium</span>
+                    </label>
+                    <label class="severity-option cursor-pointer text-amber-400">
+                      <input type="radio" name="severity" value="High" class="peer sr-only" required />
+                      <span class="flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/50 px-3 py-2.5 text-[11px] font-semibold text-slate-400 transition hover:border-slate-600 hover:text-slate-200"><span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>High</span>
+                    </label>
+                    <label class="severity-option cursor-pointer text-rose-400">
+                      <input type="radio" name="severity" value="Critical" class="peer sr-only" required />
+                      <span class="flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/50 px-3 py-2.5 text-[11px] font-semibold text-slate-400 transition hover:border-slate-600 hover:text-slate-200"><span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>Critical</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div>
+                  <div class="mb-2 flex items-center justify-between"><label for="incidentDesc" class="text-[11px] font-medium text-slate-300">Deskripsi Detail Kejadian <span class="text-cyan-400">*</span></label><span id="descCount" class="font-mono text-[9px] text-slate-600">0 / 2000</span></div>
+                  <textarea id="incidentDesc" name="incidentDesc" rows="5" maxlength="2000" class="field resize-none" placeholder="Jelaskan kronologi, sistem yang terdampak, indikator kompromi, dan tindakan yang sudah dilakukan..." required minlength="20"></textarea>
+                </div>
+
+                <div>
+                  <label for="evidence" class="mb-2 block text-[11px] font-medium text-slate-300">Lampiran Bukti <span class="text-slate-600">(opsional)</span></label>
+                  <label for="evidence" class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 px-4 py-4 transition hover:border-cyan-500/40 hover:bg-cyan-500/[0.03]">
+                    <span class="flex min-w-0 items-center gap-3">
+                      <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-800/70 text-slate-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4 4 4M5 20h14" /></svg></span>
+                      <span class="min-w-0"><span id="fileName" class="block truncate text-[11px] font-medium text-slate-300">Klik untuk mengunggah log atau screenshot</span><span id="fileMeta" class="mt-0.5 block text-[9px] text-slate-600">LOG, TXT, PNG, JPG, PDF, ZIP · Maks. 10 MB</span></span>
+                    </span>
+                    <span class="shrink-0 rounded-md border border-slate-700 px-2 py-1 text-[9px] font-semibold text-slate-500">Pilih File</span>
+                    <input id="evidence" name="evidence" type="file" class="sr-only" accept=".log,.txt,.png,.jpg,.jpeg,.pdf,.zip" />
+                  </label>
+                </div>
+
+                <label class="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-800/70 bg-slate-900/30 p-3.5">
+                  <input id="agree" name="agree" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-600 bg-slate-800 accent-cyan-500" required />
+                  <span class="text-[10px] leading-4 text-slate-400">Saya menyatakan informasi yang diberikan benar dan menyetujui pemrosesan data untuk keperluan penanganan insiden sesuai kebijakan privasi RADNET-CSIRT. <span class="text-cyan-400">*</span></span>
+                </label>
+
+                <div class="flex flex-col gap-3 border-t border-slate-800/80 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p class="flex items-center gap-1.5 text-[9px] text-slate-500"><svg class="h-3 w-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>Nomor tiket otomatis setelah laporan dikirim.</p>
+                  <button id="submitBtn" type="submit" class="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                    <svg id="submitSpinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M21 12a9 9 0 0 0-9-9v3a6 6 0 0 1 6 6h3Z"></path></svg>
+                    <span id="submitLabel">Kirim Laporan</span>
+                    <svg id="submitArrow" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6" /></svg>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADVISORIES -->
+    <section id="advisori" class="relative border-y border-slate-800/50 bg-[#0b1526]/40 py-20 sm:py-24">
+      <div class="pointer-events-none absolute right-0 top-10 h-72 w-72 rounded-full bg-amber-500/[0.035] blur-3xl" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl">
+            <div class="mb-4 flex items-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-cyan-400 to-transparent"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Security Advisories</span></div>
+            <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Advisori &amp; peringatan keamanan terbaru.</h2>
+            <p class="mt-4 text-sm leading-6 text-slate-400">Informasi kerentanan, kampanye ancaman, dan panduan mitigasi dari tim intelijen RADNET-CSIRT.</p>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label for="advisorySearch" class="relative block">
+              <span class="sr-only">Cari advisori</span>
+              <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M10.75 18a7.25 7.25 0 1 0 0-14.5 7.25 7.25 0 0 0 0 14.5Z" /></svg>
+              <input id="advisorySearch" type="search" class="field w-full pl-10 sm:w-72" placeholder="Cari CVE, judul, atau kategori..." autocomplete="off" />
+            </label>
+          </div>
+        </div>
+
+        <div class="reveal mt-8 flex flex-wrap items-center gap-2">
+          <button type="button" class="advisory-filter rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 transition hover:border-cyan-400/50" data-filter="all">Semua <span class="ml-1 font-mono text-[9px] opacity-60" data-count="all">0</span></button>
+          <button type="button" class="advisory-filter rounded-lg border border-slate-700/70 bg-slate-900/40 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:border-slate-600 hover:text-slate-200" data-filter="Critical">Critical <span class="ml-1 font-mono text-[9px] opacity-60" data-count="Critical">0</span></button>
+          <button type="button" class="advisory-filter rounded-lg border border-slate-700/70 bg-slate-900/40 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:border-slate-600 hover:text-slate-200" data-filter="High">High <span class="ml-1 font-mono text-[9px] opacity-60" data-count="High">0</span></button>
+          <button type="button" class="advisory-filter rounded-lg border border-slate-700/70 bg-slate-900/40 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:border-slate-600 hover:text-slate-200" data-filter="Medium">Medium <span class="ml-1 font-mono text-[9px] opacity-60" data-count="Medium">0</span></button>
+          <span id="advisoryCount" class="ml-auto font-mono text-[9px] text-slate-600">0 advisori</span>
+        </div>
+
+        <div id="advisoryGrid" class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+        <div id="advisoryEmpty" class="hidden rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30 py-16 text-center">
+          <svg class="mx-auto h-8 w-8 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M10.75 18a7.25 7.25 0 1 0 0-14.5 7.25 7.25 0 0 0 0 14.5Z" /></svg>
+          <p class="mt-4 text-sm font-medium text-slate-300">Advisori tidak ditemukan</p>
+          <p class="mt-1 text-[11px] text-slate-500">Coba ubah kata kunci atau filter tingkat keparahan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RFC 2350 -->
+    <section id="rfc" class="relative py-20 sm:py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16">
+          <div class="reveal">
+            <div class="mb-4 flex items-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-cyan-400 to-transparent"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Panduan RFC 2350</span></div>
+            <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Profil CSIRT yang transparan dan terstandar.</h2>
+            <p class="mt-5 text-[15px] leading-7 text-slate-400">RADNET-CSIRT mempublikasikan profil kelembagaan sesuai RFC 2350 agar konstituen, mitra, dan otoritas dapat memahami mandat, cakupan, kebijakan, serta kanal komunikasi resmi kami.</p>
+
+            <div class="mt-8 overflow-hidden rounded-2xl border border-slate-700/50 bg-[#0b1628]/75 shadow-panel backdrop-blur-xl">
+              <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/40 px-5 py-3.5">
+                <div class="flex items-center gap-2.5"><span class="grid h-7 w-7 place-items-center rounded-md bg-cyan-500/10 text-cyan-400"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 3.75h7.5L19 8.25v12H7a2 2 0 0 1-2-2V5.75a2 2 0 0 1 2-2Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.75V8.5h4.75M8.75 13h6.5m-6.5 3.25h4.5" /></svg></span><span class="font-mono text-[10px] text-slate-300">radnet-csirt-rfc2350.txt</span></div>
+                <span class="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[8px] uppercase tracking-wider text-emerald-400">Verified</span>
+              </div>
+              <div class="p-5">
+                <div class="flex items-start justify-between gap-4">
+                  <div><p class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Request for Comments</p><p class="mt-1 font-display text-3xl font-semibold text-white">2350</p></div>
+                  <div class="text-right"><p class="text-[9px] text-slate-500">Versi dokumen</p><p class="font-mono text-[11px] text-slate-200">2.0</p><p class="mt-1 text-[9px] text-slate-500">Oktober 2026</p></div>
+                </div>
+                <div class="mt-5 space-y-2">
+                  <div class="flex items-center justify-between border-t border-slate-800/70 pt-2.5"><span class="text-[10px] text-slate-500">Document ID</span><span class="font-mono text-[10px] text-slate-300">RADNET-CSIRT-RFC2350-V2</span></div>
+                  <div class="flex items-center justify-between border-t border-slate-800/70 pt-2.5"><span class="text-[10px] text-slate-500">Klasifikasi</span><span class="font-mono text-[10px] text-slate-300">PUBLIC</span></div>
+                  <div class="flex items-center justify-between border-t border-slate-800/70 pt-2.5"><span class="text-[10px] text-slate-500">Bahasa</span><span class="font-mono text-[10px] text-slate-300">ID / EN</span></div>
+                  <div class="flex items-center justify-between border-t border-slate-800/70 pt-2.5"><span class="text-[10px] text-slate-500">Status</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>ACTIVE</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button type="button" data-download="rfc" class="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-xs font-semibold text-white">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
+                Unduh RFC 2350 Lengkap
+              </button>
+              <button type="button" data-download="pgp" class="btn-secondary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-xs font-semibold text-slate-200">
+                <svg class="h-4 w-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m-3-6a6 6 0 0 1 6 6v3.75A5.25 5.25 0 0 1 16.5 17.25h-9A5.25 5.25 0 0 1 2.25 12V8.25a6 6 0 0 1 6-6h1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 10.5h5.25M7.5 13.5h3" /></svg>
+                Unduh Kunci PGP
+              </button>
+            </div>
+          </div>
+
+          <div class="reveal" style="transition-delay: 100ms">
+            <div class="rounded-2xl border border-slate-700/50 bg-[#0b1628]/80 p-6 shadow-panel backdrop-blur-xl sm:p-7">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-5">
+                <div><p class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Ringkasan RFC 2350</p><h3 class="mt-2 font-display text-lg font-semibold text-white">Informasi Profil CSIRT</h3></div>
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-400"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg></span>
+              </div>
+              <dl class="divide-y divide-slate-800/70">
+                <div class="py-4"><dt class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500"><span class="font-mono text-cyan-500/60">01</span>Constituency</dt><dd class="mt-1.5 text-[11px] leading-5 text-slate-300">PT Radnet Digital Indonesia, pelanggan, mitra, dan konstituen terkait dalam ekosistem layanan digital Radnet.</dd></div>
+                <div class="py-4"><dt class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500"><span class="font-mono text-cyan-500/60">02</span>Sponsorship</dt><dd class="mt-1.5 text-[11px] leading-5 text-slate-300">Didanai sepenuhnya oleh PT Radnet Digital Indonesia sebagai bagian dari komitmen tata kelola keamanan informasi.</dd></div>
+                <div class="py-4"><dt class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500"><span class="font-mono text-cyan-500/60">03</span>Policies</dt><dd class="mt-1.5 text-[11px] leading-5 text-slate-300">Kebijakan koordinasi insiden, kerahasiaan informasi, dan pengungkapan kerentanan secara terkoordinasi.</dd></div>
+                <div class="py-4"><dt class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500"><span class="font-mono text-cyan-500/60">04</span>Communication</dt><dd class="mt-1.5 text-[11px] leading-5 text-slate-300">Email resmi, hotline 24/7, dan komunikasi terenkripsi PGP untuk informasi sensitif.</dd></div>
+                <div class="py-4"><dt class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500"><span class="font-mono text-cyan-500/60">05</span>PGP Fingerprint</dt><dd class="mt-2 break-all rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 font-mono text-[9px] leading-5 text-cyan-300">2C57 5D19 2557 E8FB 5800 27A5 8A7F 469D 02AD 4118</dd></div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT & PGP -->
+    <section id="kontak" class="relative border-t border-slate-800/50 bg-[#0b1526]/40 py-20 sm:py-24">
+      <div class="pointer-events-none absolute inset-0 grid-glow opacity-50" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <div class="mb-4 flex items-center justify-center gap-3"><span class="h-px w-8 bg-gradient-to-r from-transparent to-cyan-400"></span><span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">Kontak &amp; PGP Key</span><span class="h-px w-8 bg-gradient-to-l from-transparent to-cyan-400"></span></div>
+          <h2 class="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Hubungi tim respons kami.</h2>
+          <p class="mt-4 text-sm leading-6 text-slate-400">Gunakan kanal resmi berikut. Untuk laporan yang mengandung informasi sensitif, enkripsi terlebih dahulu dengan kunci PGP publik kami.</p>
+        </div>
+
+        <div class="mt-12 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+          <div class="reveal grid gap-3 sm:grid-cols-2">
+            <a href="tel:+628112000247" class="group rounded-2xl border border-slate-800/80 bg-[#0b1628]/70 p-5 transition hover:border-amber-500/30 hover:bg-[#0b1628]">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-amber-500/10 text-amber-400 transition group-hover:bg-amber-500/15"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5c0-.83.67-1.5 1.5-1.5h2.2c.68 0 1.27.46 1.44 1.12l.66 2.64a1.5 1.5 0 0 1-.43 1.45L6.6 10.48a14.8 14.8 0 0 0 6.92 6.92l1.27-1.27a1.5 1.5 0 0 1 1.45-.43l2.64.66c.66.17 1.12.76 1.12 1.44V20a1.5 1.5 0 0 1-1.5 1.5C10.42 21.5 2.5 13.58 2.5 5.5Z" /></svg></span>
+              <p class="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Hotline Insiden 24/7</p>
+              <p class="mt-1.5 font-mono text-[13px] font-medium text-slate-200 group-hover:text-amber-300">+62 811 2000 247</p>
+            </a>
+            <a href="mailto:csirt@radnet.co.id" class="group rounded-2xl border border-slate-800/80 bg-[#0b1628]/70 p-5 transition hover:border-cyan-500/30 hover:bg-[#0b1628]">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-400 transition group-hover:bg-cyan-500/15"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m3.5 6.5 8.5 6 8.5-6" /></svg></span>
+              <p class="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Email Resmi</p>
+              <p class="mt-1.5 font-mono text-[13px] font-medium text-slate-200 group-hover:text-cyan-300">csirt@radnet.co.id</p>
+            </a>
+            <div class="rounded-2xl border border-slate-800/80 bg-[#0b1628]/70 p-5">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-400"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg></span>
+              <p class="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Kantor</p>
+              <p class="mt-1.5 text-[11px] leading-5 text-slate-300">Gedung Radnet, Jl. Prof. Dr. Soepomo No. 12, Jakarta Selatan 12810</p>
+            </div>
+            <div class="rounded-2xl border border-slate-800/80 bg-[#0b1628]/70 p-5">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/10 text-emerald-400"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3.5 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></span>
+              <p class="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Jam Layanan</p>
+              <p class="mt-1.5 text-[11px] leading-5 text-slate-300"><span class="font-semibold text-emerald-400">24/7</span> · Senin–Minggu, termasuk hari libur nasional</p>
+            </div>
+          </div>
+
+          <div class="reveal" style="transition-delay: 100ms">
+            <div class="relative overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/[0.07] via-[#0b1628] to-[#0b1628] p-6 shadow-panel sm:p-7">
+              <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" aria-hidden="true"></div>
+              <div class="relative flex items-start justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <span class="grid h-11 w-11 place-items-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-300"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m-3-6a6 6 0 0 1 6 6v3.75A5.25 5.25 0 0 1 16.5 17.25h-9A5.25 5.25 0 0 1 2.25 12V8.25a6 6 0 0 1 6-6h1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 10.5h5.25M7.5 13.5h3" /></svg></span>
+                  <div><p class="text-sm font-semibold text-white">PGP Public Key</p><p class="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400">Verified · RSA/Ed25519</p></div>
+                </div>
+                <span class="rounded-full border border-emerald-500/20 bg-emerald-500/[0.07] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-wider text-emerald-400">Active</span>
+              </div>
+
+              <div class="relative mt-6">
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Fingerprint</p>
+                <div class="mt-2 rounded-xl border border-slate-700/70 bg-slate-950/50 p-3.5">
+                  <p id="pgpFingerprint" class="break-all font-mono text-[10px] leading-6 tracking-[0.08em] text-cyan-300 sm:text-[11px]">2C57 5D19 2557 E8FB 5800  27A5 8A7F 469D 02AD 4118</p>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2.5">
+                  <button type="button" data-copy-fingerprint class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700/80 bg-slate-900/60 px-3 py-2.5 text-[10px] font-semibold text-slate-300 transition hover:border-cyan-500/40 hover:text-white">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V5.25A2.25 2.25 0 0 1 10.5 3h8.25A2.25 2.25 0 0 1 21 5.25v8.25A2.25 2.25 0 0 1 18.75 15.75H16.5M5.25 8.25h8.25A2.25 2.25 0 0 1 15.75 10.5v8.25a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18.75V10.5a2.25 2.25 0 0 1 2.25-2.25Z" /></svg>
+                    Salin Fingerprint
+                  </button>
+                  <button type="button" data-download="pgp" class="btn-primary inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-semibold text-white">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
+                    Unduh Kunci
+                  </button>
+                </div>
+              </div>
+
+              <div class="relative mt-5 flex items-start gap-2.5 rounded-xl border border-slate-800/80 bg-slate-950/30 p-3.5">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13.5v3.75m0 3.75h.008v.008H12v-.008Z" /></svg>
+                <p class="text-[10px] leading-5 text-slate-400">Enkripsi email atau lampiran laporan dengan kunci ini. RADNET-CSIRT tidak pernah meminta kata sandi, OTP, atau pembayaran melalui email.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="relative border-t border-slate-800/70 bg-[#07101e]">
+    <div class="mx-auto max-w-7xl px-4 pb-8 pt-14 sm:px-6 lg:px-8">
+      <div class="grid gap-10 pb-12 sm:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.9fr_1fr]">
+        <div>
+          <a href="#beranda" class="inline-flex items-center gap-3">
+            <span class="grid h-10 w-10 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-300">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4.75 6.2v5.15c0 4.22 2.86 7.55 7.25 9.65 4.39-2.1 7.25-5.43 7.25-9.65V6.2L12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.2 12.05 1.9 1.9 3.9-4.2" /></svg>
+            </span>
+            <span><span class="block font-display text-[16px] font-semibold tracking-tight text-white">RADNET<span class="text-cyan-400">-</span>CSIRT</span><span class="mt-0.5 block text-[8px] font-medium uppercase tracking-[0.2em] text-slate-500">PT Radnet Digital Indonesia</span></span>
+          </a>
+          <p class="mt-5 max-w-xs text-[11px] leading-5 text-slate-500">Computer Security Incident Response Team PT Radnet Digital Indonesia. Merespons, memitigasi, dan mengoordinasikan insiden siber secara profesional.</p>
+          <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/15 bg-emerald-500/[0.05] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400"><span class="status-dot"></span>All systems operational</div>
+        </div>
+
+        <div>
+          <h3 class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Quick Links</h3>
+          <ul class="mt-4 space-y-2.5">
+            <li><a href="#beranda" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Beranda</a></li>
+            <li><a href="#tentang" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Tentang Kami</a></li>
+            <li><a href="#layanan" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Layanan</a></li>
+            <li><a href="#rfc" class="text-[11px] text-slate-500 transition hover:text-cyan-300">RFC 2350</a></li>
+            <li><a href="#advisori" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Advisori Keamanan</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Layanan</h3>
+          <ul class="mt-4 space-y-2.5">
+            <li><a href="#layanan" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Incident Handling</a></li>
+            <li><a href="#layanan" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Vulnerability Coordination</a></li>
+            <li><a href="#layanan" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Early Warning</a></li>
+            <li><a href="#layanan" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Security Awareness</a></li>
+            <li><a href="#lapor" class="text-[11px] text-slate-500 transition hover:text-cyan-300">Laporkan Insiden</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Kontak</h3>
+          <ul class="mt-4 space-y-3">
+            <li class="flex items-start gap-2.5"><svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg><span class="text-[10px] leading-5 text-slate-500">Gedung Radnet, Jl. Prof. Dr. Soepomo No. 12, Jakarta Selatan 12810</span></li>
+            <li class="flex items-center gap-2.5"><svg class="h-3.5 w-3.5 shrink-0 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m3.5 6.5 8.5 6 8.5-6" /></svg><a href="mailto:csirt@radnet.co.id" class="font-mono text-[10px] text-slate-400 transition hover:text-cyan-300">csirt@radnet.co.id</a></li>
+            <li class="flex items-center gap-2.5"><svg class="h-3.5 w-3.5 shrink-0 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5c0-.83.67-1.5 1.5-1.5h2.2c.68 0 1.27.46 1.44 1.12l.66 2.64a1.5 1.5 0 0 1-.43 1.45L6.6 10.48a14.8 14.8 0 0 0 6.92 6.92l1.27-1.27a1.5 1.5 0 0 1 1.45-.43l2.64.66c.66.17 1.12.76 1.12 1.44V20a1.5 1.5 0 0 1-1.5 1.5C10.42 21.5 2.5 13.58 2.5 5.5Z" /></svg><a href="tel:+628112000247" class="font-mono text-[10px] text-slate-400 transition hover:text-cyan-300">+62 811 2000 247</a></li>
+            <li class="flex items-center gap-2.5"><svg class="h-3.5 w-3.5 shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3.5 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg><span class="text-[10px] text-slate-500">24/7 · WIB (UTC+7)</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800/70 pt-6">
+        <div class="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <p class="text-[9px] text-slate-600">&copy; <span id="currentYear">2026</span> PT Radnet Digital Indonesia. Seluruh hak cipta dilindungi.</p>
+          <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <a href="#rfc" class="text-[9px] text-slate-600 transition hover:text-slate-400">Kebijakan Privasi</a>
+            <a href="#rfc" class="text-[9px] text-slate-600 transition hover:text-slate-400">RFC 2350</a>
+            <a href="#kontak" class="text-[9px] text-slate-600 transition hover:text-slate-400">PGP Key</a>
+            <span class="inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-wider text-slate-600"><span class="h-1 w-1 rounded-full bg-emerald-500"></span>Secure Portal</span>
+          </div>
+        </div>
+        <p class="mx-auto mt-4 max-w-4xl text-center text-[8px] leading-4 text-slate-700">RADNET-CSIRT tidak pernah meminta kata sandi, kode OTP, atau pembayaran melalui email maupun telepon. Verifikasi setiap komunikasi melalui kanal resmi yang tercantum pada portal ini.</p>
+      </div>
+    </div>
+  </footer>
+
+  <button id="backToTop" type="button" class="fixed bottom-5 right-5 z-40 grid h-10 w-10 translate-y-3 place-items-center rounded-lg border border-cyan-500/25 bg-[#0b1628]/90 text-cyan-300 opacity-0 shadow-lg backdrop-blur transition-all duration-300 hover:border-cyan-400/50 hover:text-white" aria-label="Kembali ke atas">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0-6 6m6-6 6 6" /></svg>
+  </button>
+
+  <!-- SUCCESS MODAL -->
+  <div id="successModal" class="modal fixed inset-0 z-[100] items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="successModalTitle" aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal></div>
+    <div class="modal-panel relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-700/60 bg-[#0b1628] shadow-2xl">
+      <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true"></div>
+      <div class="relative p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <div class="grid h-12 w-12 place-items-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4 4L19 6.8" /></svg>
+          </div>
+          <button type="button" class="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-500 transition hover:border-slate-600 hover:text-white" data-close-modal aria-label="Tutup modal">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <h2 id="successModalTitle" class="mt-5 font-display text-2xl font-semibold text-white">Laporan berhasil diterima</h2>
+        <p class="mt-2 text-[12px] leading-5 text-slate-400">Terima kasih. Tim RADNET-CSIRT akan memverifikasi laporan Anda dan menghubungi pelapor melalui email atau telepon yang terdaftar.</p>
+
+        <div class="mt-6 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.05] p-4">
+          <p class="text-[9px] font-semibold uppercase tracking-[0.17em] text-slate-500">Nomor Tiket Insiden</p>
+          <div class="mt-1.5 flex items-center justify-between gap-3">
+            <p id="ticketNumber" class="font-mono text-lg font-semibold tracking-wide text-cyan-300">#INC-2026-0000</p>
+            <button type="button" id="copyTicketBtn" class="rounded-md border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1.5 text-[9px] font-semibold text-cyan-300 transition hover:bg-cyan-500/15">Salin</button>
+          </div>
+        </div>
+
+        <dl class="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-slate-800/80 bg-slate-900/40 p-4">
+          <div><dt class="text-[9px] text-slate-500">Jenis Insiden</dt><dd id="successType" class="mt-1 text-[11px] font-medium text-slate-200">-</dd></div>
+          <div><dt class="text-[9px] text-slate-500">Severity</dt><dd id="successSeverity" class="mt-1 text-[11px] font-medium text-slate-200">-</dd></div>
+          <div><dt class="text-[9px] text-slate-500">Email Pelapor</dt><dd id="successEmail" class="mt-1 truncate font-mono text-[10px] text-slate-300">-</dd></div>
+          <div><dt class="text-[9px] text-slate-500">Waktu Laporan</dt><dd id="successTime" class="mt-1 font-mono text-[10px] text-slate-300">-</dd></div>
+        </dl>
+
+        <p class="mt-4 text-[9px] leading-4 text-slate-600">Simpan nomor tiket untuk keperluan tindak lanjut. Untuk eskalasi mendesak, hubungi hotline +62 811 2000 247.</p>
+        <button type="button" class="btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-semibold text-white" data-close-modal>Selesai &amp; Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADVISORY MODAL -->
+  <div id="advisoryModal" class="modal fixed inset-0 z-[100] items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="advisoryModalTitle" aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal></div>
+    <div class="modal-panel relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-700/60 bg-[#0b1628] shadow-2xl">
+      <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800/80 bg-[#0b1628]/95 px-6 py-4 backdrop-blur">
+        <div class="flex items-center gap-2.5"><span id="advisoryModalSeverity" class="rounded border px-2 py-1 text-[8px] font-bold uppercase tracking-wider">-</span><span id="advisoryModalId" class="font-mono text-[9px] text-slate-500">-</span></div>
+        <button type="button" class="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-500 transition hover:border-slate-600 hover:text-white" data-close-modal aria-label="Tutup advisori">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="p-6 sm:p-8">
+        <h2 id="advisoryModalTitle" class="font-display text-xl font-semibold leading-snug text-white sm:text-2xl">-</h2>
+        <div class="mt-3 flex flex-wrap items-center gap-3 text-[10px] text-slate-500">
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" /></svg><span id="advisoryModalDate">-</span></span>
+          <span class="h-1 w-1 rounded-full bg-slate-700"></span>
+          <span id="advisoryModalCve" class="font-mono">-</span>
+          <span class="h-1 w-1 rounded-full bg-slate-700"></span>
+          <span id="advisoryModalCvss" class="font-mono">-</span>
+        </div>
+        <div class="mt-6 space-y-5">
+          <div><h3 class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Ringkasan</h3><p id="advisoryModalSummary" class="mt-2 text-[12px] leading-6 text-slate-300">-</p></div>
+          <div><h3 class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Sistem Terdampak</h3><p id="advisoryModalAffected" class="mt-2 text-[12px] leading-6 text-slate-300">-</p></div>
+          <div><h3 class="text-[10px] font-semibold uppercase tracking-[0.17em] text-cyan-400">Rekomendasi Mitigasi</h3><p id="advisoryModalAction" class="mt-2 text-[12px] leading-6 text-slate-300">-</p></div>
+        </div>
+        <div class="mt-7 flex items-start gap-2.5 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4">
+          <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.29 3.86 2.82 17a1.97 1.97 0 0 0 1.71 2.96h14.94A1.97 1.97 0 0 0 21.18 17L13.7 3.86a1.95 1.95 0 0 0-3.41 0Z" /></svg>
+          <p class="text-[10px] leading-5 text-slate-400">Terapkan mitigasi sesegera mungkin. Jika Anda mencurigai adanya kompromi, laporkan melalui formulir insiden atau hotline 24/7.</p>
+        </div>
+        <button type="button" class="btn-primary mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-semibold text-white" data-close-modal>Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[120] -translate-x-1/2 translate-y-3 rounded-lg border border-slate-700/80 bg-[#0b1628]/95 px-4 py-2.5 text-[11px] font-medium text-slate-200 opacity-0 shadow-xl backdrop-blur transition-all duration-300" role="status" aria-live="polite">Tersalin</div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      document.documentElement.classList.add('js');
+
+      const $ = (selector, scope = document) => scope.querySelector(selector);
+      const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const PGP_KEY = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEauR4NBYJKwYBBAHaRw8BAQdAF3ijPwxWfzcplxpXzdIMzN8vFYCjaNN/IBam
+LQvgeLG0NVJBRE5FVC1DU0lSVCAoSW5jaWRlbnQgUmVzcG9uc2UpIDxjc2lydEBy
+YWRuZXQuY28uaWQ+iJYEExYKAD4WIQQsV10ZJVfo+1gAJ6WKf0adAq1BGAUCauR4
+NAIbAwUJA8JnAAULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRCKf0adAq1BGCzn
+AP9ctjEjfk6qOVzDYxFPOQAHC/Vxm4Hf76CPpNl7CLlfrwD/eC+nE6a6Ke7orfPk
+0OB9lo2Zx9pEOxKf64ZCu/+S0AC4OARq5Hg0EgorBgEEAZdVAQUBAQdA8jWQkaWi
+zbZoYxLzCIeCrRE2J3LvCY4maLqfRnCzyxYDAQgHiH4EGBYKACYWIQQsV10ZJVfo
++1gAJ6WKf0adAq1BGAUCauR4NAIbDAUJA8JnAAAKCRCKf0adAq1BGAOdAPwKarJ8
+/JfjJdO32K9IneCYbeVXsnX1jiQzsk5z9dig3AEAtnLNMgVGO5pJupGB+dHn20//
+wNy8J7MPESN1OAOnkQo=
+=VizH
+-----END PGP PUBLIC KEY BLOCK-----`;
+
+      const RFC_TEXT = `RADNET-CSIRT — PT RADNET DIGITAL INDONESIA
+COMPUTER SECURITY INCIDENT RESPONSE TEAM
+PROFIL CSIRT SESUAI RFC 2350
+
+Document ID      : RADNET-CSIRT-RFC2350-V2
+Version          : 2.0
+Publication Date : 30 Oktober 2026
+Classification   : PUBLIC
+Language         : Bahasa Indonesia / English
+Status           : Active
+
+1. DOCUMENT INFORMATION
+Dokumen ini menjelaskan profil, mandat, kebijakan, layanan, dan kanal
+komunikasi RADNET-CSIRT sesuai struktur yang direkomendasikan RFC 2350.
+
+2. ORGANIZATION AND CONSTITUENCY
+Organization     : PT Radnet Digital Indonesia
+CSIRT Name       : RADNET-CSIRT
+CSIRT Type       : Corporate / Internal CSIRT
+Constituency     : PT Radnet Digital Indonesia, pelanggan, mitra, dan
+                   konstituen terkait dalam ekosistem layanan digital Radnet.
+Coverage         : Indonesia
+Timezone         : Asia/Jakarta (UTC+7)
+
+3. CONTACT INFORMATION
+Email            : csirt@radnet.co.id
+Hotline 24/7     : +62 811 2000 247
+Office           : Gedung Radnet, Jl. Prof. Dr. Soepomo No. 12,
+                   Jakarta Selatan 12810, Indonesia
+Website          : https://radnet.co.id
+Operational Hours: 24 hours / 7 days
+
+4. SPONSORSHIP AND AFFILIATION
+RADNET-CSIRT didanai sepenuhnya oleh PT Radnet Digital Indonesia dan
+beroperasi sebagai bagian dari fungsi tata kelola keamanan informasi
+perusahaan. CSIRT tidak memiliki afiliasi komersial yang memengaruhi
+independensi analisis dan respons insiden.
+
+5. CHARTER AND MANDATE
+- Menerima, memverifikasi, dan menangani laporan insiden siber.
+- Mengoordinasikan respons teknis, containment, eradikasi, dan pemulihan.
+- Melakukan triage, analisis forensik, dan pelaporan pasca-insiden.
+- Mengoordinasikan pengungkapan kerentanan secara bertanggung jawab.
+- Menerbitkan peringatan dini dan advisori keamanan.
+- Meningkatkan kesadaran dan kesiapan keamanan konstituen.
+
+6. POLICIES
+- Kerahasiaan informasi pelapor dijaga sesuai kebutuhan operasional.
+- Informasi sensitif dapat dikirim menggunakan enkripsi PGP.
+- Pengungkapan kerentanan dilakukan secara terkoordinasi dengan vendor.
+- Klasifikasi berbagi informasi menggunakan format TLP.
+- Aktivitas penanganan insiden dicatat dalam jejak audit.
+
+7. SERVICES
+- Incident Handling and Triage
+- Vulnerability Coordination
+- Early Warning and Security Advisories
+- Security Awareness and Education
+
+8. COMMUNICATION
+Email              : csirt@radnet.co.id
+Hotline            : +62 811 2000 247
+PGP Fingerprint    : 2C57 5D19 2557 E8FB 5800 27A5 8A7F 469D 02AD 4118
+PGP Key            : Tersedia pada portal resmi RADNET-CSIRT.
+
+9. DISCLAIMER
+Dokumen ini merupakan profil publik dan dapat diperbarui sewaktu-waktu.
+Versi terbaru selalu tersedia melalui portal resmi RADNET-CSIRT.
+
+© 2026 PT Radnet Digital Indonesia. Seluruh hak cipta dilindungi.
+`;
+
+      // Live clock
+      const clockEl = $('#liveClock');
+      function updateClock() {
+        if (!clockEl) return;
+        const now = new Date();
+        const date = new Intl.DateTimeFormat('id-ID', {
+          timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric'
+        }).format(now);
+        const time = new Intl.DateTimeFormat('id-ID', {
+          timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(now);
+        clockEl.textContent = date + ' · ' + time + ' WIB';
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      const yearEl = $('#currentYear');
+      if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+      // Navigation, scroll state, active link
+      const header = $('#siteHeader');
+      const backToTop = $('#backToTop');
+      const navLinks = $$('[data-nav]');
+      const sections = $$('main section[id]');
+
+      function updateScrollUI() {
+        const scrollY = window.scrollY;
+        if (header) header.style.backgroundColor = scrollY > 12 ? 'rgba(8, 17, 31, 0.96)' : '';
+        if (backToTop) {
+          const visible = scrollY > 600;
+          backToTop.style.opacity = visible ? '1' : '0';
+          backToTop.style.transform = visible ? 'translateY(0)' : 'translateY(12px)';
+          backToTop.style.pointerEvents = visible ? 'auto' : 'none';
+        }
+        let currentId = sections.length ? sections[0].id : '';
+        sections.forEach((section) => {
+          if (scrollY + 160 >= section.offsetTop) currentId = section.id;
+        });
+        navLinks.forEach((link) => link.classList.toggle('active', link.dataset.nav === currentId));
+      }
+      updateScrollUI();
+      window.addEventListener('scroll', updateScrollUI, { passive: true });
+
+      if (backToTop) {
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' }));
+      }
+
+      // Mobile menu
+      const menuBtn = $('#mobileMenuBtn');
+      const mobileMenu = $('#mobileMenu');
+      const iconOpen = $('#menuIconOpen');
+      const iconClose = $('#menuIconClose');
+
+      function setMobileMenu(open) {
+        if (!mobileMenu || !menuBtn) return;
+        mobileMenu.classList.toggle('hidden', !open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn.setAttribute('aria-label', open ? 'Tutup menu navigasi' : 'Buka menu navigasi');
+        if (iconOpen) iconOpen.classList.toggle('hidden', open);
+        if (iconClose) iconClose.classList.toggle('hidden', !open);
+      }
+      if (menuBtn) {
+        menuBtn.addEventListener('click', () => setMobileMenu(mobileMenu.classList.contains('hidden')));
+      }
+      $$('#mobileMenu a').forEach((link) => link.addEventListener('click', () => setMobileMenu(false)));
+
+      // Focus report form after CTA click
+      $$('[data-focus-form]').forEach((link) => {
+        link.addEventListener('click', () => {
+          window.setTimeout(() => {
+            const field = $('#reporterName');
+            if (field) field.focus({ preventScroll: true });
+          }, 650);
+        });
+      });
+
+      // Reveal-on-scroll
+      const revealEls = $$('.reveal');
+      if ('IntersectionObserver' in window && !prefersReducedMotion) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach((el) => revealObserver.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('is-visible'));
+      }
+
+      // Animated counters
+      function animateCounter(el) {
+        const target = Number(el.dataset.counter || 0);
+        if (prefersReducedMotion) {
+          el.textContent = target.toLocaleString('id-ID');
+          return;
+        }
+        const duration = 1600;
+        const start = performance.now();
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.floor(target * eased).toLocaleString('id-ID');
+          if (progress < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            el.textContent = target.toLocaleString('id-ID');
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+      const counterEls = $$('[data-counter]');
+      if ('IntersectionObserver' in window) {
+        const counterObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateCounter(entry.target);
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.5 });
+        counterEls.forEach((el) => counterObserver.observe(el));
+      } else {
+        counterEls.forEach(animateCounter);
+      }
+
+      // Toast
+      const toast = $('#toast');
+      let toastTimer;
+      function showToast(message, tone) {
+        if (!toast) return;
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translate(-50%, 0)';
+        toast.style.borderColor = tone === 'error' ? 'rgba(244, 63, 94, 0.45)' : 'rgba(100, 116, 139, 0.8)';
+        toast.style.color = tone === 'error' ? '#fda4af' : '#e2e8f0';
+        toastTimer = window.setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translate(-50%, 12px)';
+        }, 2800);
+      }
+
+      // Modal management
+      const openModals = new Set();
+      let lastFocused = null;
+
+      function openModal(modal) {
+        if (!modal) return;
+        lastFocused = document.activeElement;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('no-scroll');
+        openModals.add(modal);
+        const focusTarget = modal.querySelector('button, [href], input, select, textarea');
+        if (focusTarget) window.setTimeout(() => focusTarget.focus(), 50);
+      }
+
+      function closeModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        openModals.delete(modal);
+        if (!openModals.size) document.body.classList.remove('no-scroll');
+        if (lastFocused && typeof lastFocused.focus === 'function') {
+          window.setTimeout(() => lastFocused.focus(), 30);
+        }
+      }
+
+      $$('.modal').forEach((modal) => {
+        modal.addEventListener('keydown', (event) => {
+          if (event.key !== 'Tab') return;
+          const focusable = $$('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])', modal)
+            .filter((el) => !el.disabled && el.offsetParent !== null);
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        const closeTrigger = event.target.closest('[data-close-modal]');
+        if (closeTrigger) closeModal(closeTrigger.closest('.modal'));
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          $$('.modal.is-open').forEach((modal) => closeModal(modal));
+        }
+      });
+
+      // File & character helpers
+      const copyToClipboard = async (text) => {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+          throw new Error('Clipboard API unavailable');
+        } catch (error) {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          let ok = false;
+          try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+          textarea.remove();
+          return ok;
+        }
+      };
+
+      function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      $$('[data-download]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (button.dataset.download === 'pgp') {
+            downloadFile('radnet-csirt-public.asc', PGP_KEY, 'application/pgp-keys');
+            showToast('Kunci PGP publik RADNET-CSIRT diunduh.');
+          } else {
+            downloadFile('radnet-csirt-rfc2350.txt', RFC_TEXT, 'text/plain;charset=utf-8');
+            showToast('Dokumen RFC 2350 RADNET-CSIRT diunduh.');
+          }
+        });
+      });
+
+      $$('[data-copy-fingerprint]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const ok = await copyToClipboard('2C57 5D19 2557 E8FB 5800 27A5 8A7F 469D 02AD 4118');
+          showToast(ok ? 'Fingerprint PGP berhasil disalin.' : 'Gagal menyalin fingerprint.', ok ? undefined : 'error');
+        });
+      });
+
+      // Incident form
+      const form = $('#incidentForm');
+      const submitBtn = $('#submitBtn');
+      const submitSpinner = $('#submitSpinner');
+      const submitArrow = $('#submitArrow');
+      const submitLabel = $('#submitLabel');
+      const evidenceInput = $('#evidence');
+      const fileNameEl = $('#fileName');
+      const fileMetaEl = $('#fileMeta');
+      const descInput = $('#incidentDesc');
+      const descCount = $('#descCount');
+      const successModal = $('#successModal');
+      let lastTicket = '';
+
+      function resetFileUI() {
+        if (fileNameEl) fileNameEl.textContent = 'Klik untuk mengunggah log atau screenshot';
+        if (fileMetaEl) fileMetaEl.textContent = 'LOG, TXT, PNG, JPG, PDF, ZIP · Maks. 10 MB';
+      }
+
+      if (evidenceInput) {
+        evidenceInput.addEventListener('change', () => {
+          const file = evidenceInput.files && evidenceInput.files[0];
+          if (!file) {
+            resetFileUI();
+            return;
+          }
+          if (file.size > 10 * 1024 * 1024) {
+            evidenceInput.value = '';
+            resetFileUI();
+            showToast('Ukuran lampiran melebihi 10 MB.', 'error');
+            return;
+          }
+          const sizeInMb = file.size / (1024 * 1024);
+          if (fileNameEl) fileNameEl.textContent = file.name;
+          if (fileMetaEl) fileMetaEl.textContent = (sizeInMb < 0.1 ? '< 0.1' : sizeInMb.toFixed(2)) + ' MB · Siap diunggah';
+        });
+      }
+
+      if (descInput && descCount) {
+        descInput.addEventListener('input', () => {
+          descCount.textContent = descInput.value.length + ' / 2000';
+        });
+      }
+
+      if (form) {
+        form.addEventListener('input', () => form.classList.remove('was-validated'));
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const file = evidenceInput && evidenceInput.files ? evidenceInput.files[0] : null;
+          if (file && file.size > 10 * 1024 * 1024) {
+            showToast('Ukuran lampiran melebihi 10 MB.', 'error');
+            return;
+          }
+          if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            form.reportValidity();
+            return;
+          }
+
+          const ticket = '#INC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+          const reportType = $('#incidentType') ? $('#incidentType').value : '-';
+          const reportSeverity = form.querySelector('input[name="severity"]:checked');
+          const reportEmail = $('#reporterEmail') ? $('#reporterEmail').value : '-';
+          const severityValue = reportSeverity ? reportSeverity.value : '-';
+          lastTicket = ticket;
+
+          submitBtn.disabled = true;
+          if (submitSpinner) submitSpinner.classList.remove('hidden');
+          if (submitArrow) submitArrow.classList.add('hidden');
+          if (submitLabel) submitLabel.textContent = 'Mengirim laporan...';
+
+          window.setTimeout(() => {
+            const ticketEl = $('#ticketNumber');
+            const typeEl = $('#successType');
+            const severityEl = $('#successSeverity');
+            const emailEl = $('#successEmail');
+            const timeEl = $('#successTime');
+            if (ticketEl) ticketEl.textContent = ticket;
+            if (typeEl) typeEl.textContent = reportType;
+            if (severityEl) severityEl.textContent = severityValue;
+            if (emailEl) emailEl.textContent = reportEmail;
+            if (timeEl) {
+              timeEl.textContent = new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: false
+              }).format(new Date()) + ' WIB';
+            }
+
+            openModal(successModal);
+            form.reset();
+            form.classList.remove('was-validated');
+            resetFileUI();
+            if (descCount) descCount.textContent = '0 / 2000';
+            submitBtn.disabled = false;
+            if (submitSpinner) submitSpinner.classList.add('hidden');
+            if (submitArrow) submitArrow.classList.remove('hidden');
+            if (submitLabel) submitLabel.textContent = 'Kirim Laporan';
+          }, 1300);
+        });
+      }
+
+      const copyTicketBtn = $('#copyTicketBtn');
+      if (copyTicketBtn) {
+        copyTicketBtn.addEventListener('click', async () => {
+          if (!lastTicket) return;
+          const ok = await copyToClipboard(lastTicket);
+          showToast(ok ? 'Nomor tiket berhasil disalin.' : 'Gagal menyalin nomor tiket.', ok ? undefined : 'error');
+        });
+      }
+
+      // Advisory data
+      const advisories = [
+        {
+          id: 'RADNET-ADV-2026-006', title: 'Remote Code Execution Kritis pada Gateway VPN Perusahaan',
+          severity: 'Critical', date: '29 Okt 2026', cve: 'CVE-2026-31842', cvss: 'CVSS 9.8', category: 'Infrastruktur',
+          summary: 'Kerentanan remote code execution pada gateway VPN dapat dieksploitasi tanpa autentikasi untuk menjalankan perintah arbitrer pada perangkat yang terekspos.',
+          affected: 'Gateway VPN versi 8.2.x hingga 8.4.1 dengan fitur administrasi jarak jauh aktif.',
+          action: 'Segera terapkan patch vendor versi 8.4.2. Batasi akses panel administrasi, aktifkan MFA, dan periksa log akses mencurigakan pada 72 jam terakhir.'
+        },
+        {
+          id: 'RADNET-ADV-2026-005', title: 'Kampanye Phishing Bertema Reset Password Microsoft 365',
+          severity: 'High', date: '28 Okt 2026', cve: 'Tanpa CVE', cvss: 'CVSS 8.1', category: 'Phishing',
+          summary: 'Kampanye phishing menargetkan pengguna Microsoft 365 melalui email reset password palsu yang mengarah ke halaman login tiruan untuk mencuri kredensial dan sesi.',
+          affected: 'Pengguna email korporat, khususnya akun dengan akses administratif.',
+          action: 'Aktifkan MFA berbasis nomor, blokir domain pengirim yang teridentifikasi, dan lakukan reset kredensial bagi pengguna yang telah memasukkan data pada halaman mencurigakan.'
+        },
+        {
+          id: 'RADNET-ADV-2026-004', title: 'Eksploitasi Aktif Kerentanan Apache Struts 2',
+          severity: 'Critical', date: '26 Okt 2026', cve: 'CVE-2026-30417', cvss: 'CVSS 9.1', category: 'Aplikasi',
+          summary: 'Aktivitas eksploitasi aktif terdeteksi pada aplikasi berbasis Apache Struts 2 yang belum dipatch, berpotensi menyebabkan eksekusi kode dari jarak jauh.',
+          affected: 'Aplikasi web berbasis Struts 2 versi 6.x sebelum pembaruan keamanan terbaru.',
+          action: 'Terapkan pembaruan vendor, lakukan review konfigurasi OGNL, dan cari indikator kompromi pada log aplikasi serta proses webserver.'
+        },
+        {
+          id: 'RADNET-ADV-2026-003', title: 'Peningkatan Serangan DDoS Volumetrik pada Layanan DNS',
+          severity: 'High', date: '24 Okt 2026', cve: 'CVE-2026-27754', cvss: 'CVSS 7.5', category: 'Jaringan',
+          summary: 'Peningkatan signifikan serangan DDoS volumetrik teramati pada layanan DNS publik. Serangan memanfaatkan refleksi dan amplifikasi untuk membanjiri bandwidth target.',
+          affected: 'Layanan DNS publik, resolver terbuka, dan infrastruktur dengan konfigurasi rate limiting lemah.',
+          action: 'Aktifkan perlindungan DDoS, nonaktifkan rekursi terbuka, terapkan response rate limiting, dan koordinasikan mitigasi dengan penyedia transit.'
+        },
+        {
+          id: 'RADNET-ADV-2026-002', title: 'Infostealer Menyamar sebagai Pembaruan Browser Chrome',
+          severity: 'High', date: '22 Okt 2026', cve: 'CVE-2026-31509', cvss: 'CVSS 8.2', category: 'Malware',
+          summary: 'Malware infostealer disebarkan melalui iklan pencarian palsu dan halaman unduhan tiruan yang menyerupai pembaruan browser resmi untuk mencuri kredensial tersimpan.',
+          affected: 'Pengguna Windows dan macOS yang mengunduh browser dari sumber tidak resmi.',
+          action: 'Hanya unduh browser dari situs resmi, hapus ekstensi mencurigakan, reset kata sandi akun penting, dan pindai endpoint dengan EDR terbaru.'
+        },
+        {
+          id: 'RADNET-ADV-2026-001', title: 'Information Disclosure pada Plugin WordPress Populer',
+          severity: 'Medium', date: '20 Okt 2026', cve: 'CVE-2026-26811', cvss: 'CVSS 6.5', category: 'Aplikasi',
+          summary: 'Kerentanan information disclosure pada plugin WordPress memungkinkan pengguna tanpa hak istimewa mengakses data konfigurasi sensitif melalui endpoint yang tidak terproteksi.',
+          affected: 'Situs WordPress yang menggunakan plugin terkait versi 3.4.x hingga 3.6.0.',
+          action: 'Perbarui plugin ke versi 3.6.1, tinjau akses endpoint, dan rotasi kredensial yang mungkin terekspos dalam file konfigurasi.'
+        }
+      ];
+
+      const severityClass = {
+        Critical: { badge: 'sev-badge sev-critical', dot: 'sev-dot sev-dot-critical' },
+        High: { badge: 'sev-badge sev-high', dot: 'sev-dot sev-dot-high' },
+        Medium: { badge: 'sev-badge sev-medium', dot: 'sev-dot sev-dot-medium' }
+      };
+
+      const advisoryGrid = $('#advisoryGrid');
+      const advisoryEmpty = $('#advisoryEmpty');
+      const advisorySearch = $('#advisorySearch');
+      const advisoryCount = $('#advisoryCount');
+      const filterButtons = $$('.advisory-filter');
+      let activeFilter = 'all';
+
+      $$('[data-count]').forEach((el) => {
+        const key = el.dataset.count;
+        el.textContent = String(key === 'all' ? advisories.length : advisories.filter((item) => item.severity === key).length);
+      });
+
+      function renderAdvisories() {
+        if (!advisoryGrid) return;
+        const query = advisorySearch ? advisorySearch.value.trim().toLowerCase() : '';
+        const filtered = advisories.filter((item) => {
+          const matchesFilter = activeFilter === 'all' || item.severity === activeFilter;
+          const haystack = [item.id, item.title, item.cve, item.category, item.summary, item.affected].join(' ').toLowerCase();
+          return matchesFilter && (!query || haystack.includes(query));
+        });
+
+        advisoryGrid.innerHTML = filtered.map((item) => {
+          const sev = severityClass[item.severity] || severityClass.Medium;
+          return `
+            <article class="advisory-card group flex flex-col rounded-2xl p-5">
+              <div class="flex items-start justify-between gap-3">
+                <span class="${sev.badge}"><span class="${sev.dot}"></span>${item.severity}</span>
+                <span class="font-mono text-[9px] text-slate-500">${item.date}</span>
+              </div>
+              <div class="mt-4 flex flex-wrap items-center gap-2 font-mono text-[8px] text-slate-500">
+                <span>${item.id}</span><span class="text-slate-700">/</span><span>${item.cve}</span>
+              </div>
+              <h3 class="mt-2.5 font-display text-[15px] font-semibold leading-snug text-white">${item.title}</h3>
+              <p class="mt-2 text-[11px] leading-5 text-slate-400">${item.summary}</p>
+              <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-800/70 pt-4">
+                <span class="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-1 text-[8px] font-medium uppercase tracking-wider text-slate-500">${item.category}</span>
+                <button type="button" data-advisory-id="${item.id}" class="inline-flex items-center gap-1 text-[10px] font-semibold text-cyan-400 transition hover:text-cyan-300">Baca detail <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" /></svg></button>
+              </div>
+            </article>`;
+        }).join('');
+
+        if (advisoryCount) advisoryCount.textContent = filtered.length + ' advisori';
+        if (advisoryEmpty) advisoryEmpty.classList.toggle('hidden', filtered.length > 0);
+      }
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          activeFilter = button.dataset.filter || 'all';
+          filterButtons.forEach((other) => {
+            other.classList.remove('border-cyan-500/30', 'bg-cyan-500/10', 'text-cyan-300');
+            other.classList.add('border-slate-700/70', 'bg-slate-900/40', 'text-slate-400');
+          });
+          button.classList.remove('border-slate-700/70', 'bg-slate-900/40', 'text-slate-400');
+          button.classList.add('border-cyan-500/30', 'bg-cyan-500/10', 'text-cyan-300');
+          renderAdvisories();
+        });
+      });
+
+      if (advisorySearch) {
+        advisorySearch.addEventListener('input', renderAdvisories);
+      }
+
+      if (advisoryGrid) {
+        advisoryGrid.addEventListener('click', (event) => {
+          const trigger = event.target.closest('[data-advisory-id]');
+          if (!trigger) return;
+          const item = advisories.find((advisory) => advisory.id === trigger.dataset.advisoryId);
+          if (!item) return;
+          const sev = severityClass[item.severity] || severityClass.Medium;
+          const modalSeverity = $('#advisoryModalSeverity');
+          const modalId = $('#advisoryModalId');
+          const modalTitle = $('#advisoryModalTitle');
+          const modalDate = $('#advisoryModalDate');
+          const modalCve = $('#advisoryModalCve');
+          const modalCvss = $('#advisoryModalCvss');
+          const modalSummary = $('#advisoryModalSummary');
+          const modalAffected = $('#advisoryModalAffected');
+          const modalAction = $('#advisoryModalAction');
+          if (modalSeverity) { modalSeverity.className = sev.badge; modalSeverity.textContent = item.severity; }
+          if (modalId) modalId.textContent = item.id;
+          if (modalTitle) modalTitle.textContent = item.title;
+          if (modalDate) modalDate.textContent = item.date;
+          if (modalCve) modalCve.textContent = item.cve;
+          if (modalCvss) modalCvss.textContent = item.cvss + ' · ' + item.category;
+          if (modalSummary) modalSummary.textContent = item.summary;
+          if (modalAffected) modalAffected.textContent = item.affected;
+          if (modalAction) modalAction.textContent = item.action;
+          openModal($('#advisoryModal'));
+        });
+      }
+
+      renderAdvisories();
+    })();
+  </script>
+</body>
+</html>
+
+</body>
+</html>
+
+
+
+
+</body>
+</html>
