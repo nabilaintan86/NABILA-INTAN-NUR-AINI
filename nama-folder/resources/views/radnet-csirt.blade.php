@@ -185,14 +185,20 @@
     }
     .brand-name span { color: var(--cyan-700); }
     .brand-sub { display: block; margin-top: 2px; color: var(--slate-500); font-size: 10.5px; font-weight: 600; white-space: nowrap; }
-    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
     .nav-link {
-      display: inline-flex; align-items: center; padding: 9px 11px; border-bottom: 2px solid transparent;
+      position: relative; display: inline-flex; align-items: center; padding: 8px 11px;
+      border: 1px solid transparent; border-radius: 8px;
       color: var(--slate-600); font-size: 13px; font-weight: 600; white-space: nowrap;
-      transition: color .18s ease, border-color .18s ease, transform .18s ease;
+      transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
     }
-    .nav-link:hover { color: var(--cyan-700); border-bottom-color: var(--cyan-200); transform: translateY(-1px); }
-    .nav-link.active { color: var(--cyan-800); border-bottom-color: var(--cyan-700); }
+    .nav-link:hover { background: var(--slate-50); border-color: var(--slate-200); color: var(--cyan-800); transform: translateY(-1px); }
+    .nav-link:active { transform: translateY(0) scale(.98); }
+    .nav-link.active {
+      background: var(--cyan-50); border-color: var(--cyan-200); color: var(--cyan-800);
+      box-shadow: inset 0 -3px 0 var(--cyan-700), 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    .nav-link.active:hover { background: var(--cyan-100); border-color: var(--cyan-200); }
     .nav-actions { display: flex; align-items: center; gap: 9px; }
     .mobile-toggle {
       display: none; width: 42px; height: 42px; align-items: center; justify-content: center;
@@ -204,11 +210,17 @@
     .mobile-nav { display: grid; gap: 2px; }
     .mobile-link {
       display: flex; align-items: center; justify-content: space-between; padding: 11px 14px;
-      border-radius: 8px; color: var(--slate-700); font-size: 14px; font-weight: 600;
-      transition: background .18s ease, color .18s ease;
+      border: 1px solid transparent; border-radius: 8px;
+      color: var(--slate-700); font-size: 14px; font-weight: 600;
+      transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
-    .mobile-link:hover, .mobile-link.active { background: var(--cyan-50); color: var(--cyan-800); }
+    .mobile-link:hover { background: var(--slate-50); border-color: var(--slate-200); color: var(--cyan-800); }
+    .mobile-link.active {
+      background: var(--cyan-50); border-color: var(--cyan-200); color: var(--cyan-800);
+      font-weight: 700; box-shadow: inset 3px 0 0 var(--cyan-700);
+    }
     .mobile-link .icon { color: var(--slate-400); }
+    .mobile-link.active .icon { color: var(--cyan-700); }
     .mobile-cta { margin-top: 8px; }
 
     .section { padding: 84px 0; }
@@ -1417,6 +1429,12 @@ RIcRSnB0AQ==
           else link.removeAttribute("aria-current");
         });
       }
+
+      [...navLinks, ...mobileLinks].forEach((link) => {
+        link.addEventListener("click", () => {
+          if (link.dataset.nav) setActiveNav(link.dataset.nav);
+        });
+      });
 
       function updateScrollUI() {
         const y = window.scrollY;
